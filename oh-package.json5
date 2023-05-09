@@ -1,9 +1,13 @@
 {
-  "name": "lyric",
+  "name": "cclyric",
   "version": "1.0.0",
   "description": "A lyric library for OpenHarmony.",
-  "main": "index.ets",
+  "main": "",
   "author": "seagazer",
   "license": "Apache-2.0",
-  "dependencies": {}
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@ohos/hypium": "1.0.6"
+  }
 }

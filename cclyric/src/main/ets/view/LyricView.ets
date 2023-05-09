@@ -11,8 +11,14 @@ const DEFAULT_TEXT_COLOR = "#ff929292"
 const DEFAULT_HIGHLIGHT_COLOR = "#000000"
 const DEFAULT_EDGE_COLOR = "#ffffff"
 const DEFAULT_ANIM_DURATION = 500
-const DEFAULT_CACHE_COUNT = 2
+const DEFAULT_CACHE_SIZE = 2
 
+/**
+ * A component for display the lyric.
+ *
+ * The custom setter include the lyric text style, fade style of edge, the line space, scroll animation duration,
+ * the cache size to draw out of screen.
+ */
 @Component
 export struct LyricView {
     /*------------------------------setter----------------------------------*/
@@ -24,7 +30,7 @@ export struct LyricView {
     private edgeColor: string = DEFAULT_EDGE_COLOR
     private lineSpace: number = DEFAULT_LINE_SPACE
     private animDuration: number = DEFAULT_ANIM_DURATION
-    private cacheCount: number = DEFAULT_CACHE_COUNT
+    private cacheSize: number = DEFAULT_CACHE_SIZE
     @Watch("onProgressChanged") @Link duration: number
     @Watch("onIndexChanged") @Link targetIndex: number
     /*----------------------------------------------------------------------*/
@@ -107,13 +113,12 @@ export struct LyricView {
             let lrc = this.lrcList[i]
             let textMeasure = this.canvasCtx.measureText(lrc.text)
             let lp = textMeasure.width / this.w
-            let lines = 1
+            let lines = lp
             if (textMeasure.width % this.w != 0) {
-                lines = lp < 1 ? 1 : Math.round(lp) + 1
-            } else {
-                lines = lp
+                lines = lp < 1 ? 1 : Math.floor(lp) + 1
             }
-            let lineHeight = lines > 1 ? lines * textMeasure.height : textMeasure.height
+            console.debug("-----" + lp + ", " + lines)
+            let lineHeight = lines * textMeasure.height
             if (i == 0) {
                 tempH = Math.round(textMeasure.height / 2)
                 this.centerYOffset = tempH
@@ -158,12 +163,12 @@ export struct LyricView {
         for (let i = 0;i < this.extLrcList.length; i++) {
             let lrc = this.extLrcList[i]
             // out the top of screen, the default cache is 2 lines
-            if (i < this.firstVisibleIndex - this.cacheCount) {
+            if (i < this.firstVisibleIndex - this.cacheSize) {
                 startY += (lrc.height + this.lineSpace)
                 continue
             }
             // out the bottom of screen, the default cache is 2 lines
-            if (i > this.lastVisibleIndex + this.cacheCount) {
+            if (i > this.lastVisibleIndex + this.cacheSize) {
                 break
             }
             // draw with high light for current line
@@ -186,11 +191,9 @@ export struct LyricView {
         let textMeasure = this.canvasCtx.measureText(lrc.text)
         let height = Math.round(textMeasure.height)
         let lp = textMeasure.width / this.w
-        let lines = 1
+        let lines = lp
         if (textMeasure.width % this.w != 0) {
-            lines = lp < 1 ? 1 : Math.round(lp) + 1
-        } else {
-            lines = lp
+            lines = lp < 1 ? 1 : Math.floor(lp) + 1
         }
         let scaleHeight = height * lines
         this.canvasCtx.restore()
@@ -326,10 +329,19 @@ export struct LyricView {
     }
 
     private onProgressChanged() {
-        let index = this.getIndex(this.duration)
-        if (index != this.currentIndex) {
-            printD("go to next line=" + index)
-            this.animateToIndex(index)
+        if (this.currentIndex < this.lrcList.length - 1) {
+            let nextTimestamp = this.lrcList[this.currentIndex + 1].timestamp
+            if (this.duration > nextTimestamp) {
+                let index = this.currentIndex + 1
+                printD("go to next line=" + index)
+                this.animateToIndex(index)
+            }
         }
+        //
+        // let index = this.getIndex(this.duration)
+        // if (index != this.currentIndex) {
+        //     printD("go to next line=" + index)
+        //     this.animateToIndex(index)
+        // }
     }
 }
