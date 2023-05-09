@@ -1,9 +1,10 @@
 import { IParser } from './IParser';
 import { Lyric } from '../bean/Lyric';
+import { LyricLine } from '../bean/LyricLine';
 
 export class LyricParser implements IParser {
-    parse(src: Array<string>): Array<Lyric> {
-        let result = new Array<Lyric>()
+    parse(src: Array<string>): Lyric {
+        let list = new Array<LyricLine>()
         src.forEach((line) => {
             let spr = line.split(']')
             let text = spr[1]
@@ -19,8 +20,8 @@ export class LyricParser implements IParser {
             let seconds = Number.parseInt(spr3_1)
             let millionSecond = Number.parseInt(spr3_2)
             let timestamp = minute * 60000 + seconds * 1000 + millionSecond
-            result.push(new Lyric(timestamp, text))
+            list.push(new LyricLine(timestamp, text))
         })
-        return result
+        return new Lyric(list)
     }
 }

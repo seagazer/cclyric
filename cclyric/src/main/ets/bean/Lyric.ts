@@ -1,9 +1,9 @@
-export class Lyric {
-    readonly timestamp: number
-    readonly text: string
+import { LyricLine } from './LyricLine'
 
-    constructor(timestamp: number, text: string) {
-        this.timestamp = timestamp
-        this.text = text
+export class Lyric {
+    readonly lyricList: Array<LyricLine>
+
+    constructor(lyricList: Array<LyricLine>) {
+        this.lyricList = lyricList
     }
 }

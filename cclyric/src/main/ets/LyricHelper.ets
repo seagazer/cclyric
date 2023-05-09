@@ -1,4 +1,4 @@
-import { Lyric } from './bean/Lyric'
+import { LyricLine } from './bean/LyricLine'
 import { printD } from './extensions/Extension'
 
 /**
@@ -7,7 +7,7 @@ import { printD } from './extensions/Extension'
 export class LyricHelper {
     private currentIndex = 0
     private currentLyric = ""
-    private lrcList: Array<Lyric> = new Array<Lyric>()
+    private lrcList: Array<LyricLine> = new Array<LyricLine>()
 
     private getIndex(position: number): number {
         let first = this.lrcList[0].timestamp
@@ -32,7 +32,7 @@ export class LyricHelper {
      * Setup the lyric list.
      * @param data The list of lyric.
      */
-    public setLyricData(data: Array<Lyric>) {
+    public setLyricData(data: Array<LyricLine>) {
         this.lrcList = data
         this.currentIndex = 0
         this.currentLyric = ""

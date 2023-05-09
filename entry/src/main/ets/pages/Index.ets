@@ -1,62 +1,62 @@
-import { LyricView, Lyric, LyricParser } from '@seagazer/cclyric';
+import { Lyric, LyricConfig, LyricParser, LyricView } from '@seagazer/cclyric';
 import { MockData } from './MockData';
 
 @Entry
 @Component
 struct Index {
     @State duration: number = 0
-    private lrcList = new Array<Lyric>()
+    private lyricList: Array<Lyric> = new Array()
+    private lyric: Lyric = null
+    private lyricConfig: LyricConfig = new LyricConfig()
 
     aboutToAppear() {
-        this.lrcList = new LyricParser().parse(MockData.src2)
+        let lyric1 = new LyricParser().parse(MockData.src1)
+        let lyric2 = new LyricParser().parse(MockData.src2)
+        this.lyricList.push(lyric1)
+        this.lyricList.push(lyric2)
+        this.lyric = this.lyricList[0]
+        this.lyricConfig
+            .setLyric(this.lyric)
+            .setTextSize(48)
+            .setTextColor("#ff999999")
+            .setHighlightColor("#ff000000")
+            .setLineSpace(20)
+            .setHighlightStyle(false)
+            .setAnimationDuration(1000)
     }
 
     private test() {
         this.duration = 0
         let testTaskId = setInterval(() => {
             this.duration += 1000
-            if (this.duration > this.lrcList[this.lrcList.length-1].timestamp + 1000) {
+            if (this.duration > this.lyric.lyricList[this.lyric.lyricList.length - 1].timestamp + 1000) {
                 clearInterval(testTaskId)
             }
         }, 1000)
     }
 
-    @State testIndex: number = 0
-
     build() {
         Column() {
-            LyricView({
-                lrcList: this.lrcList,
-                duration: $duration,
-                targetIndex: $testIndex,
-                textSize: 48,
-                highLightScale: 1.2,
-                lineSpace: 16,
-                textColor: "#cc8a8a8a",
-                highLightColor: "#ff2f2f2f",
-            })
+            LyricView(
+                {
+                    config: this.lyricConfig,
+                    currentPosition: $duration,
+                })
                 .width("100%")
                 .height("70%")
                 .padding({ left: 16, right: 16 })
             Row() {
-                Button('PreIndex')
+                Button('PlayNext')
                     .fontSize(16)
                     .onClick(() => {
-                        let temp = this.testIndex - 1
-                        if (temp < 0) {
-                            temp = 0
+                        if (this.lyric == this.lyricList[0]) {
+                            this.lyric = this.lyricList[1]
+                            this.lyricConfig.setLyric(this.lyric)
+                        } else {
+                            this.lyric = this.lyricList[0]
+                            this.lyricConfig.setLyric(this.lyric)
                         }
-                        this.testIndex = temp
                     })
-                Button('NextIndex')
-                    .fontSize(16)
-                    .onClick(() => {
-                        let temp = this.testIndex + 1
-                        if (temp > this.lrcList.length - 1) {
-                            temp = this.lrcList.length - 1
-                        }
-                        this.testIndex = temp
-                    }).margin({ left: 16 })
                 Button('AutoPlay')
                     .fontSize(16)
                     .onClick(() => {
@@ -73,7 +73,7 @@ struct Index {
 
             Slider({
                 style: SliderStyle.InSet,
-                max: this.lrcList[this.lrcList.length-1].timestamp,
+                max: this.lyric.lyricList[this.lyric.lyricList.length - 1].timestamp,
                 value: this.duration
             })
                 .width("100%")
