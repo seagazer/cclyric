@@ -8,6 +8,8 @@ struct Index {
     private lyricList: Array<Lyric> = new Array()
     private lyric: Lyric = null
     private lyricConfig: LyricConfig = new LyricConfig()
+    private testIndex = 0
+    private testTimer = -1
 
     aboutToAppear() {
         let lyric1 = new LyricParser().parse(MockData.src1)
@@ -25,15 +27,13 @@ struct Index {
             .setEmptyHint("No Lyric")
     }
 
-    private testIndex = 0
-
     private test() {
         this.duration = 0
-        let testTaskId = setInterval(() => {
+        this.testTimer = setInterval(() => {
             this.duration += 1000
             let endDuration = this.lyric == null ? 100000 : this.lyric.lyricList[this.lyric.lyricList.length - 1].timestamp
-            if (this.duration > endDuration + 1000) {
-                clearInterval(testTaskId)
+            if (this.duration >= endDuration + 1000) {
+                clearInterval(this.testTimer)
             }
         }, 1000)
     }
@@ -54,8 +54,8 @@ struct Index {
                     .onClick(() => {
                         this.testIndex++
                         let index = this.testIndex % 3
-                        console.debug("----" + index)
-                        this.lyricConfig.setLyric(this.lyricList[index])
+                        this.lyric = this.lyricList[index]
+                        this.lyricConfig.setLyric(this.lyric)
                     })
                 Button('AutoPlay')
                     .fontSize(16)
