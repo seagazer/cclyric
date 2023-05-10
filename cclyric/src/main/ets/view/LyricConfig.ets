@@ -25,13 +25,13 @@ export class LyricConfig {
     private cacheSize: number = DEFAULT_CACHE_SIZE
     private isBold: boolean = true
     private emptyHint: string = ""
-    private onDataChanged: () => void
+    private onDataChanged: (lyric: Lyric) => void
 
     /**
      * Set a listener to observe the lyric data set changed. This is a inner function, do not call this.
      * @param listener Listener to observe the lyric data set changed.
      */
-    setOnDataChangedListener(listener: () => void) {
+    setOnDataChangedListener(listener: (lyric: Lyric) => void) {
         this.onDataChanged = listener
     }
 
@@ -42,7 +42,7 @@ export class LyricConfig {
      */
     setLyric(lyric: Lyric): LyricConfig {
         this.lyric = lyric
-        this.onDataChanged?.()
+        this.onDataChanged?.(lyric)
         return this
     }
 

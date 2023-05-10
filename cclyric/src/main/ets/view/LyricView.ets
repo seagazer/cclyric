@@ -2,6 +2,7 @@ import { LyricWrapper } from '../bean/LyricLineWrapper';
 import { printD, printW } from '../extensions/Extension';
 import animator, { AnimatorResult } from '@ohos.animator';
 import { LyricConfig } from './LyricConfig';
+import { Lyric } from '../bean/Lyric';
 
 /**
  * A component to display the lyric with scroll animation.
@@ -35,12 +36,15 @@ export struct LyricView {
     private anim: AnimatorResult
     private isAnimRunning = false
     private isEmpty = false
-    private onDataChangedListener = () => {
+    private lyric: Lyric = null
+    private onDataChangedListener = (lyric: Lyric) => {
+        this.lyric = lyric
         this.initSize()
     }
 
     aboutToAppear() {
         this.config.setOnDataChangedListener(this.onDataChangedListener)
+        this.lyric = this.config.getLyric()
         this.highLightTextSize = this.config.getTextSize() * this.config.getHighlightScale()
         this.highLightDrawOffset = this.config.getTextSize() * (this.config.getHighlightScale() - 1) / 2
         this.anim = animator.create({
@@ -90,9 +94,14 @@ export struct LyricView {
         this.currentIndex = 0
         this.currentPosition = 0
         this.extLrcList = []
+        this.isEmpty = this.lyric == null || this.lyric.lyricList.length <= 0
+        if (this.isEmpty) {
+            this.invalidate()
+            return
+        }
         this.scrollY = this.h / 2 // layout center when first display
         let tempH = 0
-        let list = this.config.getLyric().lyricList
+        let list = this.lyric.lyricList
         for (let i = 0;i < list.length; i++) {
             let lrc = list[i]
             let textMeasure = this.canvasCtx.measureText(lrc.text)
@@ -122,9 +131,9 @@ export struct LyricView {
     }
 
     private invalidate() {
+        // clear canvas
+        this.canvasCtx.clearRect(0, 0, this.w, this.h)
         if (!this.isEmpty) {
-            // clear canvas
-            this.canvasCtx.clearRect(0, 0, this.w, this.h)
             // TODO: handle touch event, & draw center line
             // this.drawCenterLine()
             // draw lrc text
