@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "cclyric",
+    "type": "har",
+    "deviceTypes": [
+      "default"
+    ]
+  }
+}
