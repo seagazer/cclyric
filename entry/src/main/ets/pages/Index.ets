@@ -10,6 +10,7 @@ struct Index {
     private lyricConfig: LyricConfig = new LyricConfig()
     private testIndex = 0
     private testTimer = -1
+    private emptyDuration = 60 * 1000
 
     aboutToAppear() {
         let lyric1 = new LyricParser().parse(MockData.src1)
@@ -19,11 +20,11 @@ struct Index {
         this.lyricList.push(lyric2)
         this.lyricConfig
             .setTextSize(48)
+            .setCacheSize(4)
             .setTextColor("#ff999999")
             .setHighlightColor("#ff000000")
-            .setLineSpace(20)
+            .setLineSpace(16)
             .setHighlightStyle(false)
-            .setAnimationDuration(1000)
             .setEmptyHint("No Lyric")
     }
 
@@ -31,7 +32,8 @@ struct Index {
         this.duration = 0
         this.testTimer = setInterval(() => {
             this.duration += 1000
-            let endDuration = this.lyric == null ? 100000 : this.lyric.lyricList[this.lyric.lyricList.length - 1].timestamp
+            this.lyricConfig.updatePosition(this.duration)
+            let endDuration = this.lyric == null ? this.emptyDuration : this.lyric.lyricList[this.lyric.lyricList.length - 1].beginTime
             if (this.duration >= endDuration + 1000) {
                 clearInterval(this.testTimer)
             }
@@ -40,11 +42,7 @@ struct Index {
 
     build() {
         Column() {
-            LyricView(
-                {
-                    config: this.lyricConfig,
-                    currentPosition: $duration,
-                })
+            LyricView({ lyricConfig: this.lyricConfig, })
                 .width("100%")
                 .layoutWeight(1)
                 .padding({ left: 16, right: 16 })
@@ -56,6 +54,8 @@ struct Index {
                         let index = this.testIndex % 3
                         this.lyric = this.lyricList[index]
                         this.lyricConfig.setLyric(this.lyric)
+                        clearInterval(this.testTimer)
+                        this.duration = 0
                     })
                 Button('AutoPlay')
                     .fontSize(16)
@@ -67,15 +67,17 @@ struct Index {
             .justifyContent(FlexAlign.Center)
             .margin({ top: 36 })
 
-            Slider({
-                style: SliderStyle.InSet,
-                max: this.lyric != null ? this.lyric.lyricList[this.lyric.lyricList.length - 1].timestamp : 100000,
-                value: this.duration
-            })
+            Slider(
+                {
+                    style: SliderStyle.InSet,
+                    max: this.lyric != null ? this.lyric.lyricList[this.lyric.lyricList.length - 1].beginTime : this.emptyDuration,
+                    value: this.duration
+                })
                 .width("100%")
                 .onChange((value, mode) => {
                     if (mode == SliderChangeMode.End || mode == 3) {
                         this.duration = value
+                        this.lyricConfig.updatePosition(this.duration)
                     }
                 })
 

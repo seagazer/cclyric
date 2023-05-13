@@ -10,18 +10,17 @@ export class LyricHelper {
     private lrcList: Array<LyricLine> = new Array<LyricLine>()
 
     private getIndex(position: number): number {
-        let first = this.lrcList[0].timestamp
+        let first = this.lrcList[0].beginTime
         if (position < first) {
             return 0
         }
-        let last = this.lrcList[this.lrcList.length-1].timestamp
+        let last = this.lrcList[this.lrcList.length-1].beginTime
         if (position > last) {
             return this.lrcList.length - 1
         }
         for (let i = 0; i < this.lrcList.length - 1; i++) {
-            let l1 = this.lrcList[i].timestamp
-            let l2 = this.lrcList[i+1].timestamp
-            if (position > l1 && position < l2) {
+            let line = this.lrcList[i]
+            if (position >= line.beginTime && position < line.nextTime) {
                 return i
             }
         }

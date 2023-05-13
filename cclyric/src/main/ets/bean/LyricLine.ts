@@ -1,9 +1,19 @@
+/**
+ * The line info of lyric.
+ */
 export class LyricLine {
-    readonly timestamp: number
     readonly text: string
+    readonly beginTime: number
+    readonly nextTime: number
 
-    constructor(timestamp: number, text: string) {
-        this.timestamp = timestamp
+    /**
+     * @param text The text of lyric line.
+     * @param beginTime The begin timestamp of this lyric line.
+     * @param nextTime The begin timestamp of the next lyric line.
+     */
+    constructor(text: string, beginTime: number, nextTime: number) {
         this.text = text
+        this.beginTime = beginTime
+        this.nextTime = nextTime
     }
 }

@@ -25,14 +25,31 @@ export class LyricConfig {
     private cacheSize: number = DEFAULT_CACHE_SIZE
     private isBold: boolean = true
     private emptyHint: string = ""
-    private onDataChanged: (lyric: Lyric) => void
+    private onDataChangedListener: (lyric: Lyric) => void
+    private onPositionChangedLister: (position: number) => void
 
     /**
      * Set a listener to observe the lyric data set changed. This is a inner function, do not call this.
      * @param listener Listener to observe the lyric data set changed.
      */
     setOnDataChangedListener(listener: (lyric: Lyric) => void) {
-        this.onDataChanged = listener
+        this.onDataChangedListener = listener
+    }
+
+    /**
+     * Set a listener to observe the media position changed. This is a inner function, do not call this.
+     * @param listener Listener to observe the media position changed.
+     */
+    setOnPositionChangedListener(listener: (position: number) => void) {
+        this.onPositionChangedLister = listener
+    }
+
+    /**
+     * Update the current position of media player to refresh the lyric view.
+     * @param mediaPosition The current position of media player.
+     */
+    updatePosition(mediaPosition: number) {
+        this.onPositionChangedLister?.(mediaPosition)
     }
 
     /**
@@ -42,7 +59,7 @@ export class LyricConfig {
      */
     setLyric(lyric: Lyric): LyricConfig {
         this.lyric = lyric
-        this.onDataChanged?.(lyric)
+        this.onDataChangedListener?.(lyric)
         return this
     }
 
@@ -199,12 +216,13 @@ export class LyricConfig {
     }
 
     /**
-     * Set the size of lyric lines to draw out of top and bottom. The default cache size is 2.
+     * Set the size of lyric lines to draw out of top and bottom, the result is min of cacheSize and the lyric lines.
+     * The default cache size is 2.
      * @param cacheSize The size of lyric lines to draw out of top and bottom.
      * @returns LyricConfig
      */
     setCacheSize(cacheSize: number): LyricConfig {
-        this.cacheSize = Math.min(cacheSize, this.lyric.lyricList.length - 1)
+        this.cacheSize = cacheSize
         return this
     }
 
