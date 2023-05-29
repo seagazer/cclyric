@@ -19,9 +19,9 @@ struct Index {
         this.lyricList.push(lyric1)
         this.lyricList.push(lyric2)
         this.lyricConfig
-            .setTextSize(48)
+            .setTextSize(24)
             .setCacheSize(4)
-            .setTextColor("#ff999999")
+            .setTextColor("#ffc4c4c4")
             .setHighlightColor("#ff000000")
             .setLineSpace(16)
             .setHighlightStyle(false)
