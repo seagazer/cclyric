@@ -7,7 +7,7 @@ import { printD } from './extensions/Extension'
 export class LyricHelper {
     private currentIndex = 0
     private currentLyric = ""
-    private lrcList: Array<LyricLine> = new Array<LyricLine>()
+    private lrcList: Array<LyricLine> = null
 
     private getIndex(position: number): number {
         let first = this.lrcList[0].beginTime
@@ -43,6 +43,9 @@ export class LyricHelper {
      * @returns The lyric text current time.
      */
     public getLyric(position: number): string {
+        if (!this.lrcList) {
+            return ""
+        }
         let index = this.getIndex(position)
         if (index != this.currentIndex) {
             printD("next line=" + index)
