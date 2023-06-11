@@ -1,6 +1,7 @@
 import { IParser } from './IParser';
 import { Lyric } from '../bean/Lyric';
 import { LyricLine } from '../bean/LyricLine';
+import { printD, printW } from '../extensions/Extension';
 
 /**
  * The parser to parse the string array of a standard lyric file.
@@ -28,8 +29,12 @@ export class LyricParser implements IParser {
         let album = ""
         let by = ""
         let offset = 0
-        for (let i = 0;i < src.length; i++) {
+        for (let i = 0; i < src.length; i++) {
             let line = src[i]
+            if (line == "" || line == "\n" || line == "\r" || line == "\r\n") {
+                printW("the lyric line is empty, carriage return or line feed, line index= " + i)
+                continue
+            }
             if (line.indexOf("ti") > 0) {
                 title = this.parseIdTag(line)
             } else if (line.indexOf("ar") > 0) {
@@ -42,10 +47,19 @@ export class LyricParser implements IParser {
                 offset = Number.parseInt(this.parseIdTag(line))
             } else {
                 let spr = line.split(']')
+                if (spr.length <= 1) {
+                    printW("the lyric line is no timestamp, line index= " + i)
+                    continue
+                }
                 let text = spr[1] // text
                 if (i < src.length - 1) {
                     let begin = end == -1 ? this.parseTimeline(line) : end
                     let nextLine = src[i + 1]
+                    let spr2 = nextLine.split(']')
+                    if (spr2.length <= 1) {
+                        printW("the lyric line is no timestamp, line index= " + i)
+                        continue
+                    }
                     end = this.parseTimeline(nextLine)
                     lyricLines.push(new LyricLine(text, begin - offset, end - offset))
                 } else {
@@ -53,7 +67,9 @@ export class LyricParser implements IParser {
                 }
             }
         }
-        return new Lyric(artist, title, album, by, offset, lyricLines)
+        let result = new Lyric(artist, title, album, by, offset, lyricLines)
+        printD("parse success= " + JSON.stringify(result))
+        return result
     }
 
     private parseIdTag(line: string): string {
