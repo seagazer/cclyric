@@ -181,7 +181,11 @@ export struct LyricView {
 
     private drawEmpty() {
         let hint = this.lyricConfig.getEmptyHint()
-        this.canvasCtx.fillText(hint, 0, this.centerH)
+        if (this.lyricConfig.getAlignMode() == "center") {
+            this.canvasCtx.fillText(hint, this.centerW, this.centerH)
+        } else {
+            this.canvasCtx.fillText(hint, 0, this.centerH)
+        }
     }
 
     private drawCenterLine() {
