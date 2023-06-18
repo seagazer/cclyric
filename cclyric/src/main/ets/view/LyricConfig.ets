@@ -27,6 +27,7 @@ export class LyricConfig {
     private emptyHint: string = ""
     private onDataChangedListener: (lyric: Lyric) => void
     private onPositionChangedLister: (position: number) => void
+    private alignMode: "left" | "center" = "left"
 
     /**
      * Set a listener to observe the lyric data set changed. This is a inner function, do not call this.
@@ -250,5 +251,21 @@ export class LyricConfig {
      */
     getEmptyHint(): string {
         return this.emptyHint
+    }
+
+    /**
+     * Set the alignment of the lyric text to display from.
+     * @param align The value is "left" | "center", default is "left".
+     */
+    setAlignMode(align: "left" | "center") {
+        this.alignMode = align
+    }
+
+    /**
+     * Get the alignment of the lyric text to display from.
+     * @returns The value is "left" | "center".
+     */
+    getAlignMode(): "left" | "center" {
+        return this.alignMode
     }
 }

@@ -95,21 +95,21 @@ export struct LyricView {
                 if (this.isEmpty) {
                     return
                 }
-                let touchEvent = event.touches[0]
-                switch (touchEvent.type) {
-                    case TouchType.Down:
-                        printD("---down")
-                        this.downY = touchEvent.screenY
-                        break
-                    case TouchType.Move:
-                        printD("---move")
-                        let currentY = touchEvent.screenY
-                        let dy = currentY - this.downY
-                        this.scrollY += dy
-                        this.invalidate()
-                        this.downY = currentY
-                        break
-                }
+                // let touchEvent = event.touches[0]
+                // switch (touchEvent.type) {
+                //     case TouchType.Down:
+                //         printD("---down")
+                //         this.downY = touchEvent.screenY
+                //         break
+                //     case TouchType.Move:
+                //         printD("---move")
+                //         let currentY = touchEvent.screenY
+                //         let dy = currentY - this.downY
+                //         this.scrollY += dy
+                //         this.invalidate()
+                //         this.downY = currentY
+                //         break
+                // }
             })
     }
 
@@ -119,7 +119,9 @@ export struct LyricView {
         this.canvasCtx.lineWidth = 1
         this.canvasCtx.font = this.lyricConfig.getTextSize() + "px"
         // TODO: the center textAlign has bugs when multi line in OpenHarmony 3.2
-        // this.canvasCtx.textAlign = "center"
+        if (this.lyricConfig.getAlignMode() == "center") {
+            this.canvasCtx.textAlign = "center"
+        }
     }
 
     private initSize() {
@@ -210,7 +212,11 @@ export struct LyricView {
                 let scaleHeight = this.drawHighLight(lrc, startY)
                 startY += (scaleHeight + this.lyricConfig.getLineSpace() + this.highLightDrawOffset)
             } else {
-                this.canvasCtx.fillText(lrc.text, 0, startY)
+                if (this.lyricConfig.getAlignMode() == "center") {
+                    this.canvasCtx.fillText(lrc.text, this.centerW, startY)
+                } else {
+                    this.canvasCtx.fillText(lrc.text, 0, startY)
+                }
                 startY += (lrc.height + this.lyricConfig.getLineSpace())
             }
         }
@@ -222,7 +228,11 @@ export struct LyricView {
         this.canvasCtx.font = this.lyricConfig.getHighlightStyle() ?
             this.highLightTextSize + "px" + " bold" : this.highLightTextSize + "px"
         this.canvasCtx.fillStyle = this.lyricConfig.getHighlightColor()
-        this.canvasCtx.fillText(lrc.text, 0, startY + this.highLightDrawOffset)
+        if (this.lyricConfig.getAlignMode() == "center") {
+            this.canvasCtx.fillText(lrc.text, this.centerW, startY + this.highLightDrawOffset)
+        } else {
+            this.canvasCtx.fillText(lrc.text, 0, startY + this.highLightDrawOffset)
+        }
         let textMeasure = this.canvasCtx.measureText(lrc.text)
         let height = Math.round(textMeasure.height)
         let lp = textMeasure.width / this.w
