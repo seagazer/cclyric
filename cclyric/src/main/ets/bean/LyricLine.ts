@@ -4,7 +4,7 @@
 export class LyricLine {
     readonly text: string
     readonly beginTime: number
-    readonly nextTime: number
+    nextTime: number
 
     /**
      * @param text The text of lyric line.

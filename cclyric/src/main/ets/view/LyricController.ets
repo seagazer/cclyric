@@ -11,9 +11,9 @@ const DEFAULT_ANIM_DURATION = 500
 const DEFAULT_CACHE_SIZE = 2
 
 /**
- * The config for LyricView.
+ * The controller for LyricView.
  */
-export class LyricConfig {
+export class LyricController {
     private lyric: Lyric = null
     private textColor: string = DEFAULT_TEXT_COLOR
     private textSize: number = DEFAULT_TEXT_SIZE
@@ -25,32 +25,24 @@ export class LyricConfig {
     private cacheSize: number = DEFAULT_CACHE_SIZE
     private isBold: boolean = true
     private emptyHint: string = ""
-    private onDataChangedListener: (lyric: Lyric) => void
-    private onPositionChangedLister: (position: number) => void
     private alignMode: "left" | "center" = "left"
 
     /**
-     * Set a listener to observe the lyric data set changed. This is a inner function, do not call this.
-     * @param listener Listener to observe the lyric data set changed.
+     *  Listener to observe the lyric data set changed. This is a inner function, do not call this.
      */
-    setOnDataChangedListener(listener: (lyric: Lyric) => void) {
-        this.onDataChangedListener = listener
-    }
+    onDataChangedListener: (lyric: Lyric) => void
 
     /**
-     * Set a listener to observe the media position changed. This is a inner function, do not call this.
-     * @param listener Listener to observe the media position changed.
+     *  Listener to observe the media position changed. This is a inner function, do not call this.
      */
-    setOnPositionChangedListener(listener: (position: number) => void) {
-        this.onPositionChangedLister = listener
-    }
+    onPositionChangedListener: (position: number) => void
 
     /**
      * Update the current position of media player to refresh the lyric view.
      * @param mediaPosition The current position of media player.
      */
     updatePosition(mediaPosition: number) {
-        this.onPositionChangedLister?.(mediaPosition)
+        this.onPositionChangedListener?.(mediaPosition)
     }
 
     /**
@@ -58,7 +50,7 @@ export class LyricConfig {
      * @param lyric The lyric datasource.
      * @returns LyricConfig
      */
-    setLyric(lyric: Lyric): LyricConfig {
+    setLyric(lyric: Lyric): LyricController {
         this.lyric = lyric
         this.onDataChangedListener?.(lyric)
         return this
@@ -77,7 +69,7 @@ export class LyricConfig {
      * @param color The color of normal lyric text.
      * @returns LyricConfig
      */
-    setTextColor(color: string): LyricConfig {
+    setTextColor(color: string): LyricController {
         this.textColor = color
         return this
     }
@@ -95,7 +87,7 @@ export class LyricConfig {
      * @param textSize The text size of normal lyric.
      * @returns LyricConfig
      */
-    setTextSize(textSize: number): LyricConfig {
+    setTextSize(textSize: number): LyricController {
         this.textSize = textSize
         return this
     }
@@ -113,7 +105,7 @@ export class LyricConfig {
      * @param color The color of focused lyric text.
      * @returns LyricConfig
      */
-    setHighlightColor(color: string): LyricConfig {
+    setHighlightColor(color: string): LyricController {
         this.highlightColor = color
         return this
     }
@@ -131,7 +123,7 @@ export class LyricConfig {
      * @param scale The scale of focused lyric.
      * @returns LyricConfig
      */
-    setHighlightScale(scale: number): LyricConfig {
+    setHighlightScale(scale: number): LyricController {
         this.highlightScale = scale
         return this
     }
@@ -149,7 +141,7 @@ export class LyricConfig {
      * @param bold True to set text bold style, false to set normal style.
      * @returns LyricConfig
      */
-    setHighlightStyle(isBold: boolean): LyricConfig {
+    setHighlightStyle(isBold: boolean): LyricController {
         this.isBold = isBold
         return this
     }
@@ -167,7 +159,7 @@ export class LyricConfig {
      * @param color The fade edge color of top and bottom.
      * @returns LyricConfig
      */
-    setEdgeColor(color: string): LyricConfig {
+    setEdgeColor(color: string): LyricController {
         this.edgeColor = color
         return this
     }
@@ -185,7 +177,7 @@ export class LyricConfig {
      * @param lineSpace The line space between two lyric lines.
      * @returns LyricConfig
      */
-    setLineSpace(lineSpace: number): LyricConfig {
+    setLineSpace(lineSpace: number): LyricController {
         this.lineSpace = lineSpace
         return this
     }
@@ -203,7 +195,7 @@ export class LyricConfig {
      * @param duration The duration of translate animation.
      * @returns LyricConfig
      */
-    setAnimationDuration(duration: number): LyricConfig {
+    setAnimationDuration(duration: number): LyricController {
         this.animDuration = duration
         return this
     }
@@ -222,7 +214,7 @@ export class LyricConfig {
      * @param cacheSize The size of lyric lines to draw out of top and bottom.
      * @returns LyricConfig
      */
-    setCacheSize(cacheSize: number): LyricConfig {
+    setCacheSize(cacheSize: number): LyricController {
         this.cacheSize = cacheSize
         return this
     }
@@ -240,7 +232,7 @@ export class LyricConfig {
      * @param hint The hint text when is no lyric to display.
      * @returns LyricConfig
      */
-    setEmptyHint(hint: string): LyricConfig {
+    setEmptyHint(hint: string): LyricController {
         this.emptyHint = hint
         return this
     }

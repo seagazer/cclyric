@@ -1,4 +1,4 @@
-import { Lyric, LyricConfig, LyricParser, LyricView } from '@seagazer/cclyric';
+import { Lyric, LyricController, LyricParser, LyricView } from '@seagazer/cclyric';
 import { MockData } from './MockData';
 
 @Entry
@@ -7,7 +7,7 @@ struct Index {
     @State duration: number = 0
     private lyricList: Array<Lyric> = new Array()
     private lyric: Lyric = null
-    private lyricConfig: LyricConfig = new LyricConfig()
+    private lyricController: LyricController = new LyricController()
     private testIndex = 0
     private testTimer = -1
     private emptyDuration = 60 * 1000
@@ -18,7 +18,7 @@ struct Index {
         this.lyricList.push(null)
         this.lyricList.push(lyric1)
         this.lyricList.push(lyric2)
-        this.lyricConfig
+        this.lyricController
             .setTextSize(24)
             .setCacheSize(4)
             .setTextColor("#ffc4c4c4")
@@ -32,7 +32,7 @@ struct Index {
         this.duration = 0
         this.testTimer = setInterval(() => {
             this.duration += 1000
-            this.lyricConfig.updatePosition(this.duration)
+            this.lyricController.updatePosition(this.duration)
             let endDuration = this.lyric == null ? this.emptyDuration : this.lyric.lyricList[this.lyric.lyricList.length - 1].beginTime
             if (this.duration >= endDuration + 1000) {
                 clearInterval(this.testTimer)
@@ -42,7 +42,7 @@ struct Index {
 
     build() {
         Column() {
-            LyricView({ lyricConfig: this.lyricConfig, })
+            LyricView({ controller: this.lyricController, })
                 .width("100%")
                 .layoutWeight(1)
                 .padding({ left: 16, right: 16 })
@@ -53,7 +53,7 @@ struct Index {
                         this.testIndex++
                         let index = this.testIndex % 3
                         this.lyric = this.lyricList[index]
-                        this.lyricConfig.setLyric(this.lyric)
+                        this.lyricController.setLyric(this.lyric)
                         clearInterval(this.testTimer)
                         this.duration = 0
                     })
@@ -77,7 +77,7 @@ struct Index {
                 .onChange((value, mode) => {
                     if (mode == SliderChangeMode.End || mode == 3) {
                         this.duration = value
-                        this.lyricConfig.updatePosition(this.duration)
+                        this.lyricController.updatePosition(this.duration)
                     }
                 })
 

@@ -23,7 +23,6 @@ export class LyricParser implements IParser {
      */
     parse(src: Array<string>): Lyric {
         let lyricLines = new Array<LyricLine>()
-        let end = -1
         let title = ""
         let artist = ""
         let album = ""
@@ -46,29 +45,38 @@ export class LyricParser implements IParser {
             } else if (line.indexOf("offset") > 0) {
                 offset = Number.parseInt(this.parseIdTag(line))
             } else {
+                // [00:00.10]画心 - 张靓颖
+                // [01:05.49][02:08.40]看不穿 是你失落的魂魄
                 let spr = line.split(']')
                 if (spr.length <= 1) {
                     printW("the lyric line is no timestamp, line index= " + i)
                     continue
                 }
-                let text = spr[1] // text
-                if (i < src.length - 1) {
-                    let begin = end == -1 ? this.parseTimeline(line) : end
-                    let nextLine = src[i + 1]
-                    let spr2 = nextLine.split(']')
-                    if (spr2.length <= 1) {
-                        printW("the lyric line is no timestamp, line index= " + i)
-                        continue
-                    }
-                    end = this.parseTimeline(nextLine)
-                    lyricLines.push(new LyricLine(text, begin - offset, end - offset))
-                } else {
-                    lyricLines.push(new LyricLine(text, end - offset, end + 1000 - offset))
+                // parse text
+                let text = spr[spr.length-1]
+                printD("text= " + text)
+                // parse timeline
+                for (let i = 0;i < spr.length - 1; i++) {
+                    let timeline = spr[i].replace("[", "")
+                    let timeStamp = this.parseTimeline(timeline)
+                    printD("timestamp= " + timeStamp)
+                    lyricLines.push(new LyricLine(text, timeStamp - offset, -1))
                 }
             }
         }
+        lyricLines.sort((l1, l2) => {
+            return l1.beginTime - l2.beginTime
+        })
+        for (let i = 0;i < lyricLines.length; i++) {
+            let lyricLine = lyricLines[i]
+            if (i == lyricLines.length - 1) {
+                lyricLine.nextTime = lyricLine.beginTime + 1000 - offset
+            } else {
+                let next = lyricLines[i+1]
+                lyricLine.nextTime = next.beginTime
+            }
+        }
         let result = new Lyric(artist, title, album, by, offset, lyricLines)
-        printD("parse success= " + JSON.stringify(result))
         return result
     }
 
@@ -79,10 +87,8 @@ export class LyricParser implements IParser {
         return result
     }
 
-    private parseTimeline(line: string): number {
-        let spr = line.split(']') // timestamp
-        let time = spr[0]
-        let timeString = time.replace('[', "") //00:00.50
+    private parseTimeline(timeString: string): number {
+        // 00:00.50
         let timeStringList = timeString.split(':')
         let minuteString = timeStringList[0] //00
         let minute = Number.parseInt(minuteString)

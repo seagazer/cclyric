@@ -1,7 +1,7 @@
 import { LyricLineWrapper } from '../bean/LyricLineWrapper';
 import { printD, printW } from '../extensions/Extension';
 import animator, { AnimatorResult } from '@ohos.animator';
-import { LyricConfig } from './LyricConfig';
+import { LyricController } from './LyricController';
 import { Lyric } from '../bean/Lyric';
 
 /**
@@ -15,7 +15,7 @@ export struct LyricView {
     /**
      * The lyricConfig for LyricView.
      */
-    lyricConfig: LyricConfig = null
+    controller: LyricController = null
     private lyricLines = new Array<LyricLineWrapper>() // the lyric lines list.
     readonly settings = new RenderingContextSettings(true)
     readonly canvasCtx = new CanvasRenderingContext2D(this.settings) // paint to draw.
@@ -46,16 +46,16 @@ export struct LyricView {
     }
 
     aboutToAppear() {
-        if (this.lyricConfig == null) {
+        if (this.controller == null) {
             throw new Error("The lyric lyricConfig is not set!")
         }
-        this.lyricConfig.setOnDataChangedListener(this.onDataChangedListener)
-        this.lyricConfig.setOnPositionChangedListener(this.onPositionChangedListener)
-        this.lyric = this.lyricConfig.getLyric()
-        this.highLightTextSize = this.lyricConfig.getTextSize() * this.lyricConfig.getHighlightScale()
-        this.highLightDrawOffset = this.lyricConfig.getTextSize() * (this.lyricConfig.getHighlightScale() - 1) / 2
+        this.controller.onDataChangedListener = this.onDataChangedListener
+        this.controller.onPositionChangedListener = this.onPositionChangedListener
+        this.lyric = this.controller.getLyric()
+        this.highLightTextSize = this.controller.getTextSize() * this.controller.getHighlightScale()
+        this.highLightDrawOffset = this.controller.getTextSize() * (this.controller.getHighlightScale() - 1) / 2
         this.anim = animator.create({
-            duration: this.lyricConfig.getAnimationDuration(),
+            duration: this.controller.getAnimationDuration(),
             easing: "ease-in-out",
             delay: 0,
             fill: "forwards",
@@ -80,7 +80,11 @@ export struct LyricView {
 
     build() {
         Canvas(this.canvasCtx)
-            .onAreaChange((_, newSize) => {
+            .onAreaChange((oldSize, newSize) => {
+                if (oldSize.width == newSize.width && oldSize.height == newSize.height) {
+                    printW("The size is not changed.")
+                    return
+                }
                 this.w = newSize.width as number
                 this.h = newSize.height as number
                 printD("onSizeChanged: canvas size= " + this.w + " * " + this.h)
@@ -114,12 +118,12 @@ export struct LyricView {
     }
 
     private initPaint() {
-        this.canvasCtx.fillStyle = this.lyricConfig.getTextColor()
-        this.canvasCtx.strokeStyle = this.lyricConfig.getTextColor()
+        this.canvasCtx.fillStyle = this.controller.getTextColor()
+        this.canvasCtx.strokeStyle = this.controller.getTextColor()
         this.canvasCtx.lineWidth = 1
-        this.canvasCtx.font = this.lyricConfig.getTextSize() + "px"
+        this.canvasCtx.font = this.controller.getTextSize() + "px"
         // TODO: the center textAlign has bugs when multi line in OpenHarmony 3.2
-        if (this.lyricConfig.getAlignMode() == "center") {
+        if (this.controller.getAlignMode() == "center") {
             this.canvasCtx.textAlign = "center"
         }
     }
@@ -151,7 +155,7 @@ export struct LyricView {
                 this.centerYOffset = tempH
             }
             if (tempH < this.h / 2) {
-                tempH += lineHeight + this.lyricConfig.getLineSpace()
+                tempH += lineHeight + this.controller.getLineSpace()
             } else {
                 if (this.topOverOffIndex == -1) {
                     this.topOverOffIndex = i - 1 // if current index is topOverOffIndex, top off screen
@@ -180,8 +184,8 @@ export struct LyricView {
     }
 
     private drawEmpty() {
-        let hint = this.lyricConfig.getEmptyHint()
-        if (this.lyricConfig.getAlignMode() == "center") {
+        let hint = this.controller.getEmptyHint()
+        if (this.controller.getAlignMode() == "center") {
             this.canvasCtx.fillText(hint, this.centerW, this.centerH)
         } else {
             this.canvasCtx.fillText(hint, 0, this.centerH)
@@ -203,25 +207,25 @@ export struct LyricView {
         for (let i = 0;i < this.lyricLines.length; i++) {
             let lrc = this.lyricLines[i]
             // out the top of screen, the default cache is 2 lines
-            if (i < this.firstVisibleIndex - this.lyricConfig.getCacheSize()) {
-                startY += (lrc.height + this.lyricConfig.getLineSpace())
+            if (i < this.firstVisibleIndex - this.controller.getCacheSize()) {
+                startY += (lrc.height + this.controller.getLineSpace())
                 continue
             }
             // out the bottom of screen, the default cache is 2 lines
-            if (i > this.lastVisibleIndex + this.lyricConfig.getCacheSize()) {
+            if (i > this.lastVisibleIndex + this.controller.getCacheSize()) {
                 break
             }
             // draw with high light for current line
             if (i == this.currentIndex) {
                 let scaleHeight = this.drawHighLight(lrc, startY)
-                startY += (scaleHeight + this.lyricConfig.getLineSpace() + this.highLightDrawOffset)
+                startY += (scaleHeight + this.controller.getLineSpace() + this.highLightDrawOffset)
             } else {
-                if (this.lyricConfig.getAlignMode() == "center") {
+                if (this.controller.getAlignMode() == "center") {
                     this.canvasCtx.fillText(lrc.text, this.centerW, startY)
                 } else {
                     this.canvasCtx.fillText(lrc.text, 0, startY)
                 }
-                startY += (lrc.height + this.lyricConfig.getLineSpace())
+                startY += (lrc.height + this.controller.getLineSpace())
             }
         }
         this.canvasCtx.restore()
@@ -229,10 +233,10 @@ export struct LyricView {
 
     private drawHighLight(lrc: LyricLineWrapper, startY: number): number {
         this.canvasCtx.save()
-        this.canvasCtx.font = this.lyricConfig.getHighlightStyle() ?
+        this.canvasCtx.font = this.controller.getHighlightStyle() ?
             this.highLightTextSize + "px" + " bold" : this.highLightTextSize + "px"
-        this.canvasCtx.fillStyle = this.lyricConfig.getHighlightColor()
-        if (this.lyricConfig.getAlignMode() == "center") {
+        this.canvasCtx.fillStyle = this.controller.getHighlightColor()
+        if (this.controller.getAlignMode() == "center") {
             this.canvasCtx.fillText(lrc.text, this.centerW, startY + this.highLightDrawOffset)
         } else {
             this.canvasCtx.fillText(lrc.text, 0, startY + this.highLightDrawOffset)
@@ -252,12 +256,12 @@ export struct LyricView {
     private drawEdge() {
         this.canvasCtx.save()
         let topFade = this.canvasCtx.createLinearGradient(this.centerW, 0, this.centerW, this.linearGradientEdge)
-        topFade.addColorStop(0.0, this.lyricConfig.getEdgeColor())
+        topFade.addColorStop(0.0, this.controller.getEdgeColor())
         topFade.addColorStop(1.0, '#00ffffff')
         this.canvasCtx.fillStyle = topFade
         this.canvasCtx.fillRect(0, 0, this.w, this.linearGradientEdge)
         let bottomFade = this.canvasCtx.createLinearGradient(this.centerW, this.h, this.centerW, this.h - this.linearGradientEdge)
-        bottomFade.addColorStop(0.0, this.lyricConfig.getEdgeColor())
+        bottomFade.addColorStop(0.0, this.controller.getEdgeColor())
         bottomFade.addColorStop(1.0, '#00ffffff')
         this.canvasCtx.fillStyle = bottomFade
         this.canvasCtx.fillRect(0, this.h - this.linearGradientEdge, this.w, this.linearGradientEdge)
@@ -287,7 +291,7 @@ export struct LyricView {
             let tempH = 0
             for (let i = index;i > 0; i--) {
                 let lrc = this.lyricLines[i]
-                tempH += (lrc.height + this.lyricConfig.getLineSpace())
+                tempH += (lrc.height + this.controller.getLineSpace())
                 if (tempH > this.centerH) {
                     return i
                 }
@@ -301,7 +305,7 @@ export struct LyricView {
         let tempH = 0
         for (let i = index;i < this.lyricLines.length; i++) {
             let lrc = this.lyricLines[i]
-            tempH += (lrc.height + this.lyricConfig.getLineSpace())
+            tempH += (lrc.height + this.controller.getLineSpace())
             if (tempH > this.centerH) {
                 return i
             }
@@ -327,12 +331,12 @@ export struct LyricView {
         if (isUp) { // to next
             for (let i = this.currentIndex;i < index; i++) {
                 let lrcH = this.lyricLines[i].height
-                animOffset += lrcH + this.lyricConfig.getLineSpace()
+                animOffset += lrcH + this.controller.getLineSpace()
             }
         } else { // to pre
             for (let i = index;i < this.currentIndex; i++) {
                 let lrcH = this.lyricLines[i].height
-                animOffset += lrcH + this.lyricConfig.getLineSpace()
+                animOffset += lrcH + this.controller.getLineSpace()
             }
         }
         this.currentIndex = index
@@ -354,7 +358,7 @@ export struct LyricView {
         let startY = this.scrollY
         printD(">>start anim " + startY + " -> " + this.targetScrollY)
         this.anim.reset({
-            duration: this.lyricConfig.getAnimationDuration(),
+            duration: this.controller.getAnimationDuration(),
             easing: "ease-in-out",
             delay: 0,
             fill: "forwards",
@@ -369,6 +373,11 @@ export struct LyricView {
 
     private onPositionChanged(mediaPosition: number) {
         if (this.isEmpty) {
+            printW("The lyric data is empty!")
+            return
+        }
+        if (this.lyricLines.length <= 0) {
+            printW("The lyric lines is empty!")
             return
         }
         let index = this.getIndex(mediaPosition)
