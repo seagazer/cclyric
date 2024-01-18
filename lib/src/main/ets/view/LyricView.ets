@@ -15,7 +15,7 @@ export struct LyricView {
     /**
      * The lyricConfig for LyricView.
      */
-    controller: LyricController = null
+    controller: LyricController | null = null
     private lyricLines = new Array<LyricLineWrapper>() // the lyric lines list.
     readonly settings = new RenderingContextSettings(true)
     readonly canvasCtx = new CanvasRenderingContext2D(this.settings) // paint to draw.
@@ -33,16 +33,20 @@ export struct LyricView {
     private firstVisibleIndex = 0 // the first visible item index at top.
     private lastVisibleIndex = 0 // the last visible item index at bottom.
     private topOverOffIndex = -1 // the index of highlight item when has one more item out off the top.
-    private anim: AnimatorResult = null
+    private anim: AnimatorResult | null = null
     private isAnimRunning = false
     private isEmpty = false // is no lyric.
-    private lyric: Lyric = null // current lyric.
+    private lyric: Lyric | null = null // current lyric.
     private onDataChangedListener = (lyric: Lyric) => {
         this.lyric = lyric
         this.initSize()
     }
     private onPositionChangedListener = (mediaPosition: number) => {
         this.onPositionChanged(mediaPosition)
+    }
+    private onInvalidateListener = () => {
+        printD("invalidate")
+        this.invalidate()
     }
 
     aboutToAppear() {
@@ -51,6 +55,7 @@ export struct LyricView {
         }
         this.controller.onDataChangedListener = this.onDataChangedListener
         this.controller.onPositionChangedListener = this.onPositionChangedListener
+        this.controller.onInvalidateListener = this.onInvalidateListener
         this.lyric = this.controller.getLyric()
         this.highLightTextSize = this.controller.getTextSize() * this.controller.getHighlightScale()
         this.highLightDrawOffset = this.controller.getTextSize() * (this.controller.getHighlightScale() - 1) / 2
@@ -118,12 +123,12 @@ export struct LyricView {
     }
 
     private initPaint() {
-        this.canvasCtx.fillStyle = this.controller.getTextColor()
-        this.canvasCtx.strokeStyle = this.controller.getTextColor()
+        this.canvasCtx.fillStyle = this.controller!.getTextColor()
+        this.canvasCtx.strokeStyle = this.controller!.getTextColor()
         this.canvasCtx.lineWidth = 1
-        this.canvasCtx.font = this.controller.getTextSize() + "px"
+        this.canvasCtx.font = this.controller!.getTextSize() + "px"
         // TODO: the center textAlign has bugs when multi line in OpenHarmony 3.2
-        if (this.controller.getAlignMode() == "center") {
+        if (this.controller!.getAlignMode() == "center") {
             this.canvasCtx.textAlign = "center"
         }
     }
@@ -140,8 +145,8 @@ export struct LyricView {
         }
         this.scrollY = this.h / 2 // layout from center when first display
         let tempH = 0
-        let list = this.lyric.lyricList
-        for (let i = 0;i < list.length; i++) {
+        let list = this.lyric!.lyricList
+        for (let i = 0; i < list.length; i++) {
             let lrc = list[i]
             let textMeasure = this.canvasCtx.measureText(lrc.text)
             let lp = textMeasure.width / this.w
@@ -155,7 +160,7 @@ export struct LyricView {
                 this.centerYOffset = tempH
             }
             if (tempH < this.h / 2) {
-                tempH += lineHeight + this.controller.getLineSpace()
+                tempH += lineHeight + this.controller!.getLineSpace()
             } else {
                 if (this.topOverOffIndex == -1) {
                     this.topOverOffIndex = i - 1 // if current index is topOverOffIndex, top off screen
@@ -184,8 +189,8 @@ export struct LyricView {
     }
 
     private drawEmpty() {
-        let hint = this.controller.getEmptyHint()
-        if (this.controller.getAlignMode() == "center") {
+        let hint = this.controller!.getEmptyHint()
+        if (this.controller!.getAlignMode() == "center") {
             this.canvasCtx.fillText(hint, this.centerW, this.centerH)
         } else {
             this.canvasCtx.fillText(hint, 0, this.centerH)
@@ -204,28 +209,28 @@ export struct LyricView {
         this.canvasCtx.save()
         this.canvasCtx.translate(0, this.scrollY)
         // the draw count is the max visible lines in screen + 4 caches(2 top & 2 bottom)
-        for (let i = 0;i < this.lyricLines.length; i++) {
+        for (let i = 0; i < this.lyricLines.length; i++) {
             let lrc = this.lyricLines[i]
             // out the top of screen, the default cache is 2 lines
-            if (i < this.firstVisibleIndex - this.controller.getCacheSize()) {
-                startY += (lrc.height + this.controller.getLineSpace())
+            if (i < this.firstVisibleIndex - this.controller!.getCacheSize()) {
+                startY += (lrc.height + this.controller!.getLineSpace())
                 continue
             }
             // out the bottom of screen, the default cache is 2 lines
-            if (i > this.lastVisibleIndex + this.controller.getCacheSize()) {
+            if (i > this.lastVisibleIndex + this.controller!.getCacheSize()) {
                 break
             }
             // draw with high light for current line
             if (i == this.currentIndex) {
                 let scaleHeight = this.drawHighLight(lrc, startY)
-                startY += (scaleHeight + this.controller.getLineSpace() + this.highLightDrawOffset)
+                startY += (scaleHeight + this.controller!.getLineSpace() + this.highLightDrawOffset)
             } else {
-                if (this.controller.getAlignMode() == "center") {
+                if (this.controller!.getAlignMode() == "center") {
                     this.canvasCtx.fillText(lrc.text, this.centerW, startY)
                 } else {
                     this.canvasCtx.fillText(lrc.text, 0, startY)
                 }
-                startY += (lrc.height + this.controller.getLineSpace())
+                startY += (lrc.height + this.controller!.getLineSpace())
             }
         }
         this.canvasCtx.restore()
@@ -233,10 +238,10 @@ export struct LyricView {
 
     private drawHighLight(lrc: LyricLineWrapper, startY: number): number {
         this.canvasCtx.save()
-        this.canvasCtx.font = this.controller.getHighlightStyle() ?
+        this.canvasCtx.font = this.controller!.getHighlightStyle() ?
             this.highLightTextSize + "px" + " bold" : this.highLightTextSize + "px"
-        this.canvasCtx.fillStyle = this.controller.getHighlightColor()
-        if (this.controller.getAlignMode() == "center") {
+        this.canvasCtx.fillStyle = this.controller!.getHighlightColor()
+        if (this.controller!.getAlignMode() == "center") {
             this.canvasCtx.fillText(lrc.text, this.centerW, startY + this.highLightDrawOffset)
         } else {
             this.canvasCtx.fillText(lrc.text, 0, startY + this.highLightDrawOffset)
@@ -256,12 +261,12 @@ export struct LyricView {
     private drawEdge() {
         this.canvasCtx.save()
         let topFade = this.canvasCtx.createLinearGradient(this.centerW, 0, this.centerW, this.linearGradientEdge)
-        topFade.addColorStop(0.0, this.controller.getEdgeColor())
+        topFade.addColorStop(0.0, this.controller!.getEdgeColor())
         topFade.addColorStop(1.0, '#00ffffff')
         this.canvasCtx.fillStyle = topFade
         this.canvasCtx.fillRect(0, 0, this.w, this.linearGradientEdge)
         let bottomFade = this.canvasCtx.createLinearGradient(this.centerW, this.h, this.centerW, this.h - this.linearGradientEdge)
-        bottomFade.addColorStop(0.0, this.controller.getEdgeColor())
+        bottomFade.addColorStop(0.0, this.controller!.getEdgeColor())
         bottomFade.addColorStop(1.0, '#00ffffff')
         this.canvasCtx.fillStyle = bottomFade
         this.canvasCtx.fillRect(0, this.h - this.linearGradientEdge, this.w, this.linearGradientEdge)
@@ -289,23 +294,22 @@ export struct LyricView {
     private getFirstVisibleIndex(index: number): number {
         if (index > this.topOverOffIndex) {
             let tempH = 0
-            for (let i = index;i > 0; i--) {
+            for (let i = index; i > 0; i--) {
                 let lrc = this.lyricLines[i]
-                tempH += (lrc.height + this.controller.getLineSpace())
+                tempH += (lrc.height + this.controller!.getLineSpace())
                 if (tempH > this.centerH) {
                     return i
                 }
             }
-        } else {
-            return 0
         }
+        return 0
     }
 
     private getLastVisibleIndex(index: number): number {
         let tempH = 0
-        for (let i = index;i < this.lyricLines.length; i++) {
+        for (let i = index; i < this.lyricLines.length; i++) {
             let lrc = this.lyricLines[i]
-            tempH += (lrc.height + this.controller.getLineSpace())
+            tempH += (lrc.height + this.controller!.getLineSpace())
             if (tempH > this.centerH) {
                 return i
             }
@@ -329,21 +333,21 @@ export struct LyricView {
         let animOffset = 0
         let isUp = index > this.currentIndex
         if (isUp) { // to next
-            for (let i = this.currentIndex;i < index; i++) {
+            for (let i = this.currentIndex; i < index; i++) {
                 let lrcH = this.lyricLines[i].height
-                animOffset += lrcH + this.controller.getLineSpace()
+                animOffset += lrcH + this.controller!.getLineSpace()
             }
         } else { // to pre
-            for (let i = index;i < this.currentIndex; i++) {
+            for (let i = index; i < this.currentIndex; i++) {
                 let lrcH = this.lyricLines[i].height
-                animOffset += lrcH + this.controller.getLineSpace()
+                animOffset += lrcH + this.controller!.getLineSpace()
             }
         }
         this.currentIndex = index
         printD("firstVisible= " + this.firstVisibleIndex + ", lastVisible= " + this.lastVisibleIndex + ", currentHighLight= " + this.currentIndex)
         // the animation is running, end it
         if (this.isAnimRunning) {
-            this.anim.cancel()
+            this.anim!.cancel()
             this.scrollY = this.targetScrollY
             this.invalidate()
             printW("intercept and end anim!")
@@ -357,8 +361,8 @@ export struct LyricView {
         // start animate
         let startY = this.scrollY
         printD(">>start anim " + startY + " -> " + this.targetScrollY)
-        this.anim.reset({
-            duration: this.controller.getAnimationDuration(),
+        this.anim!.reset({
+            duration: this.controller!.getAnimationDuration(),
             easing: "ease-in-out",
             delay: 0,
             fill: "forwards",
@@ -367,7 +371,7 @@ export struct LyricView {
             begin: startY,
             end: this.targetScrollY
         })
-        this.anim.play()
+        this.anim!.play()
         this.isAnimRunning = true
     }
 

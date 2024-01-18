@@ -5,21 +5,22 @@
         "name": "default",
         "material": {
           "certpath": "C:\\Users\\seagazer\\.ohos\\config\\openharmony\\auto_ohos_default_cclyric_com.seagazer.cclyric.cer",
-          "storePassword": "0000001B4DD1F97752B8FD06E556156B9DBE2AD80BA7849F63D642500CD51E5D53B8638B3C9EB244D2B51D",
+          "storePassword": "0000001B562586EF9D575B14786E3F367AFD5DE2BECB88B853E9C8B4F3125C956AE5AFCCD1B49D8918D442",
           "keyAlias": "debugKey",
-          "keyPassword": "0000001BEA5EF0704388BC9C4AFEF22C93E0A72E80EC1A1DE2DCD8A0A89120CCB5CECB0A8CB066BD2289F9",
+          "keyPassword": "0000001BCC8D9AAE3BE90889F67CB406096EF320A9692C8E08C19680EF59B4B16B94659BB51A4BF2DAC91B",
           "profile": "C:\\Users\\seagazer\\.ohos\\config\\openharmony\\auto_ohos_default_cclyric_com.seagazer.cclyric.p7b",
           "signAlg": "SHA256withECDSA",
           "storeFile": "C:\\Users\\seagazer\\.ohos\\config\\openharmony\\auto_ohos_default_cclyric_com.seagazer.cclyric.p12"
         }
       }
     ],
-    "compileSdkVersion": 9,
-    "compatibleSdkVersion": 9,
     "products": [
       {
         "name": "default",
         "signingConfig": "default",
+        "targetSdkVersion": 10,
+        "compatibleSdkVersion": 10,
+        "compileSdkVersion": 10
       }
     ]
   },
@@ -37,8 +38,8 @@
       ]
     },
     {
-      "name": "cclyric",
-      "srcPath": "./cclyric"
+      "name": "lib",
+      "srcPath": "./lib"
     }
   ]
 }

@@ -7,6 +7,6 @@
   "main": "",
   "version": "1.0.0",
   "dependencies": {
-    "@seagazer/cclyric": "file:../cclyric"
+    "@seagazer/cclyric": "file:../lib"
   }
 }

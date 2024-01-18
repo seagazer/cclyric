@@ -14,7 +14,7 @@ const DEFAULT_CACHE_SIZE = 2
  * The controller for LyricView.
  */
 export class LyricController {
-    private lyric: Lyric = null
+    private lyric: Lyric | null = null
     private textColor: string = DEFAULT_TEXT_COLOR
     private textSize: number = DEFAULT_TEXT_SIZE
     private highlightColor: string = DEFAULT_HIGHLIGHT_COLOR
@@ -26,16 +26,21 @@ export class LyricController {
     private isBold: boolean = true
     private emptyHint: string = ""
     private alignMode: "left" | "center" = "left"
-
     /**
      *  Listener to observe the lyric data set changed. This is a inner function, do not call this.
      */
-    onDataChangedListener: (lyric: Lyric) => void
-
+    onDataChangedListener: (lyric: Lyric) => void = () => {
+    }
     /**
      *  Listener to observe the media position changed. This is a inner function, do not call this.
      */
-    onPositionChangedListener: (position: number) => void
+    onPositionChangedListener: (position: number) => void = () => {
+    }
+    /**
+     * Listener to do invalidate action.
+     */
+    onInvalidateListener: () => void = () => {
+    }
 
     /**
      * Update the current position of media player to refresh the lyric view.
@@ -60,7 +65,7 @@ export class LyricController {
      * Get the lyric datasource.
      * @returns The lyric datasource.
      */
-    getLyric(): Lyric {
+    getLyric(): Lyric | null {
         return this.lyric
     }
 
@@ -259,5 +264,12 @@ export class LyricController {
      */
     getAlignMode(): "left" | "center" {
         return this.alignMode
+    }
+
+    /**
+     * Invalidate the lyric.
+     */
+    invalidate() {
+        this.onInvalidateListener()
     }
 }

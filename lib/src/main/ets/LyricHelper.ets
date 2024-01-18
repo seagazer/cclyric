@@ -7,7 +7,7 @@ import { printD } from './extensions/Extension'
 export class LyricHelper {
     private currentIndex = 0
     private currentLyric = ""
-    private lrcList: Array<LyricLine> = null
+    private lrcList: Array<LyricLine> = new Array()
 
     private getIndex(position: number): number {
         let first = this.lrcList[0].beginTime

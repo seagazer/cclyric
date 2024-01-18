@@ -5,8 +5,8 @@ import { MockData } from './MockData';
 @Component
 struct Index {
     @State duration: number = 0
-    private lyricList: Array<Lyric> = new Array()
-    private lyric: Lyric = null
+    private lyricList: Array<Lyric | null> = new Array()
+    private lyric: Lyric | null = null
     private lyricController: LyricController = new LyricController()
     private testIndex = 0
     private testTimer = -1
