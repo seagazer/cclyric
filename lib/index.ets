@@ -1,4 +1,4 @@
-export type { IParser } from './src/main/ets/parse/IParser'
+export { IParser } from './src/main/ets/parse/IParser';
 
 export { Lyric } from './src/main/ets/bean/Lyric'
 

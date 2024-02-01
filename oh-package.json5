@@ -8,5 +8,7 @@
   "description": "A lyric library for OpenHarmony.",
   "main": "",
   "version": "1.0.0",
-  "dependencies": {}
+  "dependencies": {
+    "@seagazer/cclyric": "file:./lib"
+  }
 }

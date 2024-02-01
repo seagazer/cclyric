@@ -1,3 +1,4 @@
+import { Lyric } from './bean/Lyric'
 import { LyricLine } from './bean/LyricLine'
 import { printD } from './extensions/Extension'
 
@@ -29,10 +30,10 @@ export class LyricHelper {
 
     /**
      * Setup the lyric list.
-     * @param data The list of lyric.
+     * @param data The lyric data.
      */
-    public setLyricData(data: Array<LyricLine>) {
-        this.lrcList = data
+    public setLyricData(data: Lyric) {
+        this.lrcList = data.lyricList
         this.currentIndex = 0
         this.currentLyric = ""
     }

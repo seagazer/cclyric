@@ -2,12 +2,12 @@ import { Lyric } from '../bean/Lyric'
 
 // default config
 const DEFAULT_LINE_SPACE = 16
-const DEFAULT_TEXT_SIZE = 48
+const DEFAULT_TEXT_SIZE = 28
 const DEFAULT_HIGHLIGHT_SCALE = 1.2
-const DEFAULT_TEXT_COLOR = "#ff929292"
+const DEFAULT_TEXT_COLOR = "#80000000"
 const DEFAULT_HIGHLIGHT_COLOR = "#000000"
 const DEFAULT_EDGE_COLOR = "#ffffff"
-const DEFAULT_ANIM_DURATION = 500
+const DEFAULT_ANIM_DURATION = 300
 const DEFAULT_CACHE_SIZE = 2
 
 /**
@@ -24,7 +24,7 @@ export class LyricController {
     private animDuration: number = DEFAULT_ANIM_DURATION
     private cacheSize: number = DEFAULT_CACHE_SIZE
     private isBold: boolean = true
-    private emptyHint: string = ""
+    private emptyHint: string = "--"
     private alignMode: "left" | "center" = "left"
     /**
      *  Listener to observe the lyric data set changed. This is a inner function, do not call this.
@@ -37,9 +37,9 @@ export class LyricController {
     onPositionChangedListener: (position: number) => void = () => {
     }
     /**
-     * Listener to do invalidate action.
+     *  Listener to observe the user config changed. This is a inner function, do not call this.
      */
-    onInvalidateListener: () => void = () => {
+    onInvalidated: (reLayout: boolean) => void = () => {
     }
 
     /**
@@ -57,7 +57,7 @@ export class LyricController {
      */
     setLyric(lyric: Lyric): LyricController {
         this.lyric = lyric
-        this.onDataChangedListener?.(lyric)
+        this.onDataChangedListener(lyric)
         return this
     }
 
@@ -76,6 +76,7 @@ export class LyricController {
      */
     setTextColor(color: string): LyricController {
         this.textColor = color
+        this.onInvalidated(false)
         return this
     }
 
@@ -94,6 +95,7 @@ export class LyricController {
      */
     setTextSize(textSize: number): LyricController {
         this.textSize = textSize
+        this.onInvalidated(true)
         return this
     }
 
@@ -112,6 +114,7 @@ export class LyricController {
      */
     setHighlightColor(color: string): LyricController {
         this.highlightColor = color
+        this.onInvalidated(false)
         return this
     }
 
@@ -130,6 +133,7 @@ export class LyricController {
      */
     setHighlightScale(scale: number): LyricController {
         this.highlightScale = scale
+        this.onInvalidated(true)
         return this
     }
 
@@ -148,6 +152,7 @@ export class LyricController {
      */
     setHighlightStyle(isBold: boolean): LyricController {
         this.isBold = isBold
+        this.onInvalidated(false)
         return this
     }
 
@@ -166,6 +171,7 @@ export class LyricController {
      */
     setEdgeColor(color: string): LyricController {
         this.edgeColor = color
+        this.onInvalidated(false)
         return this
     }
 
@@ -184,6 +190,7 @@ export class LyricController {
      */
     setLineSpace(lineSpace: number): LyricController {
         this.lineSpace = lineSpace
+        this.onInvalidated(true)
         return this
     }
 
@@ -221,6 +228,7 @@ export class LyricController {
      */
     setCacheSize(cacheSize: number): LyricController {
         this.cacheSize = cacheSize
+        this.onInvalidated(false)
         return this
     }
 
@@ -239,6 +247,7 @@ export class LyricController {
      */
     setEmptyHint(hint: string): LyricController {
         this.emptyHint = hint
+        this.onInvalidated(false)
         return this
     }
 
@@ -253,9 +262,12 @@ export class LyricController {
     /**
      * Set the alignment of the lyric text to display from.
      * @param align The value is "left" | "center", default is "left".
+     * @returns LyricConfig
      */
-    setAlignMode(align: "left" | "center") {
+    setAlignMode(align: "left" | "center"): LyricController {
         this.alignMode = align
+        this.onInvalidated(true)
+        return this
     }
 
     /**
@@ -267,9 +279,9 @@ export class LyricController {
     }
 
     /**
-     * Invalidate the lyric.
+     * Invalidate the ui by user, this will not reLayout, just do draw.
      */
     invalidate() {
-        this.onInvalidateListener()
+        this.onInvalidated(false)
     }
 }

@@ -1,10 +1,22 @@
 {
-  "license": "Apache-2.0",
+  "license": "Apache License 2.0",
   "devDependencies": {},
-  "author": "",
-  "name": "lib",
-  "description": "Please describe the basic information.",
+  "keywords": [
+    "Music",
+    "Lyric",
+    "音乐",
+    "歌词",
+    "自定义组件"
+  ],
+  "author": {
+    "name": "seagazer",
+    "email": "seagazer@qq.com"
+  },
+  "name": "@seagazer/cclyric",
+  "description": "A lyric view for OpenHarmony & HarmonyOS",
   "main": "index.ets",
+  "repository": "https://github.com/seagazer/cclyric",
   "version": "1.0.0",
+  "homepage": "https://github.com/seagazer",
   "dependencies": {}
 }
