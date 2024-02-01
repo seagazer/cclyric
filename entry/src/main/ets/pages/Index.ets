@@ -17,7 +17,7 @@ struct Index {
 
     aboutToAppear() {
         this.lyricController
-            .setTextSize(24)
+            .setTextSize(vp2px(18))
             .setCacheSize(4)
             .setTextColor("#8c000000")
             .setHighlightColor("#ff000000")
@@ -45,9 +45,9 @@ struct Index {
                 .width("100%")
                 .layoutWeight(1)
                 .padding({ left: 16, right: 16 })
+            Text(this.title).margin(16)
             Row() {
-                Text(this.title).margin({ right: 16 })
-                Button('PlayNext')
+                Button('play')
                     .fontSize(16)
                     .onClick(() => {
                         this.testIndex++
@@ -63,7 +63,7 @@ struct Index {
                         this.duration = 0
                         this.test()
                     })
-                Button('ChangeColor')
+                Button('color')
                     .fontSize(16)
                     .margin({ left: 16 })
                     .onClick(() => {
@@ -76,16 +76,16 @@ struct Index {
                             this.lyricController.setHighlightColor("#ff0000")
                         }
                     })
-                Button('ChangeSize')
+                Button('size')
                     .fontSize(16)
                     .margin({ left: 16 })
                     .onClick(() => {
                         this.j++
                         if (this.j % 2 == 0) {
-                            this.lyricController.setTextSize(24)
+                            this.lyricController.setTextSize(vp2px(18))
                                 .setLineSpace(16)
                         } else {
-                            this.lyricController.setTextSize(18)
+                            this.lyricController.setTextSize(vp2px(16))
                                 .setLineSpace(14)
                         }
                     })
