@@ -16,7 +16,7 @@ ohpm install @seagazer/cclyric
 
 ## 接口能力
 
-**cclyric** 提供**LyricParser **进行歌词解析， 视图组件 **LyricView** ，用户可以通过 **LyricController **来操作组件。用户也可以自己实现**IParser**接口编写自己的歌词解析业务。
+**cclyric** 提供**LyricParser**进行歌词解析， 视图组件 **LyricView** ，用户可以通过 **LyricController **来操作组件。用户也可以自己实现**IParser**接口编写自己的歌词解析业务。
 
 ### Lyric
 
