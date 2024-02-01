@@ -130,7 +130,7 @@ LyricView 组件控制器
 
 #### setAnimationDuration(duration: number): LyricController
 
-设置歌词滚动动效时长，默认为 500ms。
+设置歌词滚动动效时长，默认为 300ms。
 
 | 参数     | 参数类型 | 参数说明                  |
 | -------- | -------- | ------------------------- |
@@ -183,3 +183,51 @@ LyricView 组件控制器
 | 参数     | 参数类型 | 参数说明     | 返回值         |
 | -------- | -------- | ------------ | -------------- |
 | position | number   | 媒体播放进度 | 当前歌词行文本 |
+
+## 场景示例
+
+- 下面是基础示例和使用方式：
+
+```ts
+@Entry
+@Component
+struct Index {
+    // 1.初始化controller
+    private lyricController: LyricController = new LyricController()
+    private parser = new LyricParser()
+
+    aboutToAppear() {
+        // 2.自定义样式属性
+        this.lyricController
+            .setTextSize(24)
+            .setCacheSize(4)
+            .setTextColor("#8c000000")
+            .setHighlightColor("#ff000000")
+            .setLineSpace(16)
+            .setHighlightStyle(false)
+            .setEmptyHint("当前没有歌词")
+            .setAlignMode("center")
+        // 3.解析歌词
+        let lyric = this.parser.parse(MockData.src1)
+        // 4.设置歌词
+        this.lyricController.setLyric(lyric)
+    }
+
+    build() {
+        Column() {
+            LyricView({ controller: this.lyricController, })
+                .width("100%")
+                .layoutWeight(1)
+                .padding({ left: 16, right: 16 })
+
+                ...
+        }
+        .width('100%')
+        .height('100%')
+        .justifyContent(FlexAlign.Center)
+    }
+}
+```
+
+- 更多使用场景和示例，可以参考本库代码仓的 entry 工程：https://github.com/seagazer/cclyric
+- 配合播放器使用的复杂示例，可以参考完整音乐播放器项目：https://github.com/seagazer/cclisten
