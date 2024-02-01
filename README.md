@@ -1,233 +1,185 @@
 # cclyric
 
-## ¼ò½é
+## ç®€ä»‹
 
-**cclyric** ÊÇÒ»¸öÎª **OpenHarmony** ºÍ **HaromonyOS** µÄÒôÀÖ²¥·Å¸è´Ê¿â¡£
+**cclyric** æ˜¯ä¸€ä¸ªä¸º **OpenHarmony** å’Œ **HaromonyOS** è®¾è®¡çš„éŸ³ä¹æ’­æ”¾æ­Œè¯åº“ã€‚
 
-- Ö§³Ö¸è´Ê½âÎö
-- Ö§³Ö¸è´Ê¹ö¶¯ÏÔÊ¾
-- Ö§³Ö×Ô¶¨ÒåÑùÊ½£¬°üÀ¨¸è´Ê×ÖÌå´óÐ¡/ÑÕÉ«£¬¾Û½¹´óÐ¡/ÑÕÉ«£¬ÏÔÊ¾Ä£Ê½µÈ
+- æ”¯æŒæ­Œè¯è§£æž
+- æ”¯æŒæ­Œè¯æ»šåŠ¨æ˜¾ç¤º
+- æ”¯æŒè‡ªå®šä¹‰æ ·å¼ï¼ŒåŒ…æ‹¬æ­Œè¯å­—ä½“å¤§å°/é¢œè‰²ï¼Œèšç„¦å¤§å°/é¢œè‰²ï¼Œæ˜¾ç¤ºæ¨¡å¼ç­‰
 
-## ÒÀÀµ·½Ê½
+## ä¾èµ–æ–¹å¼
 
 ```ts
 ohpm install @seagazer/cclyric
 ```
 
-## ½Ó¿ÚÄÜÁ¦
+## æŽ¥å£èƒ½åŠ›
 
-**cclyric** Ìá¹©**LyricParser **½øÐÐ¸è´Ê½âÎö£¬ ÊÓÍ¼×é¼þ **LyricView** £¬ÓÃ»§¿ÉÒÔÍ¨¹ý **LyricController **À´²Ù×÷×é¼þ¡£ÓÃ»§Ò²¿ÉÒÔ×Ô¼ºÊµÏÖ**IParser**½Ó¿Ú±àÐ´×Ô¼ºµÄ¸è´Ê½âÎöÒµÎñ¡£
+**cclyric** æä¾›**LyricParser **è¿›è¡Œæ­Œè¯è§£æžï¼Œ è§†å›¾ç»„ä»¶ **LyricView** ï¼Œç”¨æˆ·å¯ä»¥é€šè¿‡ **LyricController **æ¥æ“ä½œç»„ä»¶ã€‚ç”¨æˆ·ä¹Ÿå¯ä»¥è‡ªå·±å®žçŽ°**IParser**æŽ¥å£ç¼–å†™è‡ªå·±çš„æ­Œè¯è§£æžä¸šåŠ¡ã€‚
 
 ### Lyric
 
-¸è´ÊÊý¾Ý½á¹¹
+æ­Œè¯æ•°æ®ç»“æž„
 
-| ÊôÐÔ      | ÊôÐÔÀàÐÍ          | ÊôÐÔËµÃ÷     |
+| å±žæ€§      | å±žæ€§ç±»åž‹          | å±žæ€§è¯´æ˜Ž     |
 | --------- | ----------------- | ------------ |
-| artist    | string            | ÒÕÊõ¼Ò       |
-| title     | string            | ±êÌâ         |
-| album     | string            | ×¨¼­         |
-| by        | string            | ×÷Õß         |
-| offset    | number            | Ê±¼ä´ÁÆ«ÒÆÁ¿ |
-| lyricList | Array\<LyricLine> | ¸è´ÊÐÐÊý×é   |
+| artist    | string            | è‰ºæœ¯å®¶       |
+| title     | string            | æ ‡é¢˜         |
+| album     | string            | ä¸“è¾‘         |
+| by        | string            | ä½œè€…         |
+| offset    | number            | æ—¶é—´æˆ³åç§»é‡ |
+| lyricList | Array\<LyricLine> | æ­Œè¯è¡Œæ•°ç»„   |
 
 ### LyricLine
 
-µ¥ÐÐ¸è´ÊÊý¾Ý½á¹¹
+å•è¡Œæ­Œè¯æ•°æ®ç»“æž„
 
-| ÊôÐÔ      | ÊôÐÔÀàÐÍ | ÊôÐÔËµÃ÷             |
+| å±žæ€§      | å±žæ€§ç±»åž‹ | å±žæ€§è¯´æ˜Ž             |
 | --------- | -------- | -------------------- |
-| text      | string   | ¸è´ÊÄÚÈÝ             |
-| beginTime | number   | µ±Ç°ÐÐ¸è´ÊÆðÊ¼Ê±¼ä´Á |
-| nextTime  | number   | ÏÂÒ»ÐÐ¸è´ÊÆðÊ¼Ê±¼ä´Á |
+| text      | string   | æ­Œè¯å†…å®¹             |
+| beginTime | number   | å½“å‰è¡Œæ­Œè¯èµ·å§‹æ—¶é—´æˆ³ |
+| nextTime  | number   | ä¸‹ä¸€è¡Œæ­Œè¯èµ·å§‹æ—¶é—´æˆ³ |
 
 ### IParser
 
-¸è´Ê½âÎö½Ó¿Ú
+æ­Œè¯è§£æžæŽ¥å£
 
 parse(src: Array\<string>): Lyric
-½âÎö¸è´Ê
+è§£æžæ­Œè¯
 
-| ²ÎÊý | ²ÎÊýÀàÐÍ       | ²ÎÊýËµÃ÷       |
+| å‚æ•° | å‚æ•°ç±»åž‹       | å‚æ•°è¯´æ˜Ž       |
 | ---- | -------------- | -------------- |
-| src  | Array\<string> | ¸è´ÊÎÄ±¾ÐÐÊý×é |
+| src  | Array\<string> | æ­Œè¯æ–‡æœ¬è¡Œæ•°ç»„ |
 
 ### LyricController
 
-LyricView ×é¼þ¿ØÖÆÆ÷
+LyricView ç»„ä»¶æŽ§åˆ¶å™¨
 
 #### setLyric(lyric: Lyric): LyricController
 
-ÉèÖÃ¸è´ÊÄÚÈÝ£¬ÐèÒªÍ¨¹ýÌá¹©µÄ LyricParser »òÕß×Ô¶¨Òå IParser ½âÎö¸è´Ê¡£
+è®¾ç½®æ­Œè¯å†…å®¹ï¼Œéœ€è¦é€šè¿‡æä¾›çš„ LyricParser æˆ–è€…è‡ªå®šä¹‰ IParser è§£æžæ­Œè¯ã€‚
 
-| ²ÎÊý  | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷ |
+| å‚æ•°  | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž |
 | ----- | -------- | -------- |
-| lyric | Lyric    | ¸è´Ê     |
+| lyric | Lyric    | æ­Œè¯     |
 
 #### updatePosition(mediaPosition: number)
 
-¸üÐÂÃ½Ìå²¥·Å½ø¶È£¬×é¼þ»á×Ô¶¯Ë¢ÐÂ¸è´ÊÏÔÊ¾¡£
+æ›´æ–°åª’ä½“æ’­æ”¾è¿›åº¦ï¼Œç»„ä»¶ä¼šè‡ªåŠ¨åˆ·æ–°æ­Œè¯æ˜¾ç¤ºã€‚
 
-| ²ÎÊý          | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷              |
+| å‚æ•°          | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž              |
 | ------------- | -------- | --------------------- |
-| mediaPosition | number   | Ã½Ìå²¥·Å½ø¶È(µ¥Î» ms) |
+| mediaPosition | number   | åª’ä½“æ’­æ”¾è¿›åº¦(å•ä½ ms) |
 
 #### setTextSize(textSize: number): LyricController
 
-ÉèÖÃ¸è´ÊÎÄ±¾³ß´ç£¬Ä¬ÈÏÎª 18px¡£
+è®¾ç½®æ­Œè¯æ–‡æœ¬å°ºå¯¸ï¼Œé»˜è®¤ä¸º 18pxã€‚
 
-| ²ÎÊý     | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷              |
+| å‚æ•°     | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž              |
 | -------- | -------- | --------------------- |
-| textSize | number   | ¸è´ÊÎÄ±¾³ß´ç(µ¥Î» px) |
+| textSize | number   | æ­Œè¯æ–‡æœ¬å°ºå¯¸(å•ä½ px) |
 
 #### setTextColor(color: string): LyricController
 
-ÉèÖÃ¸è´ÊÎÄ±¾ÆÕÍ¨ÑÕÉ«£¬Ä¬ÈÏÎª#80000000¡£
+è®¾ç½®æ­Œè¯æ–‡æœ¬æ™®é€šé¢œè‰²ï¼Œé»˜è®¤ä¸º#80000000ã€‚
 
-| ²ÎÊý  | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷     |
+| å‚æ•°  | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž     |
 | ----- | -------- | ------------ |
-| color | string   | ÎÄ±¾ÆÕÍ¨ÑÕÉ« |
+| color | string   | æ–‡æœ¬æ™®é€šé¢œè‰² |
 
 #### setHighlightColor(color: string): LyricController
 
-ÉèÖÃ¸è´ÊÎÄ±¾¾Û½¹ÑÕÉ«£¬µ±Ç°²¥·ÅµÄ¸è´ÊÊôÓÚ¾Û½¹×´Ì¬£¬Ä¬ÈÏÎª#000000¡£
+è®¾ç½®æ­Œè¯æ–‡æœ¬èšç„¦é¢œè‰²ï¼Œå½“å‰æ’­æ”¾çš„æ­Œè¯å±žäºŽèšç„¦çŠ¶æ€ï¼Œé»˜è®¤ä¸º#000000ã€‚
 
-| ²ÎÊý  | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷     |
+| å‚æ•°  | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž     |
 | ----- | -------- | ------------ |
-| color | string   | ÎÄ±¾¾Û½¹ÑÕÉ« |
+| color | string   | æ–‡æœ¬èšç„¦é¢œè‰² |
 
 #### setHighlightScale(scale: number): LyricController
 
-ÉèÖÃ¸è´ÊÎÄ±¾¾Û½¹Ëõ·Å£¬µ±Ç°²¥·ÅµÄ¸è´ÊÊôÓÚ¾Û½¹×´Ì¬£¬Ä¬ÈÏÎª 1.2f¡£
+è®¾ç½®æ­Œè¯æ–‡æœ¬èšç„¦ç¼©æ”¾ï¼Œå½“å‰æ’­æ”¾çš„æ­Œè¯å±žäºŽèšç„¦çŠ¶æ€ï¼Œé»˜è®¤ä¸º 1.2fã€‚
 
-| ²ÎÊý  | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷         |
+| å‚æ•°  | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž         |
 | ----- | -------- | ---------------- |
-| scale | number   | ÎÄ±¾¾Û½¹Ëõ·Å±ÈÀý |
+| scale | number   | æ–‡æœ¬èšç„¦ç¼©æ”¾æ¯”ä¾‹ |
 
 #### setHighlightStyle(isBold: boolean): LyricController
 
-ÉèÖÃ¸è´ÊÎÄ±¾¾Û½¹Ê±ÊÇ·ñ´ÖÌå£¬µ±Ç°²¥·ÅµÄ¸è´ÊÊôÓÚ¾Û½¹×´Ì¬£¬Ä¬ÈÏÎª true¡£
+è®¾ç½®æ­Œè¯æ–‡æœ¬èšç„¦æ—¶æ˜¯å¦ç²—ä½“ï¼Œå½“å‰æ’­æ”¾çš„æ­Œè¯å±žäºŽèšç„¦çŠ¶æ€ï¼Œé»˜è®¤ä¸º trueã€‚
 
-| ²ÎÊý   | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷           |
+| å‚æ•°   | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž           |
 | ------ | -------- | ------------------ |
-| isBold | boolean  | ÎÄ±¾¾Û½¹Ê±ÊÇ·ñ´ÖÌå |
+| isBold | boolean  | æ–‡æœ¬èšç„¦æ—¶æ˜¯å¦ç²—ä½“ |
 
 #### setEdgeColor(color: string): LyricController
 
-ÉèÖÃ¸è´ÊÉÏÏÂ±ßÔµ½¥±äÑÕÉ«£¬Ä¬ÈÏÎª#ffffff¡£
+è®¾ç½®æ­Œè¯ä¸Šä¸‹è¾¹ç¼˜æ¸å˜é¢œè‰²ï¼Œé»˜è®¤ä¸º#ffffffã€‚
 
-| ²ÎÊý  | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷         |
+| å‚æ•°  | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž         |
 | ----- | -------- | ---------------- |
-| color | string   | ¸è´Ê±ßÔµ½¥±äÑÕÉ« |
+| color | string   | æ­Œè¯è¾¹ç¼˜æ¸å˜é¢œè‰² |
 
 #### setLineSpace(lineSpace: number): LyricController
 
-ÉèÖÃ¸è´ÊÐÐ¼ä¾à£¬Ä¬ÈÏÎª 16px¡£
+è®¾ç½®æ­Œè¯è¡Œé—´è·ï¼Œé»˜è®¤ä¸º 16pxã€‚
 
-| ²ÎÊý      | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷            |
+| å‚æ•°      | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž            |
 | --------- | -------- | ------------------- |
-| lineSpace | number   | ¸è´ÊÐÐ¼ä¾à(µ¥Î» px) |
+| lineSpace | number   | æ­Œè¯è¡Œé—´è·(å•ä½ px) |
 
 #### setAnimationDuration(duration: number): LyricController
 
-ÉèÖÃ¸è´Ê¹ö¶¯¶¯Ð§Ê±³¤£¬Ä¬ÈÏÎª 300ms¡£
+è®¾ç½®æ­Œè¯æ»šåŠ¨åŠ¨æ•ˆæ—¶é•¿ï¼Œé»˜è®¤ä¸º 500msã€‚
 
-| ²ÎÊý     | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷                  |
+| å‚æ•°     | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž                  |
 | -------- | -------- | ------------------------- |
-| duration | number   | ¸è´Ê¹ö¶¯¶¯Ð§Ê±³¤(µ¥Î» ms) |
+| duration | number   | æ­Œè¯æ»šåŠ¨åŠ¨æ•ˆæ—¶é•¿(å•ä½ ms) |
 
 #### setCacheSize(cacheSize: number): LyricController
 
-ÉèÖÃ¸è´Ê»æÖÆµÄ»º´æÁ¿£¬ÔÚÆÁÄ»Íâ»áÔ¤»æÖÆÒ»¶¨ÊýÁ¿µÄ¸è´Ê£¬ÌáÉýÉÏÏÂ»¬¶¯µÄÏÔÊ¾ÐÔÄÜ£¬Ä¬ÈÏÎª 2 ÐÐ¡£
+è®¾ç½®æ­Œè¯ç»˜åˆ¶çš„ç¼“å­˜é‡ï¼Œåœ¨å±å¹•å¤–ä¼šé¢„ç»˜åˆ¶ä¸€å®šæ•°é‡çš„æ­Œè¯ï¼Œæå‡ä¸Šä¸‹æ»‘åŠ¨çš„æ˜¾ç¤ºæ€§èƒ½ï¼Œé»˜è®¤ä¸º 2 è¡Œã€‚
 
-| ²ÎÊý      | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷     |
+| å‚æ•°      | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž     |
 | --------- | -------- | ------------ |
-| cacheSize | number   | »æÖÆ»º´æÐÐÊý |
+| cacheSize | number   | ç»˜åˆ¶ç¼“å­˜è¡Œæ•° |
 
 #### setEmptyHint(hint: string): LyricController
 
-ÉèÖÃÎÞ¸è´ÊÊ±µÄÌáÊ¾Óï£¬Ä¬ÈÏÎª`--`¡£
+è®¾ç½®æ— æ­Œè¯æ—¶çš„æç¤ºè¯­ï¼Œé»˜è®¤ä¸º`--`ã€‚
 
-| ²ÎÊý | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷         |
+| å‚æ•° | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž         |
 | ---- | -------- | ---------------- |
-| hint | string   | ÎÞ¸è´ÊÊ±µÄÌáÊ¾Óï |
+| hint | string   | æ— æ­Œè¯æ—¶çš„æç¤ºè¯­ |
 
 #### setAlignMode(align: "left" | "center"): LyricController
 
-ÉèÖÃ¸è´ÊÏÔÊ¾Ä£Ê½£¬Ä¿Ç°Ö§³Ö¾ÓÖÐÏÔÊ¾ºÍ¾Ó×óÏÔÊ¾£¬Ä¬ÈÏÎª"left"×ó¶ÔÆëÏÔÊ¾¡£
+è®¾ç½®æ­Œè¯æ˜¾ç¤ºæ¨¡å¼ï¼Œç›®å‰æ”¯æŒå±…ä¸­æ˜¾ç¤ºå’Œå±…å·¦æ˜¾ç¤ºï¼Œé»˜è®¤ä¸º"left"å·¦å¯¹é½æ˜¾ç¤ºã€‚
 
-| ²ÎÊý  | ²ÎÊýÀàÐÍ          | ²ÎÊýËµÃ÷     |
+| å‚æ•°  | å‚æ•°ç±»åž‹          | å‚æ•°è¯´æ˜Ž     |
 | ----- | ----------------- | ------------ |
-| align | "left" £¬"center" | ¸è´ÊÏÔÊ¾Ä£Ê½ |
+| align | "left" ï¼Œ"center" | æ­Œè¯æ˜¾ç¤ºæ¨¡å¼ |
 
 #### invalidate()
 
-Ö÷¶¯Ë¢ÐÂÖØ»æ£¬¸Ã·½·¨Ö»»á´¥·¢ÖØÐÂ»æÖÆ£¬²»»á´¥·¢ÖØÐÂ²¼¾Ö¡£
+ä¸»åŠ¨åˆ·æ–°é‡ç»˜ï¼Œè¯¥æ–¹æ³•åªä¼šè§¦å‘é‡æ–°ç»˜åˆ¶ï¼Œä¸ä¼šè§¦å‘é‡æ–°å¸ƒå±€ã€‚
 
 ### LyricHelper
 
-¸è´Ê¹¤¾ßÀà£¬Ö§³Ö¸ù¾ÝÃ½Ìå²¥·Å½ø¶È²éÑ¯µ±Ç°¸è´Ê¡£
+æ­Œè¯å·¥å…·ç±»ï¼Œæ”¯æŒæ ¹æ®åª’ä½“æ’­æ”¾è¿›åº¦æŸ¥è¯¢å½“å‰æ­Œè¯ã€‚
 
 #### setLyricData(data: Lyric)
 
-ÉèÖÃ¸è´ÊÊý¾Ý¡£
+è®¾ç½®æ­Œè¯æ•°æ®ã€‚
 
-| ²ÎÊý | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷ |
+| å‚æ•° | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž |
 | ---- | -------- | -------- |
-| data | Lyric    | ¸è´ÊÊý¾Ý |
+| data | Lyric    | æ­Œè¯æ•°æ® |
 
 #### getLyric(position: number): string
 
-¸ù¾ÝÃ½Ìå²¥·Å½ø¶È£¬²éÑ¯µ±Ç°µÄ¸è´ÊÄÚÈÝ£¬·µ»Øµ±Ç°¸è´ÊÐÐÎÄ±¾¡£
+æ ¹æ®åª’ä½“æ’­æ”¾è¿›åº¦ï¼ŒæŸ¥è¯¢å½“å‰çš„æ­Œè¯å†…å®¹ï¼Œè¿”å›žå½“å‰æ­Œè¯è¡Œæ–‡æœ¬ã€‚
 
-| ²ÎÊý     | ²ÎÊýÀàÐÍ | ²ÎÊýËµÃ÷     | ·µ»ØÖµ         |
+| å‚æ•°     | å‚æ•°ç±»åž‹ | å‚æ•°è¯´æ˜Ž     | è¿”å›žå€¼         |
 | -------- | -------- | ------------ | -------------- |
-| position | number   | Ã½Ìå²¥·Å½ø¶È | µ±Ç°¸è´ÊÐÐÎÄ±¾ |
-
-## ³¡¾°Ê¾Àý
-
-- ÏÂÃæÊÇ»ù´¡Ê¾ÀýºÍÊ¹ÓÃ·½Ê½£º
-
-```ts
-@Entry
-@Component
-struct Index {
-    // 1.³õÊ¼»¯controller
-    private lyricController: LyricController = new LyricController()
-    private parser = new LyricParser()
-
-    aboutToAppear() {
-        // 2.×Ô¶¨ÒåÑùÊ½ÊôÐÔ
-        this.lyricController
-            .setTextSize(24)
-            .setCacheSize(4)
-            .setTextColor("#8c000000")
-            .setHighlightColor("#ff000000")
-            .setLineSpace(16)
-            .setHighlightStyle(false)
-            .setEmptyHint("µ±Ç°Ã»ÓÐ¸è´Ê")
-            .setAlignMode("center")
-        // 3.½âÎö¸è´Ê
-        let lyric = this.parser.parse(MockData.src1)
-        // 4.ÉèÖÃ¸è´Ê
-        this.lyricController.setLyric(lyric)
-    }
-
-    build() {
-        Column() {
-            LyricView({ controller: this.lyricController, })
-                .width("100%")
-                .layoutWeight(1)
-                .padding({ left: 16, right: 16 })
-
-                ...
-        }
-        .width('100%')
-        .height('100%')
-        .justifyContent(FlexAlign.Center)
-    }
-}
-```
-
-- ¸ü¶àÊ¹ÓÃ³¡¾°ºÍÊ¾Àý£¬¿ÉÒÔ²Î¿¼±¾¿â´úÂë²ÖµÄ entry ¹¤³Ì£ºhttps://github.com/seagazer/cclyric
-- ÅäºÏ²¥·ÅÆ÷Ê¹ÓÃµÄ¸´ÔÓÊ¾Àý£¬¿ÉÒÔ²Î¿¼ÍêÕûÒôÀÖ²¥·ÅÆ÷ÏîÄ¿£ºhttps://github.com/seagazer/cclisten
+| position | number   | åª’ä½“æ’­æ”¾è¿›åº¦ | å½“å‰æ­Œè¯è¡Œæ–‡æœ¬ |
