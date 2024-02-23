@@ -2,11 +2,15 @@
 
 ## 简介
 
-**cclyric** 是一个为 **OpenHarmony** 和 **HaromonyOS** 设计的音乐播放歌词库。
+**cclyric** 是一个为 **OpenHarmony** 和 **HaromonyOS** 设计的音乐歌词组件库。
 
-- 支持歌词解析
+- 支持歌词文件解析
 - 支持歌词滚动显示
 - 支持自定义样式，包括歌词字体大小/颜色，聚焦大小/颜色，显示模式等
+
+## 示例效果
+
+<img src="https://gitee.com/seagazer/cclisten/raw/dev/img/5.jpeg" width="200" height="355"/>
 
 ## 依赖方式
 
@@ -16,7 +20,7 @@ ohpm install @seagazer/cclyric
 
 ## 接口能力
 
-**cclyric** 提供**LyricParser**进行歌词解析， 视图组件 **LyricView** ，用户可以通过 **LyricController **来操作组件。用户也可以自己实现**IParser**接口编写自己的歌词解析业务。
+**cclyric** 提供 **LyricParser** 进行歌词解析， 视图组件 **LyricView** ，用户可以通过 **LyricController** 来操作组件。用户也可以自己实现 **IParser** 接口编写自己的歌词解析业务。
 
 ### Lyric
 
@@ -229,5 +233,7 @@ struct Index {
 }
 ```
 
-- 更多使用场景和示例，可以参考本库代码仓的 entry 工程：https://github.com/seagazer/cclyric
-- 配合播放器使用的复杂示例，可以参考完整音乐播放器项目：https://github.com/seagazer/cclisten
+- 更多使用场景和示例，可以参考本库代码仓的 entry 工程：  
+  https://github.com/seagazer/cclyric 或 https://gitee.com/seagazer/cclyric
+- 配合播放器使用的复杂示例，可以参考完整音乐播放器项目：  
+  https://github.com/seagazer/cclisten 或 https://gitee.com/seagazer/cclisten

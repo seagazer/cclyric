@@ -41,11 +41,11 @@ struct Index {
 
     build() {
         Column() {
+            Text(this.title).margin(16)
             LyricView({ controller: this.lyricController, })
                 .width("100%")
                 .layoutWeight(1)
                 .padding({ left: 16, right: 16 })
-            Text(this.title).margin(16)
             Row() {
                 Button('play')
                     .fontSize(16)
