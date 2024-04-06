@@ -80,9 +80,9 @@ LyricView 组件控制器
 
 设置歌词文本尺寸，默认为 18px。
 
-| 参数     | 参数类型 | 参数说明              |
-| -------- | -------- | --------------------- |
-| textSize | number   | 歌词文本尺寸(单位 px) |
+| 参数     | 参数类型 | 参数说明          |
+| -------- | -------- |---------------|
+| textSize | number   | 歌词文本尺寸(单位 vp) |
 
 #### setTextColor(color: string): LyricController
 
@@ -130,7 +130,7 @@ LyricView 组件控制器
 
 | 参数      | 参数类型 | 参数说明            |
 | --------- | -------- | ------------------- |
-| lineSpace | number   | 歌词行间距(单位 px) |
+| lineSpace | number   | 歌词行间距(单位 vp) |
 
 #### setAnimationDuration(duration: number): LyricController
 
