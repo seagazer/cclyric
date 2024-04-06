@@ -6,6 +6,7 @@ import { LyricLine } from '../bean/LyricLine';
 
 /**
  * A component to display the lyric with scroll animation.
+ * This component only support api 10+.
  *
  * The custom setter include the lyric text style, fade style of edge, the line space, scroll animation duration,
  * the cache size to draw out of screen.
@@ -169,19 +170,26 @@ export struct LyricView2 {
     @Builder
     CenterLine() {
         Row() {
-            Text('play').onClick(() => {
-                if (this.seekIndex != -1 && this.seekIndex != this.currentIndex) {
-                    clearTimeout(this.seekUiHideTimeout)
-                    let targetPosition = this.listAdapter.getData(this.seekIndex).beginTime
-                    let isPlayerHandled = this.onSeekAction(targetPosition)
-                    if (!isPlayerHandled) {
-                        this.animateToIndex(this.currentIndex)
+            Image($r('app.media.cclyric_play'))
+                .width(56)
+                .height(36)
+                .objectFit(ImageFit.ScaleDown)
+                .clickEffect({ level: ClickEffectLevel.MIDDLE })
+
+                .onClick(() => {
+                    if (this.seekIndex != -1 && this.seekIndex != this.currentIndex) {
+                        clearTimeout(this.seekUiHideTimeout)
+                        let targetPosition = this.listAdapter.getData(this.seekIndex).beginTime
+                        let isPlayerHandled = this.onSeekAction(targetPosition)
+                        if (!isPlayerHandled) {
+                            this.animateToIndex(this.currentIndex)
+                        }
+                        this.isUserTouching = false
                     }
-                    this.isUserTouching = false
-                }
-            })
+                })
             Stack().height(1).layoutWeight(1).backgroundColor(Color.Black).margin({ left: 8, right: 8 })
             Text(this.scrollDurationText)
+                .width(56)
         }.width('100%')
     }
 
