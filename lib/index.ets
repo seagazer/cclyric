@@ -8,6 +8,8 @@ export { LyricParser } from './src/main/ets/parse/LyricParser'
 
 export { LyricView } from './src/main/ets/view/LyricView'
 
+export { LyricView2 } from './src/main/ets/view/LyricView2'
+
 export { LyricController } from './src/main/ets/view/LyricController'
 
 export { LyricHelper } from './src/main/ets/LyricHelper'

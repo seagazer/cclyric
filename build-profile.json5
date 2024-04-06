@@ -1,6 +1,18 @@
 {
   "app": {
     "signingConfigs": [
+      {
+        "name": "default",
+        "material": {
+          "certpath": "C:\\Users\\seagazer\\.ohos\\config\\openharmony\\auto_ohos_default_cclyric_com.seagazer.cclyric.cer",
+          "storePassword": "0000001A9A9979412005BA722BBE271816480EEE57AE7B4FD368D268AE3B37A30C5CEC6F88F5AB765984",
+          "keyAlias": "debugKey",
+          "keyPassword": "0000001A582D468325A30B8640988A26B9B7FDF29763E3387D73DDCD2037FB3F618E799CCA3FDEF56567",
+          "profile": "C:\\Users\\seagazer\\.ohos\\config\\openharmony\\auto_ohos_default_cclyric_com.seagazer.cclyric.p7b",
+          "signAlg": "SHA256withECDSA",
+          "storeFile": "C:\\Users\\seagazer\\.ohos\\config\\openharmony\\auto_ohos_default_cclyric_com.seagazer.cclyric.p12"
+        }
+      }
     ],
     "products": [
       {

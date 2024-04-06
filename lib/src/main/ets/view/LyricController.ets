@@ -89,7 +89,7 @@ export class LyricController {
     }
 
     /**
-     * Set the text size(px) of normal lyric. The default size is 48px.
+     * Set the text size(vp) of normal lyric. The default size is 48px.
      * @param textSize The text size of normal lyric.
      * @returns LyricConfig
      */
@@ -100,7 +100,7 @@ export class LyricController {
     }
 
     /**
-     * Get the text size(px) of normal lyric.
+     * Get the text size(vp) of normal lyric.
      * @returns The text size of normal lyric.
      */
     getTextSize(): number {
@@ -184,7 +184,7 @@ export class LyricController {
     }
 
     /**
-     * Set the line space(px) between two lyric lines. The default line space is 16px.
+     * Set the line space(vp) between two lyric lines. The default line space is 16px.
      * @param lineSpace The line space between two lyric lines.
      * @returns LyricConfig
      */

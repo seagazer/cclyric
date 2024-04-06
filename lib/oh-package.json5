@@ -12,7 +12,7 @@
     "email": "seagazer@qq.com"
   },
   "name": "@seagazer/cclyric",
-  "description": "A lyric view for OpenHarmony & HarmonyOS",
+  "description": "A lyric view for OpenHarmony \u0026 HarmonyOS",
   "main": "index.ets",
   "repository": "https://github.com/seagazer/cclyric",
   "version": "1.0.1",

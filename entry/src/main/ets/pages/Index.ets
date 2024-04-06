@@ -1,4 +1,4 @@
-import { Lyric, LyricController, LyricParser, LyricView } from '@seagazer/cclyric';
+import { Lyric, LyricController, LyricParser, LyricView, LyricView2 } from '@seagazer/cclyric';
 import { MockData } from './MockData';
 
 @Entry
@@ -17,7 +17,7 @@ struct Index {
 
     aboutToAppear() {
         this.lyricController
-            .setTextSize(vp2px(18))
+            .setTextSize(16)
             .setCacheSize(4)
             .setTextColor("#8c000000")
             .setHighlightColor("#ff000000")
@@ -42,7 +42,7 @@ struct Index {
     build() {
         Column() {
             Text(this.title).margin(16)
-            LyricView({ controller: this.lyricController, })
+            LyricView2({ controller: this.lyricController, })
                 .width("100%")
                 .layoutWeight(1)
                 .padding({ left: 16, right: 16 })

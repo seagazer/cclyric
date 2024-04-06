@@ -131,13 +131,13 @@ export struct LyricView {
         this.canvasCtx.fillStyle = this.controller.getTextColor()
         this.canvasCtx.strokeStyle = this.controller.getTextColor()
         this.canvasCtx.lineWidth = 1
-        this.canvasCtx.font = this.controller.getTextSize() + "px"
+        this.canvasCtx.font = vp2px(this.controller.getTextSize()) + "px"
         // TODO: the center textAlign has bugs when multi line in OpenHarmony 3.2
         if (this.controller.getAlignMode() == "center") {
             this.canvasCtx.textAlign = "center"
         }
-        this.highLightTextSize = this.controller.getTextSize() * this.controller.getHighlightScale()
-        this.highLightDrawOffset = this.controller.getTextSize() * (this.controller.getHighlightScale() - 1) / 2
+        this.highLightTextSize = vp2px(this.controller.getTextSize() * this.controller.getHighlightScale())
+        this.highLightDrawOffset = vp2px(this.controller.getTextSize()) * (this.controller.getHighlightScale() - 1) / 2
     }
 
     private initSize() {
@@ -168,7 +168,7 @@ export struct LyricView {
                 this.centerYOffset = tempH
             }
             if (tempH < this.h / 2) {
-                tempH += lineHeight + this.controller.getLineSpace()
+                tempH += lineHeight + vp2px(this.controller.getLineSpace())
             } else {
                 if (this.topOverOffIndex == -1) {
                     this.topOverOffIndex = i - 1 // if current index is topOverOffIndex, top off screen
@@ -220,8 +220,9 @@ export struct LyricView {
         for (let i = 0; i < this.lyricLines.length; i++) {
             let lrc = this.lyricLines[i]
             // out the top of screen, the default cache is 2 lines
+            let space = vp2px(this.controller.getLineSpace())
             if (i < this.firstVisibleIndex - this.controller.getCacheSize()) {
-                startY += (lrc.height + this.controller.getLineSpace())
+                startY += (lrc.height + space)
                 continue
             }
             // out the bottom of screen, the default cache is 2 lines
@@ -231,14 +232,14 @@ export struct LyricView {
             // draw with high light for current line
             if (i == this.currentIndex) {
                 let scaleHeight = this.drawHighLight(lrc, startY)
-                startY += (scaleHeight + this.controller.getLineSpace() + this.highLightDrawOffset)
+                startY += (scaleHeight + space + this.highLightDrawOffset)
             } else {
                 if (this.controller.getAlignMode() == "center") {
                     this.canvasCtx.fillText(lrc.text, this.centerW, startY)
                 } else {
                     this.canvasCtx.fillText(lrc.text, 0, startY)
                 }
-                startY += (lrc.height + this.controller.getLineSpace())
+                startY += (lrc.height + space)
             }
         }
         this.canvasCtx.restore()
