@@ -41,7 +41,7 @@ struct Index {
 
     build() {
         Column() {
-            Text(this.title).margin(16)
+            Text(this.title).margin(16).fontSize(24).fontColor(Color.Blue)
             LyricView2({ controller: this.lyricController, })
                 .width("100%")
                 .layoutWeight(1)
@@ -82,11 +82,11 @@ struct Index {
                     .onClick(() => {
                         this.j++
                         if (this.j % 2 == 0) {
-                            this.lyricController.setTextSize(vp2px(18))
+                            this.lyricController.setTextSize(16)
                                 .setLineSpace(16)
                         } else {
-                            this.lyricController.setTextSize(vp2px(16))
-                                .setLineSpace(14)
+                            this.lyricController.setTextSize(18)
+                                .setLineSpace(18)
                         }
                     })
             }
