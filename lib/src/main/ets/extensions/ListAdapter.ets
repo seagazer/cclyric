@@ -12,7 +12,7 @@ export class ListAdapter<T> implements IDataSource {
         return this.data.length <= 0
     }
 
-    getData(index: number) {
+    getData(index: number): T {
         return this.data[index]
     }
 

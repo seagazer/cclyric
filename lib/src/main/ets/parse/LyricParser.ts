@@ -54,12 +54,12 @@ export class LyricParser implements IParser {
                 }
                 // parse text
                 let text = spr[spr.length-1]
-                printD("text= " + text)
+                // printD("text= " + text)
                 // parse timeline
                 for (let i = 0;i < spr.length - 1; i++) {
                     let timeline = spr[i].replace("[", "")
                     let timeStamp = this.parseTimeline(timeline)
-                    printD("timestamp= " + timeStamp)
+                    // printD("timestamp= " + timeStamp)
                     lyricLines.push(new LyricLine(text, timeStamp - offset, -1))
                 }
             }
