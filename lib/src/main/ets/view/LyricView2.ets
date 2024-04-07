@@ -23,6 +23,10 @@ export struct LyricView2 {
      */
     enableSeek: boolean = true
     /**
+     * The color of seek button and duration text.
+     */
+    seekUIColor: ResourceColor = '#000000'
+    /**
      * The seek callback for scroll the lyric.
      * If return true, you must handle this action to do seek action of media player.
      * If return false, the lyric view will scroll to current index of the media playing position.
@@ -181,6 +185,7 @@ export struct LyricView2 {
             Image($r('app.media.cclyric_play'))
                 .width(24)
                 .height(24)
+                .fillColor(this.seekUIColor)
                 .objectFit(ImageFit.Fill)
                 .clickEffect({ level: ClickEffectLevel.MIDDLE })
                 .onClick(() => {
@@ -197,10 +202,10 @@ export struct LyricView2 {
             Stack()
                 .height(1)
                 .layoutWeight(1)
-                .backgroundColor('#66000000')
+                .backgroundColor('#0d000000')
                 .margin({ left: 8, right: 8 })
             Text(this.scrollDurationText)
-                .width(56)
+                .fontColor(this.seekUIColor)
         }.width('100%')
         .transition(TransitionEffect.OPACITY.animation({ duration: this.animDuration }))
     }
