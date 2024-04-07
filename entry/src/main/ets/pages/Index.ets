@@ -4,7 +4,7 @@ import { MockData } from './MockData';
 @Entry
 @Component
 struct Index {
-    @State duration: number = 0
+    @State mediaPosition: number = 0
     private lyric: Lyric | null = null
     private lyricController: LyricController = new LyricController()
     private testIndex = 0
@@ -12,6 +12,7 @@ struct Index {
     private emptyDuration = 60 * 1000
     private parser = new LyricParser()
     @State title: string = ""
+    @State isV2: boolean = true
     private i = 0
     private j = 0
 
@@ -24,16 +25,16 @@ struct Index {
             .setLineSpace(16)
             .setHighlightStyle(false)
             .setEmptyHint("当前没有歌词")
-            .setAlignMode("center")
+            .setAlignMode("left")
     }
 
     private test() {
-        this.duration = 0
+        this.mediaPosition = 0
         this.testTimer = setInterval(() => {
-            this.duration += 1000
-            this.lyricController.updatePosition(this.duration)
+            this.mediaPosition += 1000
+            this.lyricController.updatePosition(this.mediaPosition)
             let endDuration = this.lyric == null ? this.emptyDuration : this.lyric.lyricList[this.lyric.lyricList.length - 1].beginTime
-            if (this.duration >= endDuration + 1000) {
+            if (this.mediaPosition >= endDuration + 1000) {
                 clearInterval(this.testTimer)
             }
         }, 1000)
@@ -42,13 +43,30 @@ struct Index {
     build() {
         Column() {
             Text(this.title).margin(16).fontSize(24).fontColor(Color.Blue)
-            LyricView2({ controller: this.lyricController, })
-                .width("100%")
-                .layoutWeight(1)
-                .padding({ left: 16, right: 16 })
+            if (this.isV2) {
+                LyricView2({ controller: this.lyricController,
+                    enableSeek: true,
+                    onSeekAction: (position) => {
+                        this.mediaPosition = position
+                        return true
+                    }
+                }).width("100%").layoutWeight(1)
+            } else {
+                LyricView({ controller: this.lyricController })
+                    .width("100%").layoutWeight(1)
+            }
             Row() {
+                Column() {
+                    Text('useV2').fontSize(16).padding(4)
+                    Toggle({ type: ToggleType.Switch, isOn: true })
+                        .onChange((isOn) => {
+                            this.isV2 = isOn
+                        })
+                }
+
                 Button('play')
                     .fontSize(16)
+                    .margin({ left: 16 })
                     .onClick(() => {
                         this.testIndex++
                         if (this.testIndex % 2 == 0) {
@@ -60,7 +78,7 @@ struct Index {
                         }
                         this.lyricController.setLyric(this.lyric)
                         clearInterval(this.testTimer)
-                        this.duration = 0
+                        this.mediaPosition = 0
                         this.test()
                     })
                 Button('color')
@@ -98,17 +116,17 @@ struct Index {
                 {
                     style: SliderStyle.InSet,
                     max: this.lyric != null ? this.lyric.lyricList[this.lyric.lyricList.length - 1].beginTime : this.emptyDuration,
-                    value: this.duration
+                    value: this.mediaPosition
                 })
                 .width("100%")
                 .onChange((value, mode) => {
                     if (mode == SliderChangeMode.End || mode == 3) {
-                        this.duration = value
-                        this.lyricController.updatePosition(this.duration)
+                        this.mediaPosition = value
+                        this.lyricController.updatePosition(this.mediaPosition)
                     }
                 })
 
-            Text(Math.round(this.duration / 1000) + "s")
+            Text(Math.round(this.mediaPosition / 1000) + "s")
                 .fontSize(18)
                 .margin({ top: 16 })
 
