@@ -86,8 +86,6 @@ export struct LyricView {
         }
     }
 
-    private downY = 0
-
     build() {
         Canvas(this.canvasCtx)
             .onAreaChange((oldSize, newSize) => {
@@ -105,26 +103,6 @@ export struct LyricView {
             })
             .width("100%")
             .height("100%")
-            .onTouch((event) => {
-                if (this.isEmpty) {
-                    return
-                }
-                // let touchEvent = event.touches[0]
-                // switch (touchEvent.type) {
-                //     case TouchType.Down:
-                //         printD("---down")
-                //         this.downY = touchEvent.screenY
-                //         break
-                //     case TouchType.Move:
-                //         printD("---move")
-                //         let currentY = touchEvent.screenY
-                //         let dy = currentY - this.downY
-                //         this.scrollY += dy
-                //         this.invalidate()
-                //         this.downY = currentY
-                //         break
-                // }
-            })
     }
 
     private initPaint() {
@@ -136,8 +114,8 @@ export struct LyricView {
         if (this.controller.getAlignMode() == "center") {
             this.canvasCtx.textAlign = "center"
         }
-        this.highLightTextSize = vp2px(this.controller.getTextSize() * this.controller.getHighlightScale())
-        this.highLightDrawOffset = vp2px(this.controller.getTextSize()) * (this.controller.getHighlightScale() - 1) / 2
+        this.highLightTextSize = fp2px(this.controller.getTextSize() * this.controller.getHighlightScale())
+        this.highLightDrawOffset = fp2px(this.controller.getTextSize()) * (this.controller.getHighlightScale() - 1) / 2
     }
 
     private initSize() {
@@ -168,7 +146,7 @@ export struct LyricView {
                 this.centerYOffset = tempH
             }
             if (tempH < this.h / 2) {
-                tempH += lineHeight + vp2px(this.controller.getLineSpace())
+                tempH += lineHeight + this.controller.getLineSpace()
             } else {
                 if (this.topOverOffIndex == -1) {
                     this.topOverOffIndex = i - 1 // if current index is topOverOffIndex, top off screen
@@ -186,11 +164,9 @@ export struct LyricView {
         // clear canvas
         this.canvasCtx.clearRect(0, 0, this.w, this.h)
         if (!this.isEmpty) {
-            // TODO: handle touch event, & draw center line
-            // this.drawCenterLine()
             // draw lrc text
             this.drawLrc()
-            this.drawEdge()
+            // this.drawEdge()
         } else {
             this.drawEmpty()
         }
@@ -205,13 +181,6 @@ export struct LyricView {
         }
     }
 
-    private drawCenterLine() {
-        this.canvasCtx.beginPath()
-        this.canvasCtx.moveTo(0, this.centerH)
-        this.canvasCtx.lineTo(this.w, this.centerH)
-        this.canvasCtx.stroke()
-    }
-
     private drawLrc() {
         let startY = this.centerYOffset // half of the first line measure text height
         this.canvasCtx.save()
@@ -220,7 +189,7 @@ export struct LyricView {
         for (let i = 0; i < this.lyricLines.length; i++) {
             let lrc = this.lyricLines[i]
             // out the top of screen, the default cache is 2 lines
-            let space = vp2px(this.controller.getLineSpace())
+            let space = this.controller.getLineSpace()
             if (i < this.firstVisibleIndex - this.controller.getCacheSize()) {
                 startY += (lrc.height + space)
                 continue
@@ -267,6 +236,9 @@ export struct LyricView {
         return scaleHeight
     }
 
+    /**
+     * @deprecated since v1.0.2
+     */
     private drawEdge() {
         this.canvasCtx.save()
         let topFade = this.canvasCtx.createLinearGradient(this.centerW, 0, this.centerW, this.linearGradientEdge)

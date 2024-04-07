@@ -16,31 +16,37 @@ export class ListAdapter<T> implements IDataSource {
         return this.data[index]
     }
 
-    addData(data: T) {
+    addData(data: T, autoFlush: boolean = true) {
         this.data.add(data)
-        this.notifyDataAdd(this.data.length - 1)
-    }
-
-    addDataList(list: Array<T>) {
-        list.forEach((data) => {
-            this.addData(data)
-        })
-    }
-
-    clear() {
-        this.data.clear()
-        this.notifyDataReload()
-    }
-
-    removeData(data: T) {
-        let index = this.data.getIndexOf(data)
-        if (index >= 0) {
-            this.data.remove(data)
-            this.notifyDataDelete(index)
+        if (autoFlush) {
+            this.notifyDataAdd(this.data.length - 1)
         }
     }
 
-    notifyDataAdd(index) {
+    addDataList(list: Array<T>, autoFlush: boolean = true) {
+        list.forEach((data) => {
+            this.addData(data, autoFlush)
+        })
+    }
+
+    clear(autoFlush: boolean = true) {
+        this.data.clear()
+        if (autoFlush) {
+            this.notifyDataReload()
+        }
+    }
+
+    removeData(data: T, autoFlush: boolean = true) {
+        let index = this.data.getIndexOf(data)
+        if (index >= 0) {
+            this.data.remove(data)
+            if (autoFlush) {
+                this.notifyDataDelete(index)
+            }
+        }
+    }
+
+    notifyDataAdd(index: number) {
         this.listeners.forEach((listener) => {
             listener.onDataAdd(index)
         })

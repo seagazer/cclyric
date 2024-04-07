@@ -166,6 +166,7 @@ export class LyricController {
 
     /**
      * Set the fade edge color of top and bottom. The default color is White.
+     * @deprecated since v1.0.2
      * @param color The fade edge color of top and bottom.
      * @returns LyricConfig
      */
@@ -177,6 +178,7 @@ export class LyricController {
 
     /**
      * Get the fade edge color of top and bottom.
+     * @deprecated since v1.0.2
      * @returns The fade edge color of top and bottom.
      */
     getEdgeColor(): string {
