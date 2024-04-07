@@ -2,7 +2,7 @@
 
 ## 简介
 
-**cclyric** 是一个为 **OpenHarmony** 和 **HaromonyOS** 设计的音乐歌词组件库。
+**cclyric** 是一个为 **OpenHarmony** 和 **HarmonyOS** 设计的音乐歌词组件库。
 
 - 支持歌词文件解析
 - 支持歌词滚动显示
