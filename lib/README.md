@@ -6,11 +6,18 @@
 
 - 支持歌词文件解析
 - 支持歌词滚动显示
+- 支持滑动查看歌词(LyricView2)
+- 支持滑动歌词触发媒体播放跳转至歌词时间戳位置(LyricView2)
 - 支持自定义样式，包括歌词字体大小/颜色，聚焦大小/颜色，显示模式等
 
 ## 示例效果
 
 <img src="https://gitee.com/seagazer/cclisten/raw/dev/img/5.jpeg" width="200" height="355"/>
+
+## 注意事项
+
+- 从 1.0.2 版本开始，新增 LyricView2 组件，具备更加平滑的动效，增加了滑动查看歌词和滑动歌词进行媒体播放定位能力，仅支持 API10+。低版本请继续使用具备兼容性的 LyricView 组件。
+- LyricView 组件的接口参数，所有尺寸单位参数在 1.0.2 版本开始变更为 vp，和 LyricView2 保持一致性。
 
 ## 依赖方式
 
@@ -20,7 +27,7 @@ ohpm install @seagazer/cclyric
 
 ## 接口能力
 
-**cclyric** 提供 **LyricParser** 进行歌词解析， 视图组件 **LyricView** ，用户可以通过 **LyricController** 来操作组件。用户也可以自己实现 **IParser** 接口编写自己的歌词解析业务。
+**cclyric** 提供 **LyricParser** 进行歌词解析， 视图组件 **LyricView** 和 **LyricView2(Api10+)**，用户可以通过 **LyricController** 来操作组件。用户也可以自己实现 **IParser** 接口编写自己的歌词解析业务。
 
 ### Lyric
 
@@ -80,8 +87,8 @@ LyricView 组件控制器
 
 设置歌词文本尺寸，默认为 18px。
 
-| 参数     | 参数类型 | 参数说明          |
-| -------- | -------- |---------------|
+| 参数     | 参数类型 | 参数说明              |
+| -------- | -------- | --------------------- |
 | textSize | number   | 歌词文本尺寸(单位 vp) |
 
 #### setTextColor(color: string): LyricController
@@ -118,7 +125,7 @@ LyricView 组件控制器
 
 #### setEdgeColor(color: string): LyricController
 
-设置歌词上下边缘渐变颜色，默认为#ffffff。
+设置歌词上下边缘渐变颜色，默认为#ffffff，**注意：该接口从 1.0.2 版本开始废弃，不再生效**
 
 | 参数  | 参数类型 | 参数说明         |
 | ----- | -------- | ---------------- |
@@ -188,6 +195,24 @@ LyricView 组件控制器
 | -------- | -------- | ------------ | -------------- |
 | position | number   | 媒体播放进度 | 当前歌词行文本 |
 
+### LyricView
+
+歌词组件
+
+| 属性       | 属性类型        | 属性说明       | 默认值 | 必填 |
+| ---------- | --------------- | -------------- | ------ | ---- |
+| controller | LyricController | 歌词组件控制器 | null   | 是   |
+
+### LyricView2
+
+歌词组件，功能完善，增加平滑过渡动效，**仅支持 4.0 及以上版本**
+
+| 属性         | 属性类型                      | 属性说明                                         | 默认值 | 必填 |
+| ------------ | ----------------------------- | ------------------------------------------------ | ------ | ---- |
+| controller   | LyricController               | 歌词组件控制器                                   | null   | 是   |
+| enableSeek   | boolean                       | 是否支持滑动歌词 seek 操作                       | true   | 否   |
+| onSeekAction | (position: number) => boolean | 滑动歌词 seek 回调，返回 true 表示用户消费该事件 | null   | 否   |
+
 ## 场景示例
 
 - 下面是基础示例和使用方式：
@@ -219,10 +244,20 @@ struct Index {
 
     build() {
         Column() {
-            LyricView({ controller: this.lyricController, })
-                .width("100%")
-                .layoutWeight(1)
-                .padding({ left: 16, right: 16 })
+            if (this.useV2) {
+                // 5.歌词组件：新版本，4.0及以上建议使用，支持媒体播放进度同步能力
+                LyricView2({ controller: this.lyricController,
+                    enableSeek: true, // 开启滑动歌词seek能力
+                    onSeekAction: (position) => { // 滑动歌词触发seek定位回调
+                        this.player.seekTo(position)
+                        return true
+                    }
+                }).width("100%").layoutWeight(1)
+            } else {
+                // 5.歌词组件：旧版本，支持兼容4.0以下版本
+                LyricView({ controller: this.lyricController })
+                    .width("100%").layoutWeight(1)
+            }
 
                 ...
         }
@@ -234,6 +269,6 @@ struct Index {
 ```
 
 - 更多使用场景和示例，可以参考本库代码仓的 entry 工程：  
-  https://github.com/seagazer/cclyric 或 https://gitee.com/seagazer/cclyric
+  https://github.com/seagazer/cclyric
 - 配合播放器使用的复杂示例，可以参考完整音乐播放器项目：  
-  https://github.com/seagazer/cclisten 或 https://gitee.com/seagazer/cclisten
+  https://github.com/seagazer/cclisten
