@@ -25,7 +25,7 @@ struct Index {
             .setLineSpace(16)
             .setHighlightStyle(false)
             .setEmptyHint("当前没有歌词")
-            .setAlignMode("left")
+            .setAlignMode("center")
     }
 
     private test() {
