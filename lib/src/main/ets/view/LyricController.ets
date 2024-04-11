@@ -2,7 +2,7 @@ import { Lyric } from '../bean/Lyric'
 
 // default config
 const DEFAULT_LINE_SPACE = 16
-const DEFAULT_TEXT_SIZE = 28
+const DEFAULT_TEXT_SIZE = 18
 const DEFAULT_HIGHLIGHT_SCALE = 1.2
 const DEFAULT_TEXT_COLOR = "#80000000"
 const DEFAULT_HIGHLIGHT_COLOR = "#000000"
@@ -25,7 +25,7 @@ export class LyricController {
     private cacheSize: number = DEFAULT_CACHE_SIZE
     private isBold: boolean = true
     private emptyHint: string = "--"
-    private alignMode: "left" | "center" = "left"
+    private alignMode: "left" | "center" = "center"
     /**
      *  Listener to observe the lyric data set changed. This is a inner function, do not call this.
      */

@@ -150,6 +150,7 @@ export struct LyricView2 {
         }
         .width('100%')
         .height('100%')
+        .scrollBar(BarState.Off)
         .cachedCount(this.cacheSize)
         .transition(TransitionEffect.OPACITY.animation({ duration: this.animDuration }))
         .onScrollIndex((_, __, center) => {
