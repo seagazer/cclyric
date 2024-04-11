@@ -57,19 +57,19 @@ ohpm install @seagazer/cclyric
 
 歌词解析接口
 
-#### parse(src: Array\<string>): Lyric
+#### parse(source: any): Lyric
 
 解析歌词
 
-| 参数 | 参数类型       | 参数说明       |
-| ---- | -------------- | -------------- |
-| src  | Array\<string> | 歌词文本行数组 |
+| 参数   | 参数类型 | 参数说明                   |
+| ------ | -------- | -------------------------- |
+| source | any      | 歌词内容（文件，字符串等） |
 
 ### LyricParser
 
-默认歌词解析器
+默认歌词解析器，实现 IParser 接口
 
-#### parse(src: Array<string>): Lyric
+#### parse(src: Array\<string>): Lyric
 
 解析歌词
 
