@@ -8,7 +8,7 @@ const DEFAULT_TEXT_COLOR = "#80000000"
 const DEFAULT_HIGHLIGHT_COLOR = "#000000"
 const DEFAULT_EDGE_COLOR = "#ffffff"
 const DEFAULT_ANIM_DURATION = 300
-const DEFAULT_CACHE_SIZE = 2
+const DEFAULT_CACHE_SIZE = 4
 
 /**
  * The controller for LyricView.

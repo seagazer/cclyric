@@ -46,6 +46,7 @@ struct Index {
             if (this.isV2) {
                 LyricView2({ controller: this.lyricController,
                     enableSeek: true,
+                    seekUIColor: "#ff0000",
                     onSeekAction: (position) => {
                         this.mediaPosition = position
                         return true
