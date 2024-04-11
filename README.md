@@ -16,7 +16,8 @@
 
 ## 注意事项
 
-- 从 1.0.2 版本开始，新增 LyricView2 组件，具备更加平滑的动效，增加了滑动查看歌词和滑动歌词进行媒体播放定位能力，仅支持 API10+。低版本请继续使用具备兼容性的 LyricView 组件。
+- 从 1.0.2 版本开始，新增 LyricView2 组件，具备更加平滑的动效，增加了滑动查看歌词和滑动歌词进行媒体播放定位能力，仅支持
+  API10+。低版本请继续使用具备兼容性的 LyricView 组件。
 - LyricView 组件的接口参数，所有尺寸单位参数在 1.0.2 版本开始变更为 vp，和 LyricView2 保持一致性。
 
 ## 依赖方式
@@ -27,7 +28,7 @@ ohpm install @seagazer/cclyric
 
 ## 接口能力
 
-**cclyric** 提供 **LyricParser** 进行歌词解析， 视图组件 **LyricView** 和 **LyricView2(Api10+)**，用户可以通过 **LyricController** 来操作组件。用户也可以自己实现 **IParser** 接口编写自己的歌词解析业务。
+**cclyric** 提供 **LyricParser** 进行歌词解析， 视图组件 **LyricView** 和 **LyricView2**(Api10+)，用户可以通过 **LyricController** 来操作组件。用户也可以自己实现 **IParser** 接口编写自己的歌词解析业务。
 
 ### Lyric
 
@@ -85,7 +86,7 @@ LyricView 组件控制器
 
 #### setTextSize(textSize: number): LyricController
 
-设置歌词文本尺寸，默认为 18px。
+设置歌词文本尺寸，默认为 18vp。
 
 | 参数     | 参数类型 | 参数说明              |
 | -------- | -------- | --------------------- |
@@ -125,6 +126,7 @@ LyricView 组件控制器
 
 #### setEdgeColor(color: string): LyricController
 
+`@deprecated since v1.0.2`
 设置歌词上下边缘渐变颜色，默认为#ffffff，**注意：该接口从 1.0.2 版本开始废弃，不再生效**
 
 | 参数  | 参数类型 | 参数说明         |
@@ -133,7 +135,7 @@ LyricView 组件控制器
 
 #### setLineSpace(lineSpace: number): LyricController
 
-设置歌词行间距，默认为 16px。
+设置歌词行间距，默认为 16vp。
 
 | 参数      | 参数类型 | 参数说明            |
 | --------- | -------- | ------------------- |
@@ -149,7 +151,7 @@ LyricView 组件控制器
 
 #### setCacheSize(cacheSize: number): LyricController
 
-设置歌词绘制的缓存量，在屏幕外会预绘制一定数量的歌词，提升上下滑动的显示性能，默认为 2 行。
+设置歌词绘制的缓存量，在屏幕外会预绘制一定数量的歌词，提升上下滑动的显示性能，默认为 4 行。
 
 | 参数      | 参数类型 | 参数说明     |
 | --------- | -------- | ------------ |
@@ -167,17 +169,17 @@ LyricView 组件控制器
 
 设置歌词显示模式，目前支持居中显示和居左显示，默认为"left"左对齐显示。
 
-| 参数  | 参数类型          | 参数说明     |
-| ----- | ----------------- | ------------ |
-| align | "left" ，"center" | 歌词显示模式 |
+| 参数  | 参数类型          | 参数说明     | 默认值 |
+| ----- | ----------------- | ------------ | ------ |
+| align | "left" ，"center" | 歌词显示模式 | center |
 
 #### invalidate()
 
-主动刷新重绘，该方法只会触发重新绘制，不会触发重新布局。
+主动刷新重绘，该方法在 LyricView 中只会触发重新绘制，不会触发重新布局，在 LyricView2 中触发组件刷新。
 
 ### LyricHelper
 
-歌词工具类，支持根据媒体播放进度查询当前歌词。
+歌词工具类，支持根据媒体播放进度查询当前歌词，可以用于构建自己的单行歌词显示组件。
 
 #### setLyricData(data: Lyric)
 
@@ -197,7 +199,7 @@ LyricView 组件控制器
 
 ### LyricView
 
-歌词组件
+歌词组件，兼容 API10 以下(不包含 API10)
 
 | 属性       | 属性类型        | 属性说明       | 默认值 | 必填 |
 | ---------- | --------------- | -------------- | ------ | ---- |
@@ -205,13 +207,14 @@ LyricView 组件控制器
 
 ### LyricView2
 
-歌词组件，功能完善，增加平滑过渡动效，**仅支持 4.0 及以上版本**
+歌词组件，功能完善，增加平滑过渡动效，**仅支持 API10+ 版本**
 
-| 属性         | 属性类型                      | 属性说明                                         | 默认值 | 必填 |
-| ------------ | ----------------------------- | ------------------------------------------------ | ------ | ---- |
-| controller   | LyricController               | 歌词组件控制器                                   | null   | 是   |
-| enableSeek   | boolean                       | 是否支持滑动歌词 seek 操作                       | true   | 否   |
-| onSeekAction | (position: number) => boolean | 滑动歌词 seek 回调，返回 true 表示用户消费该事件 | null   | 否   |
+| 属性         | 属性类型                      | 属性说明                                         | 默认值  | 必填 |
+| ------------ | ----------------------------- | ------------------------------------------------ | ------- | ---- |
+| controller   | LyricController               | 歌词组件控制器                                   | null    | 是   |
+| enableSeek   | boolean                       | 是否支持滑动歌词 seek 操作                       | true    | 否   |
+| onSeekAction | (position: number) => boolean | 滑动歌词 seek 回调，返回 true 表示用户消费该事件 | null    | 否   |
+| seekUIColor  | ResourceColor                 | 滑动歌词 seek 界面的按钮和文本颜色               | #000000 | 否   |
 
 ## 场景示例
 
@@ -245,16 +248,17 @@ struct Index {
     build() {
         Column() {
             if (this.useV2) {
-                // 5.歌词组件：新版本，4.0及以上建议使用，支持媒体播放进度同步能力
+                // 5.歌词组件：新版本，api10及以上建议使用，支持媒体播放进度同步能力
                 LyricView2({ controller: this.lyricController,
                     enableSeek: true, // 开启滑动歌词seek能力
+                    seekUIColor: "#ff0000",// 滑动定位的按钮和文本颜色
                     onSeekAction: (position) => { // 滑动歌词触发seek定位回调
                         this.player.seekTo(position)
                         return true
                     }
                 }).width("100%").layoutWeight(1)
             } else {
-                // 5.歌词组件：旧版本，支持兼容4.0以下版本
+                // 5.歌词组件：旧版本，支持兼容api10以下版本
                 LyricView({ controller: this.lyricController })
                     .width("100%").layoutWeight(1)
             }
