@@ -57,7 +57,20 @@ ohpm install @seagazer/cclyric
 
 歌词解析接口
 
-parse(src: Array\<string>): Lyric
+#### parse(src: Array\<string>): Lyric
+
+解析歌词
+
+| 参数 | 参数类型       | 参数说明       |
+| ---- | -------------- | -------------- |
+| src  | Array\<string> | 歌词文本行数组 |
+
+### LyricParser
+
+默认歌词解析器
+
+#### parse(src: Array<string>): Lyric
+
 解析歌词
 
 | 参数 | 参数类型       | 参数说明       |
@@ -167,7 +180,7 @@ LyricView 组件控制器
 
 #### setAlignMode(align: "left" | "center"): LyricController
 
-设置歌词显示模式，目前支持居中显示和居左显示，默认为"left"左对齐显示。
+设置歌词显示模式，目前支持居中显示和居左显示。
 
 | 参数  | 参数类型          | 参数说明     | 默认值 |
 | ----- | ----------------- | ------------ | ------ |
@@ -274,5 +287,5 @@ struct Index {
 
 - 更多使用场景和示例，可以参考本库代码仓的 entry 工程：  
   https://github.com/seagazer/cclyric
-- 配合播放器使用的复杂示例，可以参考完整音乐播放器项目：  
+- 配合播放器使用的复杂示例，例如解析歌词文件，关联播放器切歌等场景，可以参考完整音乐播放器项目 PageHome 页面：  
   https://github.com/seagazer/cclisten
