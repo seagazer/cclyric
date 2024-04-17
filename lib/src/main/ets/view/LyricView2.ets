@@ -72,21 +72,25 @@ export struct LyricView2 {
 
     private loadData(lyric: Lyric) {
         this.currentLyric = lyric
-        if (this.h > 0 && this.currentLyric) {
-            this.listAdapter.clear(false)
-            let lyricLines = lyric.lyricList
-            let first = lyricLines[0].beginTime
-            for (let i = 0; i < this.centerOffsetSize; i++) {
-                this.listAdapter.addData(new LyricLine(' ', 0, first), false)
+        if (this.h > 0) {
+            if (this.currentLyric) {
+                this.listAdapter.clear(false)
+                let lyricLines = lyric.lyricList
+                let first = lyricLines[0].beginTime
+                for (let i = 0; i < this.centerOffsetSize; i++) {
+                    this.listAdapter.addData(new LyricLine(' ', 0, first), false)
+                }
+                lyricLines.forEach((line) => {
+                    this.listAdapter.addData(line, false)
+                })
+                let last = lyricLines[lyricLines.length-1].nextTime
+                for (let i = 0; i < this.centerOffsetSize; i++) {
+                    this.listAdapter.addData(new LyricLine(' ', last + i, last + i), false)
+                }
+                this.listAdapter.notifyDataReload()
+            } else {
+                this.listAdapter.clear(true)
             }
-            lyricLines.forEach((line) => {
-                this.listAdapter.addData(line, false)
-            })
-            let last = lyricLines[lyricLines.length-1].nextTime
-            for (let i = 0; i < this.centerOffsetSize; i++) {
-                this.listAdapter.addData(new LyricLine(' ', last + i, last + i), false)
-            }
-            this.listAdapter.notifyDataReload()
         }
         this.isLyricEmpty = this.listAdapter.isEmpty()
         this.currentIndex = 0
@@ -152,7 +156,6 @@ export struct LyricView2 {
         .height('100%')
         .scrollBar(BarState.Off)
         .cachedCount(this.cacheSize)
-        .transition(TransitionEffect.OPACITY.animation({ duration: this.animDuration }))
         .onScrollIndex((_, __, center) => {
             if (this.isUserTouching) {
                 this.seekIndex = center
