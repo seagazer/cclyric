@@ -27,6 +27,10 @@ export struct LyricView2 {
      */
     seekUIColor: ResourceColor = '#000000'
     /**
+     * The color of the seek location line.
+     */
+    seekLineColor: ResourceColor = '#0d000000'
+    /**
      * The seek callback for scroll the lyric.
      * If return true, you must handle this action to do seek action of media player.
      * If return false, the lyric view will scroll to current index of the media playing position.
@@ -56,9 +60,16 @@ export struct LyricView2 {
     @State scrollDurationText: string = '00:00'
     private seekIndex: number = -1
     private seekUiHideTimeout = -1
-    private autoHideSeekUIDuration = 1500
+    private autoHideSeekUIDuration = 2000
+    @State isLoadingData: boolean = false
+    private loadTimeout = -1
     private onDataChangedListener = (lyric: Lyric) => {
+        clearTimeout(this.loadTimeout)
+        this.isLoadingData = true
         this.loadData(lyric)
+        this.loadTimeout = setTimeout(() => {
+            this.isLoadingData = false
+        }, 300)
     }
     private onPositionChangedListener = (mediaPosition: number) => {
         this.onPositionChanged(mediaPosition)
@@ -66,7 +77,7 @@ export struct LyricView2 {
     private onInvalidatedListener = (reLayout: boolean) => {
         this.getAttrFromController()
         if (reLayout && this.currentIndex > 0) {
-            this.animateToIndex(this.currentIndex, true)
+            this.animateToIndex(this.currentIndex)
         }
     }
 
@@ -156,6 +167,7 @@ export struct LyricView2 {
         .height('100%')
         .scrollBar(BarState.Off)
         .cachedCount(this.cacheSize)
+        .visibility(this.isLoadingData ? Visibility.Hidden : Visibility.Visible)
         .onScrollIndex((_, __, center) => {
             if (this.isUserTouching) {
                 this.seekIndex = center
@@ -184,7 +196,7 @@ export struct LyricView2 {
     }
 
     @Builder
-    CenterLine() {
+    SeekLine() {
         Row() {
             Image($r('app.media.cclyric_play'))
                 .width(24)
@@ -206,11 +218,15 @@ export struct LyricView2 {
             Stack()
                 .height(1)
                 .layoutWeight(1)
-                .backgroundColor('#0d000000')
+                .backgroundColor(this.seekLineColor)
                 .margin({ left: 8, right: 8 })
             Text(this.scrollDurationText)
                 .fontColor(this.seekUIColor)
-        }.width('100%')
+        }
+        .visibility(this.enableSeek && this.isUserTouching ? Visibility.Visible : Visibility.Hidden)
+        .width('100%')
+        .height('100%')
+        .hitTestBehavior(HitTestMode.Transparent)
         .transition(TransitionEffect.OPACITY.animation({ duration: this.animDuration }))
     }
 
@@ -221,14 +237,7 @@ export struct LyricView2 {
             } else {
                 this.LyricListView()
             }
-            Stack() {
-                if (this.enableSeek && this.isUserTouching) {
-                    this.CenterLine()
-                }
-            }
-            .width('100%')
-            .height('100%')
-            .hitTestBehavior(HitTestMode.Transparent)
+            this.SeekLine()
         }
         .width('100%')
         .height('100%')
@@ -245,6 +254,7 @@ export struct LyricView2 {
     }
 
     aboutToDisappear() {
+        clearTimeout(this.loadTimeout)
         clearTimeout(this.seekUiHideTimeout)
     }
 
@@ -267,7 +277,7 @@ export struct LyricView2 {
         return this.currentIndex
     }
 
-    private animateToIndex(index: number, _: boolean = false) {
+    private animateToIndex(index: number) {
         printD("animate to index= " + index)
         this.currentIndex = index
         if (this.isUserTouching) {
