@@ -238,7 +238,9 @@ export struct LyricView2 {
             let lineH = this.textSize + this.lineSpace
             this.centerOffsetSize = Math.floor((this.h - lineH) / 2 / lineH)
             printW('offsetSize = ' + this.centerOffsetSize)
-            this.loadData(this.currentLyric)
+            if (this.currentLyric) {
+                this.loadData(this.currentLyric)
+            }
         })
     }
 

@@ -67,7 +67,7 @@ ohpm install @seagazer/cclyric
 
 ### LyricParser
 
-默认歌词解析器，实现 IParser 接口
+默认歌词解析器，实现 IParser 接口，可以解析字符串数组格式的歌词
 
 #### parse(src: Array\<string>): Lyric
 
@@ -76,6 +76,18 @@ ohpm install @seagazer/cclyric
 | 参数 | 参数类型       | 参数说明       |
 | ---- | -------------- | -------------- |
 | src  | Array\<string> | 歌词文本行数组 |
+
+### FileParser
+
+歌词文件解析器，实现 IParser 接口，支持解析标准的 lrc 歌词文件
+
+#### parse(filePath: string): Lyric
+
+解析歌词文件
+
+| 参数     | 参数类型 | 参数说明     |
+| -------- | -------- | ------------ |
+| filePath | string   | 歌词文件路径 |
 
 ### LyricController
 
