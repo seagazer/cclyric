@@ -6,6 +6,8 @@ export { LyricLine } from './src/main/ets/bean/LyricLine'
 
 export { LyricParser } from './src/main/ets/parse/LyricParser'
 
+export { FileParser } from './src/main/ets/parse/FileParser'
+
 export { LyricView } from './src/main/ets/view/LyricView'
 
 export { LyricView2 } from './src/main/ets/view/LyricView2'
