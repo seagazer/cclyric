@@ -234,12 +234,13 @@ LyricView 组件控制器
 
 歌词组件，功能完善，增加平滑过渡动效，**仅支持 API10+ 版本**
 
-| 属性         | 属性类型                      | 属性说明                                         | 默认值  | 必填 |
-| ------------ | ----------------------------- | ------------------------------------------------ | ------- | ---- |
-| controller   | LyricController               | 歌词组件控制器                                   | null    | 是   |
-| enableSeek   | boolean                       | 是否支持滑动歌词 seek 操作                       | true    | 否   |
-| onSeekAction | (position: number) => boolean | 滑动歌词 seek 回调，返回 true 表示用户消费该事件 | null    | 否   |
-| seekUIColor  | ResourceColor                 | 滑动歌词 seek 界面的按钮和文本颜色               | #000000 | 否   |
+| 属性          | 属性类型                      | 属性说明                                         | 默认值    | 必填 |
+| ------------- | ----------------------------- | ------------------------------------------------ | --------- | ---- |
+| controller    | LyricController               | 歌词组件控制器                                   | null      | 是   |
+| enableSeek    | boolean                       | 是否支持滑动歌词 seek 操作                       | true      | 否   |
+| onSeekAction  | (position: number) => boolean | 滑动歌词 seek 回调，返回 true 表示用户消费该事件 | null      | 否   |
+| seekUIColor   | ResourceColor                 | 滑动歌词 seek 界面的按钮和文本颜色               | #000000   | 否   |
+| seekLineColor | ResourceColor                 | 滑动歌词 seek 界面的中间定位线颜色               | #0d000000 | 否   |
 
 ## 场景示例
 
