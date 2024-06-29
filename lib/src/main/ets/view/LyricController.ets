@@ -150,7 +150,7 @@ export class LyricController {
      * @param bold True to set text bold style, false to set normal style.
      * @returns LyricConfig
      */
-    setHighlightStyle(isBold: boolean): LyricController {
+    setHighlightBold(isBold: boolean): LyricController {
         this.isBold = isBold
         this.onInvalidated(false)
         return this
@@ -160,7 +160,7 @@ export class LyricController {
      * The bold style of focused lyric.
      * @returns True to set text bold style, false to set normal style.
      */
-    getHighlightStyle(): boolean {
+    isHighlightBold(): boolean {
         return this.isBold
     }
 

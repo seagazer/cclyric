@@ -31,6 +31,10 @@ export struct LyricView2 {
      */
     seekLineColor: ResourceColor = '#0d000000'
     /**
+     * The seek ui style.
+     */
+    seekUIStyle: 'seekLine' | 'listItem' = 'listItem'
+    /**
      * The seek callback for scroll the lyric.
      * If return true, you must handle this action to do seek action of media player.
      * If return false, the lyric view will scroll to current index of the media playing position.
@@ -39,17 +43,17 @@ export struct LyricView2 {
     private currentLyric: Lyric | null = null
     private scroller = new Scroller()
     private listAdapter = new ListAdapter<LyricLine>()
+    private w = 0 // the width of this view.
     private h = 0 // the height of this view.
     @State currentIndex: number = 0 // the focused index of the lyric line list.
     @State isLyricEmpty: boolean = true // is no lyric.
     @State textSize: number = 16
     @State lineSpace: number = 16
     @State textHighlightSize: number = 18
-    private alignLeftHighlightPadding: number = 18
     @State textColor: string = '#000000'
     @State textHighlightColor: string = '#000000'
     @State isHighlightBold: boolean = false
-    @State alignMode: "left" | "center" = 'center'
+    @State alignMode: 'left' | 'center' = 'center'
     @State emptyHint: string = ''
     @State cacheSize: number = 0
     @State animDuration: number = 300
@@ -58,7 +62,7 @@ export struct LyricView2 {
     // seek action: center line view
     @State seekPosition: number = -1
     @State scrollDurationText: string = '00:00'
-    private seekIndex: number = -1
+    @State seekIndex: number = -1
     private seekUiHideTimeout = -1
     private autoHideSeekUIDuration = 2000
     @State isLoadingData: boolean = false
@@ -83,18 +87,20 @@ export struct LyricView2 {
 
     private loadData(lyric: Lyric) {
         this.currentLyric = lyric
-        if (this.h > 0) {
+        if (this.w > 0 && this.h > 0) {
             if (this.currentLyric) {
                 this.listAdapter.clear(false)
                 let lyricLines = lyric.lyricList
                 let first = lyricLines[0].beginTime
+                // fill the top empty gap
                 for (let i = 0; i < this.centerOffsetSize; i++) {
                     this.listAdapter.addData(new LyricLine(' ', 0, first), false)
                 }
                 lyricLines.forEach((line) => {
                     this.listAdapter.addData(line, false)
                 })
-                let last = lyricLines[lyricLines.length-1].nextTime
+                // fill the bottom empty gap
+                let last = lyricLines[lyricLines.length - 1].nextTime
                 for (let i = 0; i < this.centerOffsetSize; i++) {
                     this.listAdapter.addData(new LyricLine(' ', last + i, last + i), false)
                 }
@@ -116,8 +122,7 @@ export struct LyricView2 {
         this.textColor = this.controller.getTextColor()
         this.textHighlightColor = this.controller.getHighlightColor()
         this.textHighlightSize = this.controller.getHighlightScale() * this.textSize
-        this.alignLeftHighlightPadding = (this.controller.getHighlightScale() - 1) * this.textSize
-        this.isHighlightBold = this.controller.getHighlightStyle()
+        this.isHighlightBold = this.controller.isHighlightBold()
         this.animDuration = this.controller.getAnimationDuration()
         this.cacheSize = this.controller.getCacheSize()
         this.emptyHint = this.controller.getEmptyHint()
@@ -126,7 +131,7 @@ export struct LyricView2 {
 
     aboutToAppear() {
         if (this.controller == null) {
-            throw new Error("The lyric lyricConfig is not set!")
+            throw new Error('The lyric lyricConfig is not set!')
         }
         this.controller.onDataChangedListener = this.onDataChangedListener
         this.controller.onPositionChangedListener = this.onPositionChangedListener
@@ -143,22 +148,51 @@ export struct LyricView2 {
 
     @Builder
     LyricListView() {
-        List({ space: this.lineSpace, scroller: this.scroller }) {
-            LazyForEach(this.listAdapter,
-                (item: LyricLine, index: number) => {
-                    ListItem() {
+        List({ space: this.lineSpace - 16, scroller: this.scroller }) {
+            LazyForEach(this.listAdapter, (item: LyricLine, index: number) => {
+                ListItem() {
+                    Stack() {
                         Text(item.text)
                             .width('100%')
                             .textAlign(this.alignMode == 'center' ? TextAlign.Center : TextAlign.Start)
-                            .fontSize(index == this.currentIndex ? this.textHighlightSize : this.textSize)
-                            .fontColor(index == this.currentIndex ? this.textHighlightColor : this.textColor)
-                            .fontWeight(index == this.currentIndex && this.isHighlightBold ? FontWeight.Bold : FontWeight.Normal)
-                            .padding({
-                                left: index == this.currentIndex && this.alignMode == 'left' ? this.alignLeftHighlightPadding : 0
+                            .scale({
+                                x: index == this.currentIndex ? this.controller.getHighlightScale() : 1,
+                                y: index == this.currentIndex ? this.controller.getHighlightScale() : 1,
+                                centerX: this.alignMode == 'center' ? '50%' : 0
                             })
+                            .fontColor(index == this.currentIndex ? this.textHighlightColor : this.textColor)
+                            .fontWeight(index == this.currentIndex && this.isHighlightBold ? FontWeight.Bold : FontWeight.Normal)// .padding({
                             .animation({ duration: this.animDuration, curve: Curve.FastOutSlowIn })
+                            .width('100%')
+
+                        if (this.seekUIStyle == 'listItem' && index == this.seekIndex && item.text.length > 0
+                            && this.enableSeek && this.isUserTouching) {
+                            // Row() {
+                            //     Image($r('app.media.cclyric_play'))
+                            //         .width(24)
+                            //         .height(24)
+                            //         .fillColor(this.seekUIColor)
+                            //         .objectFit(ImageFit.Fill)
+                            Text(this.scrollDurationText)
+                                .fontSize(this.textSize)
+                                .fontColor(this.seekUIColor)
+                            // }.width('100%')
+                            // .justifyContent(FlexAlign.SpaceBetween)
+                        }
+                    }.align(Alignment.End)
+                }
+                .padding(8)
+                .border({ radius: 4 })
+                .backgroundColor(this.seekUIStyle == 'listItem' && index == this.seekIndex && item.text.length > 0
+                    && this.enableSeek && this.isUserTouching ? '#80a9a9a9' : '#00000000')
+                .onClick(() => {
+                    if (this.seekUIStyle == 'listItem' && index == this.seekIndex && item.text.length > 0) {
+                        if (this.seekIndex != -1 && this.seekIndex != this.currentIndex) {
+                            this.handleSeekAction();
+                        }
                     }
-                },
+                })
+            },
                 (item: LyricLine, index: number) => {
                     return item.text + '_' + index + '_' + item.beginTime + '_' + item.nextTime
                 })
@@ -195,6 +229,16 @@ export struct LyricView2 {
         })
     }
 
+    private handleSeekAction() {
+        clearTimeout(this.seekUiHideTimeout);
+        let targetPosition = this.listAdapter.getData(this.seekIndex).beginTime;
+        let isPlayerHandled = this.onSeekAction(targetPosition);
+        if (!isPlayerHandled) {
+            this.animateToIndex(this.currentIndex);
+        }
+        this.isUserTouching = false;
+    }
+
     @Builder
     SeekLine() {
         Row() {
@@ -206,13 +250,7 @@ export struct LyricView2 {
                 .clickEffect({ level: ClickEffectLevel.MIDDLE })
                 .onClick(() => {
                     if (this.seekIndex != -1 && this.seekIndex != this.currentIndex) {
-                        clearTimeout(this.seekUiHideTimeout)
-                        let targetPosition = this.listAdapter.getData(this.seekIndex).beginTime
-                        let isPlayerHandled = this.onSeekAction(targetPosition)
-                        if (!isPlayerHandled) {
-                            this.animateToIndex(this.currentIndex)
-                        }
-                        this.isUserTouching = false
+                        this.handleSeekAction()
                     }
                 })
             Stack()
@@ -221,6 +259,7 @@ export struct LyricView2 {
                 .backgroundColor(this.seekLineColor)
                 .margin({ left: 8, right: 8 })
             Text(this.scrollDurationText)
+                .fontSize(this.textSize)
                 .fontColor(this.seekUIColor)
         }
         .visibility(this.enableSeek && this.isUserTouching ? Visibility.Visible : Visibility.Hidden)
@@ -237,13 +276,16 @@ export struct LyricView2 {
             } else {
                 this.LyricListView()
             }
-            this.SeekLine()
+            if (this.seekUIStyle == 'seekLine') {
+                this.SeekLine()
+            }
         }
         .width('100%')
         .height('100%')
         .onAreaChange((_, newSize) => {
             printW('onSizeChanged: ' + JSON.stringify(newSize))
             this.h = newSize.height as number
+            this.w = newSize.width as number
             let lineH = this.textSize + this.lineSpace
             this.centerOffsetSize = Math.floor((this.h - lineH) / 2 / lineH)
             printW('offsetSize = ' + this.centerOffsetSize)
@@ -278,7 +320,7 @@ export struct LyricView2 {
     }
 
     private animateToIndex(index: number) {
-        printD("animate to index= " + index)
+        printD('animate to index= ' + index)
         this.currentIndex = index
         if (this.isUserTouching) {
             return
@@ -288,11 +330,11 @@ export struct LyricView2 {
 
     private onPositionChanged(mediaPosition: number) {
         if (this.isLyricEmpty) {
-            printW("The lyric data is empty!")
+            printW('The lyric data is empty!')
             return
         }
         if (this.listAdapter.isEmpty()) {
-            printW("The lyric lines is empty!")
+            printW('The lyric lines is empty!')
             return
         }
         let index = this.getIndex(mediaPosition)

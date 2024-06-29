@@ -23,6 +23,13 @@ export class ListAdapter<T> implements IDataSource {
         }
     }
 
+    addDataWithIndex(data: T, index: number, autoFlush: boolean = true) {
+        this.data.insert(data, index)
+        if (autoFlush) {
+            this.notifyDataAdd(index)
+        }
+    }
+
     addDataList(list: Array<T>, autoFlush: boolean = true) {
         list.forEach((data) => {
             this.addData(data, autoFlush)

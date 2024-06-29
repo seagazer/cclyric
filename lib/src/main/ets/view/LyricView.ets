@@ -216,7 +216,7 @@ export struct LyricView {
 
     private drawHighLight(lrc: LyricLineWrapper, startY: number): number {
         this.canvasCtx.save()
-        this.canvasCtx.font = this.controller.getHighlightStyle() ?
+        this.canvasCtx.font = this.controller.isHighlightBold() ?
             this.highLightTextSize + "px" + " bold" : this.highLightTextSize + "px"
         this.canvasCtx.fillStyle = this.controller.getHighlightColor()
         if (this.controller.getAlignMode() == "center") {

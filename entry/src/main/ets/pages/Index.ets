@@ -18,12 +18,14 @@ struct Index {
 
     aboutToAppear() {
         this.lyricController
-            .setTextSize(16)
+            .setTextSize(18)
             .setCacheSize(4)
-            .setTextColor("#8c000000")
-            .setHighlightColor("#ff000000")
-            .setLineSpace(16)
-            .setHighlightStyle(false)
+            .setTextColor("#80ffffff")
+            .setHighlightColor("#ffffffff")
+            .setLineSpace(18)
+            .setHighlightScale(1.3)
+            .setHighlightBold(true)
+            .setHighlightBold(false)
             .setEmptyHint("当前没有歌词")
             .setAlignMode("center")
     }
@@ -42,11 +44,16 @@ struct Index {
 
     build() {
         Column() {
-            Text(this.title).margin(16).fontSize(24).fontColor(Color.Blue)
+            Text(this.title).margin(16)
+                .fontColor("#ffffff")
+                .fontSize(24)
+                .fontColor("#ffffff")
             if (this.isV2) {
-                LyricView2({ controller: this.lyricController,
+                LyricView2({
+                    controller: this.lyricController,
                     enableSeek: true,
-                    seekUIColor: "#ff0000",
+                    seekUIColor: "#ffd4d4d4",
+                    seekLineColor: "#80ffffff",
                     onSeekAction: (position) => {
                         this.mediaPosition = position
                         return true
@@ -58,10 +65,19 @@ struct Index {
             }
             Row() {
                 Column() {
-                    Text('useV2').fontSize(16).padding(4)
+                    Text('useV2View').fontColor("#ffffff").fontSize(16).padding(4)
                     Toggle({ type: ToggleType.Switch, isOn: true })
                         .onChange((isOn) => {
                             this.isV2 = isOn
+                        })
+                    Text('centerMode').fontColor("#ffffff").fontSize(16).padding(4)
+                    Toggle({ type: ToggleType.Switch, isOn: true })
+                        .onChange((isOn) => {
+                            if (isOn) {
+                                this.lyricController.setAlignMode("center")
+                            } else {
+                                this.lyricController.setAlignMode("left")
+                            }
                         })
                 }
 
@@ -88,11 +104,13 @@ struct Index {
                     .onClick(() => {
                         this.i++
                         if (this.i % 2 == 0) {
-                            this.lyricController.setTextColor("#8c000000")
-                            this.lyricController.setHighlightColor("#000000")
+                            this.lyricController
+                                .setTextColor("#80ffffff")
+                                .setHighlightColor("#ffffffff")
                         } else {
-                            this.lyricController.setTextColor("#8cff0000")
-                            this.lyricController.setHighlightColor("#ff0000")
+                            this.lyricController
+                                .setTextColor("#80e3d052")
+                                .setHighlightColor("#e3d052")
                         }
                     })
                 Button('size')
@@ -101,8 +119,8 @@ struct Index {
                     .onClick(() => {
                         this.j++
                         if (this.j % 2 == 0) {
-                            this.lyricController.setTextSize(16)
-                                .setLineSpace(16)
+                            this.lyricController.setTextSize(12)
+                                .setLineSpace(12)
                         } else {
                             this.lyricController.setTextSize(18)
                                 .setLineSpace(18)
@@ -119,6 +137,8 @@ struct Index {
                     max: this.lyric != null ? this.lyric.lyricList[this.lyric.lyricList.length - 1].beginTime : this.emptyDuration,
                     value: this.mediaPosition
                 })
+                .blockColor("#fffafafa")
+                .trackColor("#ffffff")
                 .width("100%")
                 .onChange((value, mode) => {
                     if (mode == SliderChangeMode.End || mode == 3) {
@@ -128,10 +148,15 @@ struct Index {
                 })
 
             Text(Math.round(this.mediaPosition / 1000) + "s")
+                .fontColor("#ffffff")
                 .fontSize(18)
                 .margin({ top: 16 })
 
         }
+        .linearGradient({
+            angle: 360,
+            colors: [["#ff2e3030", 0], ["#662e3030", 1],]
+        })
         .padding(16)
         .width('100%')
         .height('100%')
