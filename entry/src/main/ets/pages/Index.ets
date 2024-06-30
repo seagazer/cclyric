@@ -54,6 +54,7 @@ struct Index {
                     enableSeek: true,
                     seekUIColor: "#ffd4d4d4",
                     seekLineColor: "#80ffffff",
+                    seekUIStyle: "listItem",
                     onSeekAction: (position) => {
                         this.mediaPosition = position
                         return true

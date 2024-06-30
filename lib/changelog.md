@@ -1,3 +1,8 @@
+# 1.0.6
+- 性能优化
+- LyricView2增加设置滑动seek样式选择接口
+- LyricView2增加抖音汽水音乐seek样式效果
+
 # 1.0.5
 
 - 修复FileParser接口对外未暴露问题

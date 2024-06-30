@@ -12,12 +12,14 @@
 
 ## 示例效果
 
-<img src="https://gitee.com/seagazer/cclisten/raw/dev/img/5.jpeg" width="200" height="355"/>
+<img src="https://www.freeimg.cn/i/2024/06/30/6680d00b517e7.png" width="200" height="380"/>
+<img src="https://www.freeimg.cn/i/2024/06/30/6680d00b5a8e3.png" width="200" height="380"/>
 
 ## 注意事项
 
 - 从 1.0.2 版本开始，新增 LyricView2 组件，具备更加平滑的动效，增加了滑动查看歌词和滑动歌词进行媒体播放定位能力，仅支持
-  API10+。低版本请继续使用具备兼容性的 LyricView 组件。
+  API10+，建议使用。
+- 低版本请继续使用具备兼容性的 LyricView 组件。
 - LyricView 组件的接口参数，所有尺寸单位参数在 1.0.2 版本开始变更为 vp，和 LyricView2 保持一致性。
 
 ## 依赖方式
@@ -241,6 +243,7 @@ LyricView 组件控制器
 | onSeekAction  | (position: number) => boolean | 滑动歌词 seek 回调，返回 true 表示用户消费该事件 | null      | 否   |
 | seekUIColor   | ResourceColor                 | 滑动歌词 seek 界面的按钮和文本颜色               | #000000   | 否   |
 | seekLineColor | ResourceColor                 | 滑动歌词 seek 界面的中间定位线颜色               | #0d000000 | 否   |
+| seekUIStyle   | 'seekLine' or 'listItem'      | 滑动歌词 seek 样式                               | listItem  | 否   |
 
 ## 场景示例
 
@@ -278,6 +281,8 @@ struct Index {
                 LyricView2({ controller: this.lyricController,
                     enableSeek: true, // 开启滑动歌词seek能力
                     seekUIColor: "#ff0000",// 滑动定位的按钮和文本颜色
+                    seekLineColor: "#80ffffff",// 滑动定位线颜色
+                    seekUIStyle: "listItem",// 滑动定位样式（seekLine传统样式，listItem类似抖音汽水音乐样式）
                     onSeekAction: (position) => { // 滑动歌词触发seek定位回调
                         this.player.seekTo(position)
                         return true
