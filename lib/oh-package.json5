@@ -15,7 +15,7 @@
   "description": "A lyric view for OpenHarmony & HarmonyOS",
   "main": "index.ets",
   "repository": "https://github.com/seagazer/cclyric",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "homepage": "https://github.com/seagazer",
   "dependencies": {}
 }
