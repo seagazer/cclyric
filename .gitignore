@@ -1,4 +1,6 @@
 /node_modules
+/.preview
+/build
 /oh_modules
 /local.properties
 /.idea
@@ -8,4 +10,6 @@
 /.clangd
 /.clang-format
 /.clang-tidy
+/oh-package-lock.json5
 **/.test
+/.appanalyzer
