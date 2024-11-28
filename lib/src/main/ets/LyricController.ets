@@ -1,4 +1,4 @@
-import { Lyric } from '../bean/Lyric'
+import { Lyric } from './bean/Lyric'
 
 // default config
 const DEFAULT_LINE_SPACE = 16
@@ -29,7 +29,7 @@ export class LyricController {
     /**
      *  Listener to observe the lyric data set changed. This is a inner function, do not call this.
      */
-    onDataChangedListener: (lyric: Lyric) => void = () => {
+    onDataChangedListener: (lyric: Lyric | null) => void = () => {
     }
     /**
      *  Listener to observe the media position changed. This is a inner function, do not call this.
@@ -55,7 +55,7 @@ export class LyricController {
      * @param lyric The lyric datasource.
      * @returns LyricConfig
      */
-    setLyric(lyric: Lyric): LyricController {
+    setLyric(lyric: Lyric | null): LyricController {
         this.lyric = lyric
         this.onDataChangedListener(lyric)
         return this

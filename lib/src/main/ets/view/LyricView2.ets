@@ -1,5 +1,5 @@
 import { duration2text, printD, printW } from '../extensions/Extension';
-import { LyricController } from './LyricController';
+import { LyricController } from '../LyricController';
 import { Lyric } from '../bean/Lyric';
 import { ListAdapter } from '../extensions/ListAdapter';
 import { LyricLine } from '../bean/LyricLine';
@@ -67,7 +67,7 @@ export struct LyricView2 {
     private autoHideSeekUIDuration = 2000
     @State isLoadingData: boolean = false
     private loadTimeout = -1
-    private onDataChangedListener = (lyric: Lyric) => {
+    private onDataChangedListener = (lyric: Lyric | null) => {
         clearTimeout(this.loadTimeout)
         this.isLoadingData = true
         this.loadData(lyric)
@@ -85,12 +85,12 @@ export struct LyricView2 {
         }
     }
 
-    private loadData(lyric: Lyric) {
+    private loadData(lyric: Lyric | null) {
         this.currentLyric = lyric
         if (this.w > 0 && this.h > 0) {
             if (this.currentLyric) {
                 this.listAdapter.clear(false)
-                let lyricLines = lyric.lyricList
+                let lyricLines = this.currentLyric.lyricList
                 let first = lyricLines[0].beginTime
                 // fill the top empty gap
                 for (let i = 0; i < this.centerOffsetSize; i++) {
@@ -161,7 +161,8 @@ export struct LyricView2 {
                                 centerX: this.alignMode == 'center' ? '50%' : 0
                             })
                             .fontColor(index == this.currentIndex ? this.textHighlightColor : this.textColor)
-                            .fontWeight(index == this.currentIndex && this.isHighlightBold ? FontWeight.Bold : FontWeight.Normal)// .padding({
+                            .fontWeight(index == this.currentIndex && this.isHighlightBold ? FontWeight.Bold :
+                            FontWeight.Normal)// .padding({
                             .animation({ duration: this.animDuration, curve: Curve.FastOutSlowIn })
                             .width('100%')
 

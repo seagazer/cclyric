@@ -1,7 +1,7 @@
 import { LyricLineWrapper } from '../bean/LyricLineWrapper';
 import { printD, printW } from '../extensions/Extension';
 import animator, { AnimatorResult } from '@ohos.animator';
-import { LyricController } from './LyricController';
+import { LyricController } from '../LyricController';
 import { Lyric } from '../bean/Lyric';
 
 /**
@@ -37,7 +37,7 @@ export struct LyricView {
     private isAnimRunning = false
     private isEmpty = false // is no lyric.
     private lyric: Lyric | null = null // current lyric.
-    private onDataChangedListener = (lyric: Lyric) => {
+    private onDataChangedListener = (lyric: Lyric | null) => {
         this.lyric = lyric
         this.initSize()
     }
@@ -325,7 +325,8 @@ export struct LyricView {
             }
         }
         this.currentIndex = index
-        printD("firstVisible= " + this.firstVisibleIndex + ", lastVisible= " + this.lastVisibleIndex + ", currentHighLight= " + this.currentIndex)
+        printD("firstVisible= " + this.firstVisibleIndex + ", lastVisible= " + this.lastVisibleIndex + ", currentHighLight= " +
+        this.currentIndex)
         // the animation is running, end it
         if (this.isAnimRunning) {
             this.anim!.cancel()

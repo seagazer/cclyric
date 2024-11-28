@@ -64,8 +64,8 @@ struct Index {
                 LyricView({ controller: this.lyricController })
                     .width("100%").layoutWeight(1)
             }
-            Row() {
-                Column() {
+            Column() {
+                Row() {
                     Text('useV2View').fontColor("#ffffff").fontSize(16).padding(4)
                     Toggle({ type: ToggleType.Switch, isOn: true })
                         .onChange((isOn) => {
@@ -82,51 +82,61 @@ struct Index {
                         })
                 }
 
-                Button('play')
-                    .fontSize(16)
-                    .margin({ left: 16 })
-                    .onClick(() => {
-                        this.testIndex++
-                        if (this.testIndex % 2 == 0) {
-                            this.lyric = this.parser.parse(MockData.src1)
-                            this.title = "可能"
-                        } else {
-                            this.title = "一直很安静"
-                            this.lyric = this.parser.parse(MockData.src2)
-                        }
-                        this.lyricController.setLyric(this.lyric)
-                        clearInterval(this.testTimer)
-                        this.mediaPosition = 0
-                        this.test()
-                    })
-                Button('color')
-                    .fontSize(16)
-                    .margin({ left: 16 })
-                    .onClick(() => {
-                        this.i++
-                        if (this.i % 2 == 0) {
-                            this.lyricController
-                                .setTextColor("#80ffffff")
-                                .setHighlightColor("#ffffffff")
-                        } else {
-                            this.lyricController
-                                .setTextColor("#80e3d052")
-                                .setHighlightColor("#e3d052")
-                        }
-                    })
-                Button('size')
-                    .fontSize(16)
-                    .margin({ left: 16 })
-                    .onClick(() => {
-                        this.j++
-                        if (this.j % 2 == 0) {
-                            this.lyricController.setTextSize(12)
-                                .setLineSpace(12)
-                        } else {
-                            this.lyricController.setTextSize(18)
-                                .setLineSpace(18)
-                        }
-                    })
+                Row() {
+                    Button('play')
+                        .fontSize(16)
+                        .margin({ left: 16 })
+                        .onClick(() => {
+                            this.testIndex++
+                            if (this.testIndex % 2 == 0) {
+                                this.lyric = this.parser.parse(MockData.src1)
+                                this.title = "可能"
+                            } else {
+                                this.title = "一直很安静"
+                                this.lyric = this.parser.parse(MockData.src2)
+                            }
+                            this.lyricController.setLyric(this.lyric)
+                            clearInterval(this.testTimer)
+                            this.mediaPosition = 0
+                            this.test()
+                        })
+                    Button('color')
+                        .fontSize(16)
+                        .margin({ left: 16 })
+                        .onClick(() => {
+                            this.i++
+                            if (this.i % 2 == 0) {
+                                this.lyricController
+                                    .setTextColor("#80ffffff")
+                                    .setHighlightColor("#ffffffff")
+                            } else {
+                                this.lyricController
+                                    .setTextColor("#80e3d052")
+                                    .setHighlightColor("#e3d052")
+                            }
+                        })
+                    Button('size')
+                        .fontSize(16)
+                        .margin({ left: 16 })
+                        .onClick(() => {
+                            this.j++
+                            if (this.j % 2 == 0) {
+                                this.lyricController.setTextSize(12)
+                                    .setLineSpace(12)
+                            } else {
+                                this.lyricController.setTextSize(18)
+                                    .setLineSpace(18)
+                            }
+                        })
+                    Button('clear')
+                        .fontSize(16)
+                        .margin({ left: 16 })
+                        .onClick(() => {
+                            this.lyricController.setLyric(null)
+                        })
+                }.width("100%")
+                .justifyContent(FlexAlign.SpaceBetween)
+                .margin({ top: 16 })
             }
             .width("100%")
             .justifyContent(FlexAlign.Center)

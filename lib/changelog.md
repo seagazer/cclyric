@@ -1,3 +1,6 @@
+# 1.0.7
+- 适配OpenHarmony 5.0-Release和HarmonyOS Next
+
 # 1.0.6
 - 性能优化
 - LyricView2增加设置滑动seek样式选择接口
