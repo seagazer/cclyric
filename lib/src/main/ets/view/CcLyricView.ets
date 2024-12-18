@@ -17,7 +17,6 @@ export class CcLyricView extends NodeController {
         let rootView = new FrameNode(uiContext)
         let renderRoot = rootView.getRenderNode()
         if (renderRoot) {
-            console.warn('abc', '-------')
             renderRoot.appendChild(this.lyricView)
         }
         return rootView
@@ -53,18 +52,19 @@ class LyricNode extends RenderNode {
     private h: number = 0
     private highLightPaint: drawing.Brush = new drawing.Brush()
     private normalPaint: drawing.Brush = new drawing.Brush()
-    private textSize: number = vp2px(16)
-    private lineSpace: number = vp2px(16)
-    private multiLineSpace: number = vp2px(10)
-    private drawY: number = 0
+    private textSize: number = vp2px(24)
+    private lineSpace: number = vp2px(24)
+    private multiLineSpace: number = vp2px(16)
+    private startY: number = 0
     private scrollY: number = 0
     private centerY: number = 0
-    private currentIndex: number = 0
+    private currentIndex: number = 4
     private emptyHint: string = ""
-    private highlightScale: number = 1.15
+    private highlightScale: number = 1.2
     private normalFont: drawing.Font = new drawing.Font()
     private highlightFont: drawing.Font = new drawing.Font()
     private padding: number = vp2px(16)
+    private downY: number = 0
 
     onCreate(): void {
         this.highLightPaint.setColor({
@@ -119,125 +119,203 @@ class LyricNode extends RenderNode {
         if (lyric) {
             this.lyricMeasureResult.clear()
             this.lyricMeasureResult = this.measureLines(lyric)
-            this.invalidate()
+            this.lyricMeasureResult.forEach((v) => {
+                console.debug('abc', '---' + JSON.stringify(v))
+            })
         } else {
             this.setEmpty()
         }
+        this.invalidate()
     }
 
-    private reSize() {
+    private reSize(): void {
         this.centerY = this.h / 2 - this.textSize / 2
         this.normalFont.setSize(this.textSize)
         this.highlightFont.setSize(this.textSize * this.highlightScale)
         if (this.lyric) {
+            this.lyricMeasureResult.clear()
             this.lyricMeasureResult = this.measureLines(this.lyric)
             this.invalidate()
         }
     }
 
-    private setEmpty() {
+    private setEmpty(): void {
 
     }
 
     private measureLines(lyric: Lyric): Map<number, LyricLineMeasureResult> {
-        let lineHeight = this.textSize
-        let measureResult = new Map<number, LyricLineMeasureResult>()
-        let lyricList = lyric.lyricList
+        const lineHeight = this.textSize
+        const measureResult = new Map<number, LyricLineMeasureResult>()
+        const lyricList = lyric.lyricList
         for (let i = 0; i < lyricList.length; i++) {
-            let lyricText = lyricList[i].text
-            let lineWidth = this.normalFont.measureText(lyricText, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+            const lyricText = lyricList[i].text
             const measureItem = new LyricLineMeasureResult()
             let contentW = this.w - this.padding * 2
-            if (lineWidth > contentW) { // multi lines
-                let tempWidth = 0
-                let tempText = ''
-                let tempHeight = lineHeight
-                let tempCount = 1
-                for (let j = 0; j < lyricText.length; j++) {
-                    let char = lyricText[j]
-                    let charWidth = this.normalFont.measureText(char, drawing.TextEncoding.TEXT_ENCODING_UTF8)
-                    if (tempWidth + charWidth > contentW) {
-                        measureItem.preLineWidth.push(tempWidth)
-                        measureItem.preLineText.push(tempText)
-                        tempWidth = 0
-                        tempText = ''
-                        tempCount++
-                        tempHeight = tempHeight + this.multiLineSpace + lineHeight
-                    }
-                    tempWidth += charWidth
-                    tempText += char
-                }
-                measureItem.preLineWidth.push(tempWidth)
-                measureItem.preLineText.push(tempText)
-                measureItem.lineCount = tempCount
-                measureItem.lineHeight = tempHeight
-                measureResult.set(i, measureItem)
-            } else { // single line
-                measureItem.lineCount = 1
-                measureItem.preLineWidth = [lineWidth]
-                measureItem.lineHeight = lineHeight
-                measureItem.preLineText = [lyricText]
-                measureResult.set(i, measureItem)
-            }
+            // normal style
+            this.measureByFont(measureItem, false, lyricText, contentW, lineHeight)
+            // highlight style
+            this.measureByFont(measureItem, true, lyricText, contentW, lineHeight * this.highlightScale)
+            measureResult.set(i, measureItem)
         }
         return measureResult
     }
 
+    private measureByFont(measureItem: LyricLineMeasureResult, isHighlight: boolean, lyricText: string, contentW: number, lineHeight: number): void {
+        const font = isHighlight ? this.highlightFont : this.normalFont
+        const lineWidth = font.measureText(lyricText, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+        if (lineWidth > contentW) { // multi lines
+            let tempWidth = 0
+            let tempText = ''
+            let tempHeight = lineHeight
+            let tempCount = 1
+            for (let j = 0; j < lyricText.length; j++) {
+                let char = lyricText[j]
+                let charWidth = font.measureText(char, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+                if (tempWidth + charWidth > contentW) {
+                    if (isHighlight) {
+                        measureItem.preLineWidthHL.push(tempWidth)
+                        measureItem.preLineTextHL.push(tempText)
+                    } else {
+                        measureItem.preLineWidth.push(tempWidth)
+                        measureItem.preLineText.push(tempText)
+                    }
+                    tempWidth = 0
+                    tempText = ''
+                    tempCount++
+                    tempHeight = tempHeight + this.multiLineSpace + lineHeight
+                }
+                tempWidth += charWidth
+                tempText += char
+            }
+            if (isHighlight) {
+                measureItem.preLineWidthHL.push(tempWidth)
+                measureItem.preLineTextHL.push(tempText)
+                measureItem.lineCountHL = tempCount
+                measureItem.lineHeightHL = tempHeight
+            } else {
+                measureItem.preLineWidth.push(tempWidth)
+                measureItem.preLineText.push(tempText)
+                measureItem.lineCount = tempCount
+                measureItem.lineHeight = tempHeight
+            }
+        } else { // single line
+            if (isHighlight) {
+                measureItem.lineCountHL = 1
+                measureItem.preLineWidthHL = [lineWidth]
+                measureItem.lineHeightHL = lineHeight
+                measureItem.preLineTextHL = [lyricText]
+            } else {
+                measureItem.lineCount = 1
+                measureItem.preLineWidth = [lineWidth]
+                measureItem.lineHeight = lineHeight
+                measureItem.preLineText = [lyricText]
+            }
+        }
+    }
+
     onTouch(event: TouchEvent): void {
+        const ev = event.touches[0]
+        switch (ev.type) {
+            case TouchType.Down:
+                this.downY = ev.y
+                break
+            case TouchType.Move:
+                let curY = ev.y
+                let dy = curY - this.downY
+                this.scrollY += vp2px(dy)
+                this.downY = curY
+                break
+            case TouchType.Up:
+                this.downY = 0
+                break
+        }
+        this.invalidate()
     }
 
     draw(context: DrawContext): void {
-        let canvas = context.canvas
-        this.drawY = this.centerY + this.scrollY
+        const canvas = context.canvas
+        this.startY = this.centerY + this.scrollY
         if (this.lyric) {
-            let lyricLines = this.lyric.lyricList
+            const lyricLines = this.lyric.lyricList
             for (let i = 0; i < lyricLines.length; i++) {
-                let lineText = lyricLines[i].text
-                let measureResult = this.lyricMeasureResult.get(i)!
-                let count = measureResult.lineCount
-                if (count > 1) { //draw multi lines
-                    let subLines = measureResult.preLineText
-                    for (let j = 0; j < subLines.length; j++) {
-                        let subLineText = subLines[j]
-                        if (subLineText) {
-                            if (this.currentIndex == i) {
-                                canvas.attachBrush(this.highLightPaint)
-                                this.normalFont.setSize(this.textSize * 1.2)
-                            } else {
-                                canvas.attachBrush(this.normalPaint)
-                                this.normalFont.setSize(this.textSize)
-                            }
-                            let textBlob =
-                                drawing.TextBlob.makeFromString(subLineText, this.normalFont, drawing.TextEncoding.TEXT_ENCODING_UTF8)
-                            let drawX = (this.w - measureResult.preLineWidth[j]) / 2
-                            canvas.drawTextBlob(textBlob, drawX, this.drawY)
-                        }
-                        if (j < subLines.length - 1) {
-                            this.drawY += this.textSize + this.multiLineSpace
-                        } else {
-                            this.drawY += this.textSize + this.lineSpace
-                        }
-                    }
-                } else { // draw single line
-                    if (lineText) {
-                        if (this.currentIndex == i) {
-                            canvas.attachBrush(this.highLightPaint)
-                            this.normalFont.setSize(this.textSize * 1.2)
-                        } else {
-                            canvas.attachBrush(this.normalPaint)
-                            this.normalFont.setSize(this.textSize)
-                        }
-                        let textBlob = drawing.TextBlob.makeFromString(lineText, this.normalFont, drawing.TextEncoding.TEXT_ENCODING_UTF8)
-                        let drawX = (this.w - measureResult.preLineWidth[0]) / 2
-                        canvas.drawTextBlob(textBlob, drawX, this.drawY)
-                    }
-                    this.drawY += this.textSize + this.lineSpace
+                const measureResult = this.lyricMeasureResult.get(i)!
+                if (this.currentIndex == i) {
+                    this.drawHighlight(canvas, measureResult)
+                } else {
+                    this.drawNormal(canvas, measureResult)
                 }
             }
             canvas.detachBrush()
         }
     }
 
-    private v() {
+    private isDrawOnScreen(): boolean {
+        return this.startY > -this.textSize && this.startY < this.h + this.textSize
+    }
+
+    private drawHighlight(canvas: drawing.Canvas, measureResult: LyricLineMeasureResult): void {
+        canvas.attachBrush(this.highLightPaint)
+        const count = measureResult.lineCountHL
+        const subLines = measureResult.preLineTextHL
+        if (count > 1) { //draw multi lines
+            for (let i = 0; i < subLines.length; i++) {
+                if (this.isDrawOnScreen()) {
+                    const subLineText = subLines[i]
+                    if (subLineText) {
+                        const textBlob = drawing.TextBlob.makeFromString(subLineText, this.highlightFont, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+                        let drawX = (this.w - measureResult.preLineWidthHL[i]) / 2
+                        canvas.drawTextBlob(textBlob, drawX, this.startY)
+                    }
+                }
+                if (i < subLines.length - 1) {
+                    this.startY += this.textSize + this.multiLineSpace
+                } else {
+                    this.startY += this.textSize + this.lineSpace
+                }
+            }
+        } else { // draw single line
+            if (this.isDrawOnScreen()) {
+                const lineText = subLines[0]
+                if (lineText) {
+                    let textBlob = drawing.TextBlob.makeFromString(lineText, this.highlightFont, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+                    let drawX = (this.w - measureResult.preLineWidthHL[0]) / 2
+                    canvas.drawTextBlob(textBlob, drawX, this.startY)
+                }
+            }
+            this.startY += this.textSize + this.lineSpace
+        }
+    }
+
+    private drawNormal(canvas: drawing.Canvas, measureResult: LyricLineMeasureResult): void {
+        canvas.attachBrush(this.normalPaint)
+        const count = measureResult.lineCount
+        const subLines = measureResult.preLineText
+        if (count > 1) { //draw multi lines
+            for (let j = 0; j < subLines.length; j++) {
+                if (this.isDrawOnScreen()) {
+                    const subLineText = subLines[j]
+                    if (subLineText) {
+                        const textBlob = drawing.TextBlob.makeFromString(subLineText, this.normalFont, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+                        let drawX = (this.w - measureResult.preLineWidth[j]) / 2
+                        canvas.drawTextBlob(textBlob, drawX, this.startY)
+                    }
+                }
+                if (j < subLines.length - 1) {
+                    this.startY += this.textSize + this.multiLineSpace
+                } else {
+                    this.startY += this.textSize + this.lineSpace
+                }
+            }
+        } else { // draw single line
+            if (this.isDrawOnScreen()) {
+                const lineText = subLines[0]
+                if (lineText) {
+                    let textBlob = drawing.TextBlob.makeFromString(lineText, this.normalFont, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+                    let drawX = (this.w - measureResult.preLineWidth[0]) / 2
+                    canvas.drawTextBlob(textBlob, drawX, this.startY)
+                }
+            }
+            this.startY += this.textSize + this.lineSpace
+        }
     }
 }
