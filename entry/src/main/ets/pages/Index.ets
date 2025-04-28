@@ -1,16 +1,15 @@
-import { Lyric, LyricController, LyricParser, LyricView, LyricView2 } from '@seagazer/cclyric';
-import { MockData } from './MockData';
+import { FileParser, Lyric, LyricController, LyricView, LyricView2 } from '@seagazer/cclyric';
+import { picker } from '@kit.CoreFileKit';
+import { uri } from '@kit.ArkTS';
 
 @Entry
 @Component
 struct Index {
     @State mediaPosition: number = 0
-    private lyric: Lyric | null = null
+    private lyric: Lyric | undefined = undefined
     private lyricController: LyricController = new LyricController()
-    private testIndex = 0
     private testTimer = -1
     private emptyDuration = 60 * 1000
-    private parser = new LyricParser()
     @State title: string = ""
     @State isV2: boolean = true
     private i = 0
@@ -35,7 +34,7 @@ struct Index {
         this.testTimer = setInterval(() => {
             this.mediaPosition += 1000
             this.lyricController.updatePosition(this.mediaPosition)
-            let endDuration = this.lyric == null ? this.emptyDuration : this.lyric.lyricList[this.lyric.lyricList.length - 1].beginTime
+            let endDuration = this.lyric == undefined ? this.emptyDuration : this.lyric.lyricList[this.lyric.lyricList.length - 1].beginTime
             if (this.mediaPosition >= endDuration + 1000) {
                 clearInterval(this.testTimer)
             }
@@ -45,9 +44,9 @@ struct Index {
     build() {
         Column() {
             Text(this.title).margin(16)
-                .fontColor("#ffffff")
+                .fontColor("#ffffffff")
                 .fontSize(24)
-                .fontColor("#ffffff")
+                .fontColor("#ffffffff")
             if (this.isV2) {
                 LyricView2({
                     controller: this.lyricController,
@@ -66,12 +65,12 @@ struct Index {
             }
             Column() {
                 Row() {
-                    Text('useV2View').fontColor("#ffffff").fontSize(16).padding(4)
+                    Text('useV2View').fontColor("#ffffffff").fontSize(16).padding(4)
                     Toggle({ type: ToggleType.Switch, isOn: true })
                         .onChange((isOn) => {
                             this.isV2 = isOn
                         })
-                    Text('centerMode').fontColor("#ffffff").fontSize(16).padding(4)
+                    Text('centerMode').fontColor("#ffffffff").fontSize(16).padding(4)
                     Toggle({ type: ToggleType.Switch, isOn: true })
                         .onChange((isOn) => {
                             if (isOn) {
@@ -87,18 +86,18 @@ struct Index {
                         .fontSize(16)
                         .margin({ left: 16 })
                         .onClick(() => {
-                            this.testIndex++
-                            if (this.testIndex % 2 == 0) {
-                                this.lyric = this.parser.parse(MockData.src1)
-                                this.title = "可能"
-                            } else {
-                                this.title = "一直很安静"
-                                this.lyric = this.parser.parse(MockData.src2)
-                            }
-                            this.lyricController.setLyric(this.lyric)
-                            clearInterval(this.testTimer)
-                            this.mediaPosition = 0
-                            this.test()
+                            let parser = new FileParser()
+                            let documentSelectOptions = new picker.DocumentSelectOptions();
+                            let picker2 = new picker.DocumentViewPicker(getContext(this))
+                            picker2.select(documentSelectOptions).then((documentSelectResult: Array<string>) => {
+                                let url = decodeURI(documentSelectResult[0])
+                                let uri2 = new uri.URI(url)
+                                this.lyric = parser.parse(uri2.path)
+                                if (this.lyric) {
+                                    this.lyricController.setLyric(this.lyric)
+                                    this.test()
+                                }
+                            })
                         })
                     Button('color')
                         .fontSize(16)

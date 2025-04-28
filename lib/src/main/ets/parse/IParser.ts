@@ -2,6 +2,6 @@ import { Lyric } from '../bean/Lyric';
 
 export interface IParser {
 
-    parse(source: any): Lyric
+    parse(source: any): Lyric | undefined
 
 }

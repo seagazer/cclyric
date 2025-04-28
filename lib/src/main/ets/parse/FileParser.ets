@@ -1,6 +1,6 @@
 import { IParser, Lyric, LyricParser } from '@seagazer/cclyric';
-import fs from '@ohos.file.fs'
-import { printD } from '../extensions/Extension';
+import fs from '@ohos.file.fs';
+import { printD, printW } from '../extensions/Extension';
 
 /**
  * Author: seagazer
@@ -9,7 +9,7 @@ import { printD } from '../extensions/Extension';
 export class FileParser implements IParser {
     private parser = new LyricParser()
 
-    parse(filePath: string): Lyric {
+    parse(filePath: string): Lyric | undefined {
         let lrc = fs.readTextSync(filePath)
         let isCR = lrc.indexOf("\r") > 0 && lrc.indexOf("\n") < 0 // mac
         let isLF = lrc.indexOf("\n") > 0 && lrc.indexOf("\r") < 0 // unix
@@ -25,6 +25,9 @@ export class FileParser implements IParser {
             printD("isCRLF windows")
             lrcArray = lrc.split("\r\n")
         }
+        lrcArray.forEach((lrc) => {
+            printW(JSON.stringify(lrc))
+        })
         return this.parser.parse(lrcArray)
     }
 }

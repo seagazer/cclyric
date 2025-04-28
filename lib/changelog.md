@@ -1,3 +1,6 @@
+# 1.0.8
+- 优化歌词文件解析性能
+- 
 # 1.0.7
 - 适配OpenHarmony 5.0-Release和HarmonyOS Next
 

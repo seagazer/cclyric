@@ -12,8 +12,9 @@
 
 ## 示例效果
 
-<img src="https://www.freeimg.cn/i/2024/06/30/6680d00b517e7.png" width="200" height="380"/>
-<img src="https://www.freeimg.cn/i/2024/06/30/6680d00b5a8e3.png" width="200" height="380"/>
+<img src="https://s21.ax1x.com/2025/04/28/pE73xPK.jpg" width="200" height="380"/>
+<img src="https://s21.ax1x.com/2025/04/28/pE73z8O.jpg" width="200" height="380"/>
+<img src="https://s21.ax1x.com/2025/04/28/pE78S2D.jpg" width="200" height="380"/>
 
 ## 注意事项
 
