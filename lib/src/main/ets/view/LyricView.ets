@@ -74,13 +74,13 @@ export struct LyricView {
             begin: this.scrollY,
             end: this.targetScrollY
         })
-        this.anim.oncancel = () => {
+        this.anim.onCancel = () => {
             this.isAnimRunning = false
         }
-        this.anim.onfinish = () => {
+        this.anim.onFinish = () => {
             this.isAnimRunning = false
         }
-        this.anim.onframe = (value) => {
+        this.anim.onFrame = (value) => {
             this.scrollY = value
             this.invalidate()
         }

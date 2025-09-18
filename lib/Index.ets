@@ -15,5 +15,3 @@ export { LyricView2 } from './src/main/ets/view/LyricView2'
 export { LyricController } from './src/main/ets/LyricController'
 
 export { LyricHelper } from './src/main/ets/LyricHelper'
-
-export { CcLyricView } from './src/main/ets/view/CcLyricView'
