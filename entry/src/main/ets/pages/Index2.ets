@@ -1,4 +1,4 @@
-import { AnimatorResult, DrawContext, FrameNode, NodeController, RenderNode, Size, UIContext } from '@kit.ArkUI';
+import { AnimatorResult, DrawContext, FrameNode, NodeController, RenderNode, UIContext } from '@kit.ArkUI';
 import { common2D, drawing } from '@kit.ArkGraphics2D';
 import { ListAdapter } from '@seagazer/cclyric/src/main/ets/extensions/ListAdapter';
 
@@ -254,7 +254,7 @@ struct Index {
                             .animation({ duration: 300 })
                         }, (krc: LrcLineView | undefined, index: number) => {
                             if (krc != undefined) {
-                                return krc.getLyric().text + index
+                                return krc.getLyric().beginTime + "_" + krc.getLyric().endTime + "_" + index
                             }
                             return index.toString()
                         })
@@ -283,6 +283,7 @@ struct Index {
                 if (this.lrcDataSource === undefined) {
                     this.lrcDataSource = new LrcDataSource()
                     const h = size.height as number
+                    this.maxWidth = this.getUIContext().vp2px(size.width as number)
                     this.middleLine =
                         Math.round(((h + this.controller.lineSpace) / (this.controller.textSize * 1.5 + this.controller.lineSpace) - 1) / 2)
                     console.warn("abc", "h= " + h + ", line= " + (this.controller.textSize) + ", lines= " + this.middleLine)
@@ -307,8 +308,8 @@ struct Index {
                         // change data source
                         this.lyric = new SampleLyricParser().parse(src2)
                         console.info("abc", JSON.stringify(this.lyric))
-                        // this.setupDataSource();
-                        this.lyric = undefined
+                        this.setupDataSource();
+                        // this.lyric = undefined
                         // replay
                         this.mockPlayer()
                     })
@@ -318,6 +319,17 @@ struct Index {
         .height('100%')
         .width('100%')
     }
+
+    private measureText(text: string, textSize: number, scale: number): number {
+        const font = new drawing.Font()
+        font.setSize(this.getUIContext().vp2px(textSize))
+        const bound = drawing.TextBlob.makeFromString(text, font)
+        const rect = bound.bounds()
+        const textWidth = rect.right - rect.left
+        return textWidth * scale
+    }
+
+    private maxWidth = 0
 
     private setupDataSource() {
         if (this.lrcDataSource === undefined) {
@@ -330,12 +342,40 @@ struct Index {
         const lines = this.lyric!.lyricList;
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            // todo 测量，是否换行
-            const view = new LrcLineView(line);
-            view.setTextSize(this.controller.textSize);
-            view.setTextColor(this.controller.textColor);
-            view.setTextHighlightColor(this.controller.textHighlightColor);
-            this.lrcDataSource.addData(view, false);
+            // todo measure and break line
+            const textWidth = this.measureText(line.text, this.controller.textSize, 1.1)
+            console.info("abc", line.text + ", textWidth= " + textWidth + ", viewWidth= " + this.maxWidth)
+            if (textWidth > this.maxWidth) {
+                // break line
+                const singleLineCharSize = Math.floor(line.wordList.length * this.maxWidth / textWidth) //单行字符数
+                const maxLineCharSize = line.wordList.length
+                const breakLines = Math.floor(line.text.length / singleLineCharSize) + 1 //折行数
+                const lineWordList = line.wordList //单个字符结构
+                console.info("abc", JSON.stringify(lineWordList))
+                for (let j = 0; j < breakLines; j++) {
+                    const begin = singleLineCharSize * j
+                    const end = Math.min(begin + singleLineCharSize, maxLineCharSize)
+                    const singLineText = line.text.substring(begin, end) //[begin,end)
+                    console.warn("abc", singLineText + "--- " + begin + "->" + end)
+                    const singLrcLine: LrcLine = {
+                        text: singLineText,
+                        beginTime: lineWordList[begin].startTime,
+                        endTime: lineWordList[end-1].endTime,
+                        wordList: lineWordList.slice(begin, end)//[begin,end)
+                    }
+                    const view = new LrcLineView(singLrcLine);
+                    view.setTextSize(this.controller.textSize);
+                    view.setTextColor(this.controller.textColor);
+                    view.setTextHighlightColor(this.controller.textHighlightColor);
+                    this.lrcDataSource.addData(view, false);
+                }
+            } else {
+                const view = new LrcLineView(line);
+                view.setTextSize(this.controller.textSize);
+                view.setTextColor(this.controller.textColor);
+                view.setTextHighlightColor(this.controller.textHighlightColor);
+                this.lrcDataSource.addData(view, false);
+            }
         }
         for (let i = 0; i < this.middleLine; i++) {
             this.lrcDataSource.addData(undefined, false);
@@ -354,6 +394,9 @@ struct Index {
         const beginIndex = this.middleLine
         const endIndex = this.lrcDataSource.totalCount() - 1
         for (let i = beginIndex; i < endIndex; i++) {
+            if (this.focusIndex === i) {
+                break
+            }
             const lyric = this.lrcDataSource.getData(i)
             if (lyric === undefined) {
                 continue
@@ -362,7 +405,6 @@ struct Index {
             const start = lyricLine.beginTime
             const end = lyricLine.endTime
             if (position >= start && position < end) {
-                console.error("abc", "-----" + lyricLine.text + ", " + i)
                 if (this.focusIndex != i) {
                     if (this.focusView) {
                         this.focusView.stop()
@@ -576,14 +618,17 @@ class LrcTextView extends RenderNode {
     }
 
     onSizeChanged(width: number, height: number) {
+        if (this.frame.width === width && this.frame.height === height) {
+            return
+        }
         this.frame = {
             x: 0,
             y: 0,
             width: width,
             height: height
         }
-        this.beginX = (width - this.textWidth) / 2
-        this.beginY = height / 2 + this.textHeight / 2
+        this.beginX = (this.context.vp2px(width) - this.textWidth) / 2
+        this.beginY = this.context.vp2px(height) / 2 + this.textHeight / 2
         this.invalidate()
     }
 
@@ -629,6 +674,7 @@ class LrcTextView extends RenderNode {
 
     private drawNormal(canvas: drawing.Canvas) {
         canvas.attachBrush(this.normalPen)
+        console.error("abc", this.lyricLine.text + "----" + this.beginX)
         canvas.drawTextBlob(this.lyricTextBlob, this.beginX, this.beginY)
         canvas.detachBrush()
     }
