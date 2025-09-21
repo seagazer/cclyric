@@ -5,6 +5,8 @@ import { printD, printW } from '../extensions/Extension';
 
 /**
  * The parser to parse the string array of a standard lyric file.
+ *
+ * @deprecated since v1.0.9
  */
 export class LyricParser implements IParser {
     // Example lyric file:

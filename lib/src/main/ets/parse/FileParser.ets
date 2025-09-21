@@ -5,6 +5,8 @@ import { printD, printW } from '../extensions/Extension';
 /**
  * Author: seagazer
  * Date: 2023/6/11
+ *
+ * @deprecated since v1.0.9
  */
 export class FileParser implements IParser {
     private parser = new LyricParser()

@@ -9,6 +9,8 @@ import { Lyric } from '../bean/Lyric';
  *
  * The custom setter include the lyric text style, fade style of edge, the line space, scroll animation duration,
  * the cache size to draw out of screen.
+ *
+ * @deprecated since v1.0.9
  */
 @Component
 export struct LyricView {

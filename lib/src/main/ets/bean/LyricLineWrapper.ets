@@ -1,5 +1,8 @@
 import { LyricLine } from './LyricLine';
 
+/**
+ * @deprecated since v1.0.9
+ */
 export class LyricLineWrapper extends LyricLine {
     readonly height: number
 

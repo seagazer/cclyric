@@ -12,6 +12,7 @@ const DEFAULT_CACHE_SIZE = 4
 
 /**
  * The controller for LyricView.
+ * @deprecated since v1.0.9
  */
 export class LyricController {
     private lyric: Lyric | null = null

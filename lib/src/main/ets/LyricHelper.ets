@@ -4,6 +4,7 @@ import { printD } from './extensions/Extension'
 
 /**
  * The helper to get lyric line by media position.
+ * @deprecated since v1.0.9
  */
 export class LyricHelper {
     private currentIndex = 0

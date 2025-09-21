@@ -1,6 +1,4 @@
-import { AnimatorResult, DrawContext, FrameNode, NodeController, RenderNode, UIContext } from '@kit.ArkUI';
-import { common2D, drawing } from '@kit.ArkGraphics2D';
-import { ListAdapter } from '@seagazer/cclyric/src/main/ets/extensions/ListAdapter';
+import { CcLrcController, CcLyricView, Lrc, LrcLine, LrcWord } from '@seagazer/cclyric';
 
 const src1 = [
     "[ar:G.E.M. 邓紫棋、张靓颖]",
@@ -66,654 +64,45 @@ const src1 = [
 ]
 
 const src2: string[] = [
-    "[00:36.549]ど[00:37.080]う[00:37.328]し[00:37.705]て[00:37.914]君[00:38.129]は [00:39.721]小[00:40.033]さ[00:40.329]な[00:40.790]手[00:41.235]で [00:42.224]伤[00:42.466]を[00:42.824]背[00:43.509]负[00:43.814]う[00:44.274]と[00:44.703]す[00:45.059]る[00:45.319]の[00:45.724]だ[00:45.946]ろ[00:46.199]う[00:47.382]",
-    "[00:49.069]谁[00:49.764]か[00:50.474]の[00:50.929]た[00:51.289]め[00:51.484]だ[00:52.025]け[00:52.469]じ[00:52.727]ゃ[00:52.969]な[00:53.233]い [00:54.254]见[00:54.525]失[00:54.739]わ[00:55.111]な[00:55.490]い[00:55.859]で[00:57.196]",
-    "[01:02.355]ど[01:02.946]う[01:03.311]し[01:03.498]て[01:03.771]仆[01:04.181]は [01:05.116]迷[01:05.441]い[01:05.891]な[01:06.307]が[01:06.718]ら [01:07.769]逃[01:08.144]げ[01:08.524]出[01:08.973]す[01:09.274]事[01:09.764]で[01:10.444]き[01:10.675]な[01:10.949]い[01:11.284]ん[01:11.504]だ[01:11.922]ろ[01:12.543]う[01:13.057]",
-    "[01:14.146]望[01:14.706]む[01:15.766]の[01:16.055]は [01:17.006]光[01:18.008]さ[01:18.374]す [01:19.133]灯[01:20.015]を [01:22.711]灯[01:23.396]を[01:26.827]",
-    "[01:28.770]FIND [01:29.700]THE [01:30.515]WAY [01:31.003]辉[01:31.265]く[01:32.485]空[01:32.825]に [01:33.830]手[01:34.161]は[01:34.425]届[01:34.945]か[01:35.240]な[01:35.705]く[01:35.960]て[01:36.320]も[01:36.645]",
-    "[01:36.745]响[01:37.280]く [01:38.380]爱[01:38.890]だ[01:39.310]け[01:39.727]頼[01:41.260]り[01:41.935]に[01:42.423]",
-    "[01:42.355]进[01:43.020]ん[01:43.693]だ[01:44.040]道[01:44.765]の[01:45.520]先 [01:45.956]光[01:46.390]が[01:46.831]见[01:47.066]つ[01:47.626]か[01:48.031]る[01:48.368]か[01:48.691]ら[01:51.175]",
-    "[01:53.736]YOU [01:54.348]FIND [01:55.382]THE [01:55.761]WAY[01:57.915]",
-    "[02:09.494]君[02:10.170]は[02:10.856]言[02:11.175]っ[02:11.681]た [02:12.231]长[02:12.777]い[02:13.134]梦[02:13.591]を[02:13.901]见[02:14.181]た [02:14.821]と[02:15.220]て[02:15.573]も[02:16.033]悲[02:16.391]し[02:16.821]い[02:17.236]梦[02:18.201]だ[02:18.591]っ[02:18.841]た[02:19.141]と[02:20.183]",
-    "[02:22.240]そ[02:22.925]れ[02:23.172]で[02:23.734]も[02:24.175]そ[02:24.570]の[02:25.140]姿[02:26.212]は [02:27.245]少[02:27.808]し[02:28.235]も[02:28.516]昙[02:29.287]ら[02:29.537]な[02:29.785]い[02:31.280]",
-    "[02:35.070]仆[02:35.855]は[02:36.510]言[02:36.855]っ[02:37.305]た [02:37.742]泣[02:38.227]い[02:38.532]て[02:38.922]い[02:39.189]い[02:39.467]ん[02:39.728]だ[02:40.022]と [02:40.912]ず[02:41.159]っ[02:41.522]と[02:41.734]傍[02:42.607]に[02:43.092]居[02:43.667]て[02:43.914]あ[02:44.152]げ[02:44.527]る[02:44.837]よ[02:45.861]",
-    "[02:46.650]欲[02:47.760]し[02:48.758]い[02:49.081]の[02:49.300]は [02:49.890]抱[02:50.462]き[02:50.730]上[02:51.146]げ[02:51.520]る [02:52.010]手[02:52.882]を [02:55.523]手[02:55.992]を[02:59.636]",
-    "[03:01.599]FIND [03:02.574]THE [03:03.336]WAY [03:03.839]言[03:04.100]叶[03:04.674]な[03:05.032]く[03:05.552]て[03:05.934]も [03:06.424]飞[03:06.689]ぶ[03:06.914]羽[03:07.514]は[03:07.864]な[03:08.354]く[03:08.674]て[03:08.999]も[03:09.236]",
-    "[03:09.509]吹[03:10.059]き[03:10.340]出[03:10.551]す [03:11.009]风[03:11.578]に[03:12.059]负[03:12.454]け[03:13.007]ぬ[03:14.078]よ[03:14.294]う[03:14.544]に[03:15.076]",
-    "[03:15.124]今[03:16.144]谁[03:16.551]よ[03:16.924]り[03:17.591]早[03:18.394]く [03:18.879]光[03:19.295]に[03:19.759]気[03:20.482]付[03:21.314]け[03:21.564]た[03:22.046]な[03:22.364]ら[03:24.108]",
-    "[03:26.339]答[03:27.074]え[03:28.249]を[03:30.453]出[03:30.971]す[03:31.825]事 [03:32.251]き[03:32.783]っ[03:33.171]と[03:33.454]全[03:34.861]て[03:35.826]じ[03:36.816]ゃ[03:36.826]な[03:36.976]い[03:38.581]",
-    "[03:40.683]焦[03:41.404]ら[03:41.700]な[03:42.039]く[03:42.579]て[03:44.519]い[03:44.895]い[03:45.224]ん[03:45.597]だ[03:45.949]よ [03:49.375]あ[03:49.773]な[03:50.709]た[03:51.553]も[03:55.107]",
-    "[03:59.454]FIND [04:00.053]THE [04:00.924]WAY [04:01.538]辉[04:02.144]く[04:02.481]空[04:03.255]に [04:04.049]手[04:04.399]は[04:05.034]届[04:05.249]か[04:05.719]な[04:06.148]く[04:06.458]て[04:07.098]も[04:07.403]",
-    "[04:07.109]响[04:07.683]く [04:09.023]爱[04:09.568]だ[04:09.968]け[04:10.688]赖[04:11.799]り[04:11.974]に[04:12.542]",
-    "[04:12.696]进[04:13.335]ん[04:13.801]だ[04:14.376]道[04:14.956]の[04:15.567]先 [04:16.621]光[04:16.881]が[04:17.358]见[04:18.500]つ[04:18.946]か[04:19.270]る[04:19.811]か[04:20.110]ら[04:23.424]",
-    "[04:24.957]FIND [04:25.730]THE [04:26.555]WAY [04:27.175]言[04:27.360]叶[04:27.985]な[04:28.365]く[04:28.700]て[04:29.127]も [04:29.865]飞[04:30.261]ぶ[04:30.464]羽[04:31.235]は[04:31.620]な[04:31.856]く[04:32.076]て[04:32.430]も[04:32.867]",
-    "[04:32.751]吹[04:33.240]き[04:33.485]出[04:33.940]す [04:34.295]风[04:34.685]に[04:35.170]负[04:35.605]け[04:36.125]ぬ[04:37.120]よ[04:37.355]う[04:37.615]に[04:37.977]",
-    "[04:38.245]进[04:38.955]ん[04:39.626]だ[04:39.927]道[04:40.625]の[04:40.926]先 [04:42.505]确[04:42.815]か[04:43.190]な[04:44.115]光[04:44.861]を[04:45.112]见[04:45.805]た"
+    "[ar:程响]",
+    "[ti:可能]",
+    "[offset:0]",
+    "[00:00.099]程[00:00.288]响 [00:00.502]- [00:00.645]可[00:00.858]能[00:01.072]",
+    "[00:01.072]作[00:01.287]词[00:01.499]Lyricist：[00:01.643]宁[00:01.856]缺[00:02.072]",
+    "[00:02.072]作[00:02.215]曲[00:02.428]Composer：[00:02.572]宁[00:02.785]缺[00:02.927]",
+    "[00:02.927]编[00:03.140]曲[00:03.354]Arranger：[00:03.569]曲[00:03.784]比[00:03.928]阿[00:04.141]且[00:04.354]",
+    "[00:04.354]录[00:04.851]音[00:05.064]Recording：[00:05.278]张[00:05.492]雨[00:05.705]农[00:05.847]",
+    "[00:05.847]混[00:06.060]音[00:06.273]Mixing：[00:06.488]王[00:06.702]朋[00:06.915]",
+    "[00:06.915]母[00:07.128]带[00:07.340]Master [00:07.624]tape：[00:07.837]全[00:07.979]相[00:08.264]彦[00:08.478]",
+    "[00:26.846]可[00:27.275]能[00:27.630]南[00:27.915]方[00:28.489]的[00:28.774]阳[00:29.126]光 [00:29.481]照[00:29.767]着[00:30.051]北[00:30.408]方[00:30.907]的[00:31.264]风[00:31.834]",
+    "[00:31.834]可[00:32.121]能[00:32.474]时[00:32.759]光[00:33.629]被[00:33.915]吹[00:34.198]走 [00:34.481]从[00:34.765]此[00:35.048]无[00:35.334]影[00:35.832]无[00:36.116]踪[00:36.760]",
+    "[00:36.760]可[00:37.045]能[00:37.330]故[00:37.616]事[00:38.184]只[00:38.469]剩[00:38.825]下 [00:39.107]一[00:39.391]个[00:39.747]难[00:40.029]忘[00:40.599]的[00:40.956]人[00:41.451]",
+    "[00:41.451]可[00:41.807]能[00:42.091]在[00:42.446]昨[00:42.730]夜[00:43.298]梦[00:43.654]里 [00:44.011]依[00:44.367]然[00:44.722]笑[00:45.150]得[00:45.577]纯[00:45.934]真[00:47.002]",
+    "[00:48.922]可[00:49.279]能[00:49.633]北[00:49.995]京[00:50.494]的[00:50.779]后[00:51.062]海 [00:51.415]许[00:51.700]多[00:51.987]漂[00:52.415]泊[00:52.912]的[00:53.270]魂[00:53.483]",
+    "[00:54.225]可[00:54.508]能[00:54.722]成[00:55.007]都[00:55.505]小[00:55.787]酒[00:56.072]馆 [00:56.357]有[00:56.642]群[00:57.000]孤[00:57.355]独[00:57.853]的[00:58.211]人[00:58.711]",
+    "[00:58.711]可[00:59.065]能[00:59.351]枕[00:59.706]边[01:00.205]有[01:00.488]微[01:00.847]笑 [01:01.201]才[01:01.558]能[01:01.911]暖[01:02.269]你[01:02.767]清[01:03.119]晨[01:03.546]",
+    "[01:03.546]可[01:03.906]能[01:04.189]夜[01:04.615]空[01:04.975]有[01:05.403]流[01:05.832]星 [01:06.261]才[01:06.545]能[01:06.828]照[01:07.257]你[01:07.611]前[01:07.966]行[01:09.106]",
+    "[01:11.045]可[01:11.403]能[01:11.686]西[01:11.973]安[01:12.542]城[01:12.824]墙[01:13.035]上 [01:13.392]有[01:13.676]人[01:14.032]誓[01:14.386]言[01:14.882]不[01:15.239]分[01:15.735]",
+    "[01:15.735]可[01:16.093]能[01:16.446]要[01:16.802]去[01:17.370]到[01:17.727]大[01:18.085]理 [01:18.370]才[01:18.655]算[01:19.012]爱[01:19.369]得[01:19.866]认[01:20.222]真[01:20.721]",
+    "[01:20.721]可[01:21.004]能[01:21.287]谁[01:21.645]说[01:22.215]要[01:22.572]陪[01:22.926]你 [01:23.283]牵[01:23.565]手[01:23.921]走[01:24.276]完[01:24.772]一[01:25.129]生[01:25.628]",
+    "[01:25.628]可[01:25.982]能[01:26.337]笑[01:26.693]着[01:27.120]流[01:27.547]出[01:27.904]泪 [01:30.605]某[01:31.101]天[01:31.315]在[01:31.743]某[01:32.028]时[01:32.457]辰[01:34.669]",
+    "[01:55.246]可[01:55.531]能[01:55.817]桂[01:56.101]林[01:56.599]有[01:56.882]渔[01:57.240]船 [01:57.597]为[01:57.808]你[01:58.164]迷[01:58.518]茫[01:58.947]点[01:59.303]灯[01:59.803]",
+    "[01:59.803]可[02:00.160]能[02:00.520]在[02:00.804]呼[02:01.445]伦[02:01.799]草[02:02.084]原 [02:02.439]牛[02:02.725]羊[02:03.080]流[02:03.507]成[02:03.933]风[02:04.285]景[02:04.856]",
+    "[02:04.856]可[02:05.141]能[02:05.497]再[02:05.783]也[02:06.353]找[02:06.707]不[02:07.064]到 [02:07.350]愿[02:07.635]意[02:07.919]相[02:08.203]信[02:08.771]的[02:09.203]人[02:09.702]",
+    "[02:09.702]可[02:09.985]能[02:10.341]穿[02:10.696]越[02:11.194]了[02:11.549]彷[02:11.906]徨 [02:12.261]脚[02:12.543]步[02:12.901]才[02:13.254]能[02:13.685]坚[02:14.040]定[02:15.322]",
+    "[02:17.075]可[02:17.360]能[02:17.715]武[02:18.071]当[02:18.569]山[02:18.854]道[02:19.137]上 [02:19.492]有[02:19.777]人[02:20.059]虔[02:20.347]诚[02:20.631]攀[02:21.198]登[02:21.556]",
+    "[02:22.230]可[02:22.513]能[02:22.796]周[02:23.079]庄[02:23.578]小[02:23.864]巷[02:24.148]里 [02:24.505]忽[02:24.864]然[02:25.218]忘[02:25.574]掉[02:26.069]年[02:26.351]轮[02:26.919]",
+    "[02:26.919]可[02:27.203]能[02:27.630]要[02:27.913]多[02:28.482]年[02:28.768]以[02:29.054]后 [02:29.408]才[02:29.692]能[02:30.047]看[02:30.473]清[02:30.896]曾[02:31.250]经[02:31.752]",
+    "[02:31.752]可[02:32.105]能[02:32.460]在[02:32.814]当[02:33.385]时[02:33.671]身[02:33.956]边 [02:34.312]有[02:34.666]双[02:35.022]温[02:35.376]柔[02:35.803]眼[02:36.231]睛[02:38.209]",
+    "[02:39.116]可[02:39.540]能[02:39.897]西[02:40.184]安[02:40.610]城[02:40.965]墙[02:41.179]上 [02:41.464]有[02:41.819]人[02:42.100]誓[02:42.458]言[02:43.027]不[02:43.382]分[02:43.952]",
+    "[02:43.952]可[02:44.306]能[02:44.662]要[02:45.018]去[02:45.590]到[02:45.942]大[02:46.225]理 [02:46.582]才[02:46.936]算[02:47.295]爱[02:47.724]得[02:48.151]认[02:48.435]真[02:48.934]",
+    "[02:48.934]可[02:49.221]能[02:49.507]谁[02:49.862]说[02:50.432]要[02:50.719]陪[02:51.075]你 [02:51.499]牵[02:51.783]手[02:52.139]走[02:52.495]完[02:52.995]一[02:53.349]生[02:53.781]",
+    "[02:53.781]可[02:54.069]能[02:54.423]笑[02:54.781]着[02:55.133]流[02:55.491]出[02:55.922]泪[02:58.693]",
+    "[02:58.693]可[02:58.978]能[02:59.333]终[02:59.760]于[03:00.259]有[03:00.684]一[03:00.970]天 [03:01.258]刚[03:01.614]好[03:01.969]遇[03:02.325]见[03:02.749]爱[03:03.105]情[03:03.677]",
+    "[03:03.677]可[03:03.961]能[03:04.320]永[03:04.675]远[03:05.174]在[03:05.529]路[03:05.885]上 [03:06.239]有[03:06.596]人[03:06.951]奋[03:07.235]斗[03:07.661]前[03:08.016]行[03:08.583]",
+    "[03:08.583]可[03:08.868]能[03:09.223]一[03:09.579]切[03:10.083]的[03:10.439]可[03:10.724]能 [03:11.081]相[03:11.438]信[03:11.721]才[03:12.006]有[03:12.573]可[03:12.930]能[03:13.501]",
+    "[03:13.501]可[03:13.786]能[03:14.142]拥[03:14.499]有[03:14.995]过[03:15.350]梦[03:15.711]想 [03:18.416]才[03:18.700]能[03:18.985]叫[03:19.488]做[03:19.916]青[03:20.271]春[03:22.337]"
 ];
-
-class LrcDataSource extends ListAdapter<LrcLineView | undefined> {
-    constructor() {
-        super()
-    }
-}
-
-
-export class LrcController {
-    private currentPosition = 0
-    private _textSize: number = 20
-    private _lineSpace: number = 12
-    private _lyric?: Lrc | undefined = undefined
-    private _textColor: number = 0xff000000
-    private _textHighlightColor: number = 0xffff0000
-    private _emptyHint: ResourceStr = "没有歌词";
-    private _fadeColor: ResourceColor = "#ffffffff";
-
-    public set emptyHint(value: ResourceStr) {
-        this._emptyHint = value;
-        this.invalidate()
-    }
-
-    public get emptyHint(): ResourceStr {
-        return this._emptyHint;
-    }
-
-    public set fadeColor(value: ResourceColor) {
-        this._fadeColor = value;
-        this.invalidate()
-    }
-
-    public get fadeColor(): ResourceColor {
-        return this._fadeColor;
-    }
-
-    public set lyric(value: Lrc | undefined) {
-        this._lyric = value
-        this.onDataChanged?.(value)
-        // todo lrc changed
-    }
-
-    public get lyric(): Lrc | undefined {
-        return this._lyric
-    }
-
-    public set textSize(value: number) {
-        this._textSize = value
-        this.invalidate()
-    }
-
-    public get textSize(): number {
-        return this._textSize
-    }
-
-    public set lineSpace(value: number) {
-        this._lineSpace = value
-        this.invalidate()
-    }
-
-    public get lineSpace(): number {
-        return this._lineSpace
-    }
-
-    public set textColor(value) {
-        this._textColor = value
-        this.invalidate()
-    }
-
-    public get textColor() {
-        return this._textColor
-    }
-
-    public set textHighlightColor(value: number) {
-        this._textHighlightColor = value
-        this.invalidate()
-    }
-
-    public get textHighlightColor(): number {
-        return this._textHighlightColor
-    }
-
-    updatePosition(position: number) {
-        this.currentPosition = position
-        this.onProgressChanged?.(position)
-    }
-
-    private invalidate() {
-        this.onAttributeChanged?.()
-    }
-
-    onProgressChanged?: (position: number) => void = undefined
-    onAttributeChanged?: () => void = undefined
-    onDataChanged?: (lyric: Lrc | undefined) => void = undefined
-}
-
-@Entry
-@ComponentV2
-struct Index {
-    private timer = -1
-    private scroller = new Scroller()
-    @Local focusIndex: number = -1
-    @Local userSeekIndex: number = -1
-    @Local progress: number = 0
-    @Local lrcDataSource?: LrcDataSource = undefined
-    private focusView?: LrcLineView = undefined
-    @Require @Param controller: LrcController = new LrcController()
-    @Local lyric?: Lrc = undefined
-    private middleLine = 0
-
-    aboutToAppear(): void {
-        // set controller
-        this.controller.textSize = 18
-        this.controller.lineSpace = 12
-        this.controller.textColor = 0xCC000000
-        this.controller.textHighlightColor = 0xffe7107f
-        this.lyric = new SampleLyricParser().parse(src1)
-
-        this.controller.onProgressChanged = (position) => {
-            this.updatePosition(position)
-        }
-        this.controller.onDataChanged = (lrc) => {
-            this.focusView = undefined
-            this.lyric = lrc
-        }
-    }
-
-    @Builder
-    FadeOverlay() {
-        Column()
-            .width("100%")
-            .height("100%")
-            .hitTestBehavior(HitTestMode.Transparent)
-            .backgroundColor(Color.Transparent)
-            .linearGradient({
-                angle: 0,
-                colors: [[this.controller.fadeColor, 0], ["#00ffffff", 0.2], ["#00ffffff", 0.8], [this.controller.fadeColor, 1]],
-                repeating: false
-            })
-    }
-
-    build() {
-        Column() {
-            Stack() {
-                if (this.lyric !== undefined && this.lrcDataSource !== undefined && this.lrcDataSource.totalCount() > 0) {
-                    List({ scroller: this.scroller, space: this.controller.lineSpace }) {
-                        LazyForEach(this.lrcDataSource, (krc: LrcLineView | undefined, index: number) => {
-                            ListItem() {
-                                if (krc && !krc.isEmpty()) {
-                                    NodeContainer(krc)
-                                        .width("100%")
-                                        .height("100%")
-                                } else {
-                                    Stack()
-                                        .width("100%")
-                                        .height("100%")
-                                }
-                            }
-                            .width("100%")
-                            .height(this.controller.textSize * 1.5)
-                            .scale(this.focusIndex === index ? { x: 1.1, y: 1.1 } : { x: 1, y: 1 })
-                            .animation({ duration: 300 })
-                        }, (krc: LrcLineView | undefined, index: number) => {
-                            if (krc != undefined) {
-                                return krc.getLyric().beginTime + "_" + krc.getLyric().endTime + "_" + index
-                            }
-                            return index.toString()
-                        })
-                    }
-                    .width("100%")
-                    .height("100%")
-                    .overlay(this.FadeOverlay())
-                    .edgeEffect(EdgeEffect.None)
-                    .scrollBar(BarState.Off)
-                    .onScrollIndex((start, end, center) => {
-                        // console.warn("abc", "center= " + center)
-                        // currentCenter lyric line is center+1
-                    })
-                    .onTouch((event) => {
-                        // todo handle seek action
-                    })
-                } else {
-                    Text(this.controller.emptyHint)
-                        .fontSize(this.controller.textSize)
-                        .fontColor(this.controller.textColor)
-                }
-            }
-            .width("100%")
-            .layoutWeight(1)
-            .onSizeChange((_, size) => {
-                if (this.lrcDataSource === undefined) {
-                    this.lrcDataSource = new LrcDataSource()
-                    const h = size.height as number
-                    this.maxWidth = this.getUIContext().vp2px(size.width as number)
-                    this.middleLine =
-                        Math.round(((h + this.controller.lineSpace) / (this.controller.textSize * 1.5 + this.controller.lineSpace) - 1) / 2)
-                    console.warn("abc", "h= " + h + ", line= " + (this.controller.textSize) + ", lines= " + this.middleLine)
-                    // todo 动态计算填充个数
-                    this.setupDataSource()
-                }
-            })
-
-            Progress({
-                value: this.progress,
-                total: this.lyric ? this.lyric.lyricList[this.lyric.lyricList.length-1].endTime : 0
-            }).width("100%").margin(8)
-
-            Row() {
-                Button("start")
-                    .onClick(() => {
-                        this.mockPlayer()
-                    })
-
-                Button("change")
-                    .onClick(() => {
-                        // change data source
-                        this.lyric = new SampleLyricParser().parse(src2)
-                        console.info("abc", JSON.stringify(this.lyric))
-                        this.setupDataSource();
-                        // this.lyric = undefined
-                        // replay
-                        this.mockPlayer()
-                    })
-            }.width("100%")
-            .justifyContent(FlexAlign.SpaceEvenly)
-        }
-        .height('100%')
-        .width('100%')
-    }
-
-    private measureText(text: string, textSize: number, scale: number): number {
-        const font = new drawing.Font()
-        font.setSize(this.getUIContext().vp2px(textSize))
-        const bound = drawing.TextBlob.makeFromString(text, font)
-        const rect = bound.bounds()
-        const textWidth = rect.right - rect.left
-        return textWidth * scale
-    }
-
-    private maxWidth = 0
-
-    private setupDataSource() {
-        if (this.lrcDataSource === undefined) {
-            return
-        }
-        this.lrcDataSource.clear(false);
-        for (let i = 0; i < this.middleLine; i++) {
-            this.lrcDataSource.addData(undefined, false);
-        }
-        const lines = this.lyric!.lyricList;
-        for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
-            // todo measure and break line
-            const textWidth = this.measureText(line.text, this.controller.textSize, 1.1)
-            console.info("abc", line.text + ", textWidth= " + textWidth + ", viewWidth= " + this.maxWidth)
-            if (textWidth > this.maxWidth) {
-                // break line
-                const singleLineCharSize = Math.floor(line.wordList.length * this.maxWidth / textWidth) //单行字符数
-                const maxLineCharSize = line.wordList.length
-                const breakLines = Math.floor(line.text.length / singleLineCharSize) + 1 //折行数
-                const lineWordList = line.wordList //单个字符结构
-                console.info("abc", JSON.stringify(lineWordList))
-                for (let j = 0; j < breakLines; j++) {
-                    const begin = singleLineCharSize * j
-                    const end = Math.min(begin + singleLineCharSize, maxLineCharSize)
-                    const singLineText = line.text.substring(begin, end) //[begin,end)
-                    console.warn("abc", singLineText + "--- " + begin + "->" + end)
-                    const singLrcLine: LrcLine = {
-                        text: singLineText,
-                        beginTime: lineWordList[begin].startTime,
-                        endTime: lineWordList[end-1].endTime,
-                        wordList: lineWordList.slice(begin, end)//[begin,end)
-                    }
-                    const view = new LrcLineView(singLrcLine);
-                    view.setTextSize(this.controller.textSize);
-                    view.setTextColor(this.controller.textColor);
-                    view.setTextHighlightColor(this.controller.textHighlightColor);
-                    this.lrcDataSource.addData(view, false);
-                }
-            } else {
-                const view = new LrcLineView(line);
-                view.setTextSize(this.controller.textSize);
-                view.setTextColor(this.controller.textColor);
-                view.setTextHighlightColor(this.controller.textHighlightColor);
-                this.lrcDataSource.addData(view, false);
-            }
-        }
-        for (let i = 0; i < this.middleLine; i++) {
-            this.lrcDataSource.addData(undefined, false);
-        }
-        this.lrcDataSource.notifyDataReload();
-        this.scroller.scrollToIndex(0);
-    }
-
-    private updatePosition(position: number) {
-        if (this.lrcDataSource === undefined || this.lyric === undefined) {
-            return
-        }
-        if (this.focusView !== undefined) {
-            this.focusView.play(position)
-        }
-        const beginIndex = this.middleLine
-        const endIndex = this.lrcDataSource.totalCount() - 1
-        for (let i = beginIndex; i < endIndex; i++) {
-            if (this.focusIndex === i) {
-                break
-            }
-            const lyric = this.lrcDataSource.getData(i)
-            if (lyric === undefined) {
-                continue
-            }
-            const lyricLine = lyric.getLyric()
-            const start = lyricLine.beginTime
-            const end = lyricLine.endTime
-            if (position >= start && position < end) {
-                if (this.focusIndex != i) {
-                    if (this.focusView) {
-                        this.focusView.stop()
-                        this.focusView = undefined
-                    }
-                    this.focusView = this.lrcDataSource.getData(i)
-                    this.focusIndex = i
-                    const centerScrollIndex = i - this.middleLine
-                    this.scroller.scrollToIndex(centerScrollIndex, true)
-                }
-                break
-            }
-        }
-    }
-
-    private mockPlayer() {
-        clearInterval(this.timer)
-        this.progress = 0
-        this.timer = setInterval(() => {
-            this.progress += 300
-            this.updatePosition(this.progress)
-        }, 300)
-    }
-}
-
-class LrcLineView extends NodeController {
-    private context: UIContext | null = null
-    private lyricLine: LrcLine
-    private lyricTextView: LrcTextView | null = null
-    private rootView: FrameNode | null = null
-    private isEmptyLine = false
-    private textSize: number = -1
-    private textColor: number = -1
-    private textHighlightColor: number = -1
-
-    public setTextSize(size: number) {
-        this.textSize = size
-        this.lyricTextView?.setTextSize(size)
-    }
-
-    public setTextColor(color: number) {
-        this.textColor = color
-        this.lyricTextView?.setTextColor(color)
-    }
-
-    public setTextHighlightColor(color: number) {
-        this.textHighlightColor = color
-        this.lyricTextView?.setTextHighlightColor(color)
-    }
-
-    constructor(lyricLine: LrcLine) {
-        super()
-        this.lyricLine = lyricLine
-        this.isEmptyLine = lyricLine.text === undefined || lyricLine.text.length <= 0
-    }
-
-    /**
-     * Check the lyric text is empty or not.
-     * @returns The lyric is empty or not.
-     */
-    isEmpty(): boolean {
-        return this.isEmptyLine
-    }
-
-    /**
-     * Return the lyric data of this view.
-     * @returns The lyric data {@link LyricLine}.
-     */
-    getLyric(): LrcLine {
-        return this.lyricLine
-    }
-
-    /**
-     * Play the effect animation.
-     * @param position The playing position of media player.
-     */
-    play(position: number) {
-        this.lyricTextView?.update(position)
-    }
-
-    /**
-     * Stop the effect animation.
-     */
-    stop() {
-        this.lyricTextView?.reset()
-    }
-
-    aboutToResize(size: Size): void {
-        if (this.isEmptyLine) {
-            // todo warning
-            return
-        }
-        if (this.lyricTextView === null) {
-            this.lyricTextView = new LrcTextView(this.context!, this.lyricLine)
-            this.lyricTextView.onSizeChanged(size.width, size.height)
-            if (this.textSize !== -1) {
-                this.setTextSize(this.textSize)
-            }
-            if (this.textColor !== -1) {
-                this.setTextColor(this.textColor)
-            }
-            if (this.textHighlightColor !== -1) {
-                this.setTextHighlightColor(this.textHighlightColor)
-            }
-            const renderNode = this.rootView?.getRenderNode()
-            if (renderNode) {
-                renderNode.appendChild(this.lyricTextView)
-            }
-        } else {
-            this.lyricTextView.onSizeChanged(size.width, size.height)
-        }
-    }
-
-    makeNode(uiContext: UIContext): FrameNode | null {
-        if (this.rootView == null) {
-            this.context = uiContext
-            this.rootView = new FrameNode(uiContext)
-        }
-        return this.rootView
-    }
-}
-
-class LrcTextView extends RenderNode {
-    private context: UIContext
-    private lyricLine: LrcLine
-    private normalPen: drawing.Brush = new drawing.Brush()
-    private highlightPen: drawing.Brush = new drawing.Brush()
-    private font = new drawing.Font()
-    private readonly defaultTextSize = 16 //vp
-    private textSize: number = 0 //vp
-    private textColor: common2D.Color = {
-        red: 0,
-        green: 0,
-        blue: 0,
-        alpha: 255
-    }
-    private textHighlightColor: number = 0xFFFF0000
-    // "#ffff0000"
-    private lyricTextBlob?: drawing.TextBlob = undefined
-    private anim?: AnimatorResult = undefined
-    private textWidth: number = 0
-    private textHeight: number = 0
-    private beginX = -1
-    private beginY = -1
-    private relativePosition = -1
-    private totalDuration = 0
-    private drawBeginWidth = 0
-    private drawingWidth = 0
-    private endPoint: common2D.Point = { x: 0, y: 0 }
-    private isKrc = false
-
-    constructor(uiContext: UIContext, lyricLine: LrcLine) {
-        super()
-        this.context = uiContext
-        this.textSize = uiContext.vp2px(this.defaultTextSize)
-        this.lyricLine = lyricLine
-        this.isKrc = lyricLine.wordList != undefined && lyricLine.wordList.length > 0
-        this.totalDuration = this.lyricLine.endTime - this.lyricLine.beginTime
-        this.initAnimation()
-        this.updateConfig()
-    }
-
-    private initAnimation() {
-        this.anim = this.context.createAnimator({
-            duration: 250,
-            delay: 0,
-            easing: "linear",
-            fill: 'forwards',
-            direction: "normal",
-            iterations: 1,
-            begin: 0,
-            end: 1
-        })
-        this.anim.onFrame = (progress) => {
-            this.drawingWidth = progress
-            this.invalidate()
-        }
-    }
-
-    setTextSize(size: number) {
-        this.textSize = this.context.vp2px(size)
-        this.updateConfig()
-    }
-
-    setTextColor(textColor: number) {
-        const colors = SimpleColor.hex2Argb(textColor) //argb
-        this.textColor = {
-            red: colors[1],
-            green: colors[2],
-            blue: colors[3],
-            alpha: colors[0]
-        }
-        this.updateConfig()
-    }
-
-    setTextHighlightColor(textColor: number) {
-        this.textHighlightColor = textColor
-        this.updateConfig()
-    }
-
-    private updateConfig() {
-        this.normalPen.setColor(this.textColor)
-        this.font.setSize(this.textSize)
-        this.lyricTextBlob = drawing.TextBlob.makeFromString(this.lyricLine.text, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
-        const bound = this.lyricTextBlob.bounds()
-        this.textWidth = bound.right - bound.left
-        this.textHeight = bound.bottom - bound.top
-        this.beginX = (this.context.vp2px(this.frame.width) - this.textWidth) / 2
-        this.beginY = this.context.vp2px(this.frame.height / 2) + this.textHeight / 2
-        this.invalidate()
-    }
-
-    onSizeChanged(width: number, height: number) {
-        if (this.frame.width === width && this.frame.height === height) {
-            return
-        }
-        this.frame = {
-            x: 0,
-            y: 0,
-            width: width,
-            height: height
-        }
-        this.beginX = (this.context.vp2px(width) - this.textWidth) / 2
-        this.beginY = this.context.vp2px(height) / 2 + this.textHeight / 2
-        this.invalidate()
-    }
-
-    update(position: number) {
-        this.relativePosition = position - this.lyricLine.beginTime
-        // console.info("abc", "current pos= " + position + ", relative pos= " + this.relativePosition + ", start pos= " + this.lyricLine.beginTime +
-        //     ", total duration= " + this.totalDuration + ", " + this.lyricLine.text)
-        this.updateDrawParams()
-    }
-
-    reset() {
-        this.anim!.finish()
-        this.relativePosition = -1
-        this.drawBeginWidth = 0
-        this.drawingWidth = 0
-        this.invalidate()
-    }
-
-    private updateDrawParams() {
-        const currentPercent = this.relativePosition / this.totalDuration
-        const drawTargetWidth = this.textWidth * currentPercent
-        this.anim!.reset({
-            duration: 250,
-            delay: 0,
-            easing: "linear",
-            fill: 'forwards',
-            direction: "normal",
-            iterations: 1,
-            begin: this.drawBeginWidth,
-            end: drawTargetWidth
-        })
-        this.anim!.play()
-        this.drawBeginWidth = drawTargetWidth
-    }
-
-    draw(context: DrawContext): void {
-        const canvas = context.canvas
-        // draw background
-        this.drawNormal(canvas)
-        // draw foreground
-        this.drawHighlight(canvas)
-    }
-
-    private drawNormal(canvas: drawing.Canvas) {
-        canvas.attachBrush(this.normalPen)
-        console.error("abc", this.lyricLine.text + "----" + this.beginX)
-        canvas.drawTextBlob(this.lyricTextBlob, this.beginX, this.beginY)
-        canvas.detachBrush()
-    }
-
-    private drawHighlight(canvas: drawing.Canvas) {
-        if (this.relativePosition > 0) {
-            this.endPoint.x = this.drawingWidth + this.beginX
-            const shaderEffect = drawing.ShaderEffect.createLinearGradient({ x: 0, y: 0 }, this.endPoint,
-                [this.textHighlightColor, this.textHighlightColor], drawing.TileMode.DECAL)
-            this.highlightPen.setShaderEffect(shaderEffect)
-            canvas.attachBrush(this.highlightPen)
-            canvas.drawTextBlob(this.lyricTextBlob, this.beginX, this.beginY)
-            canvas.detachBrush()
-        }
-    }
-}
-
-
-interface LrcWord {
-    text: string; // 单个字符
-    startTime: number; // 开始时间(ms)
-    endTime: number; // 结束时间(ms)
-}
-
-interface LrcLine {
-    text: string; // 完整文本
-    beginTime: number; // 行开始时间(ms)
-    endTime: number; // 行结束时间(ms)
-    wordList: LrcWord[]; // 逐字歌词
-}
-
-interface Lrc {
-    artist?: string; // 艺术家
-    title?: string; // 标题
-    album?: string; // 专辑
-    by?: string; // 制作
-    offset?: number; // 偏移量(ms)
-    lyricList: LrcLine[]; // 歌词行列表
-}
 
 class SampleLyricParser {
     parse(lyricLines: string[]): Lrc {
@@ -810,40 +199,107 @@ class SampleLyricParser {
     }
 }
 
-export class SimpleColor {
-    // hex, argb, string
-    private static hex2String(hex: number): string {
-        let hexString = hex.toString(16)
-        if (hexString.length < 6) {
-            let size = 6 - hexString.length
-            let fill = ""
-            for (let i = 0; i < size; i++) {
-                fill += 0
-            }
-            return "#" + fill + hexString
-        } else {
-            return "#" + hexString
-        }
+@Entry
+@ComponentV2
+struct Index2 {
+    private timer = -1
+    @Local focusIndex: number = -1
+    @Local userSeekIndex: number = -1
+    @Local progress: number = 0
+    @Require @Param controller: CcLrcController = new CcLrcController()
+    @Local lyric?: Lrc = undefined
+
+    aboutToAppear(): void {
+        // set controller
+        this.controller.textSize = 18
+        this.controller.lineSpace = 12
+        this.controller.textColor = 0xCC000000
+        this.controller.textHighlightColor = 0xffe7107f
+        this.lyric = new SampleLyricParser().parse(src1)
+        this.controller.lyric = this.lyric
     }
 
-    private static hexNumber2Argb(hex: number) {
-        let alpha = hex >> 24 & 0xff
-        let red = hex >> 16 & 0xff
-        let green = hex >> 8 & 0xff
-        let blue = hex & 0xff
-        return [alpha, red, green, blue]
+    @Builder
+    FadeOverlay() {
+        Column()
+            .width("100%")
+            .height("100%")
+            .hitTestBehavior(HitTestMode.Transparent)
+            .backgroundColor(Color.Transparent)
+            .linearGradient({
+                angle: 0,
+                colors: [[this.controller.fadeColor, 0], ["#00ffffff", 0.2], ["#00ffffff", 0.8], [this.controller.fadeColor, 1]],
+                repeating: false
+            })
     }
 
-    static hex2Argb(hex: string | number): number[] {
-        if (typeof hex == 'number') {
-            return SimpleColor.hexNumber2Argb(hex)
-        } else {
-            let hexString = hex.replace("#", "")
-            if (hexString.length < 8) {
-                hexString = "ff" + hexString
+    build() {
+        Column() {
+            Stack() {
+                CcLyricView({
+                    controller: this.controller
+                })
             }
-            let hex2 = Number.parseInt(hexString, 16)
-            return SimpleColor.hexNumber2Argb(hex2)
+            .width("100%")
+            .layoutWeight(1)
+
+            Slider({
+                value: this.progress,
+                max: this.lyric ? this.lyric.lyricList[this.lyric.lyricList.length-1].endTime : 0
+            }).width("100%").margin(8)
+                .onChange((value, mode) => {
+                    if (mode == SliderChangeMode.End) {
+                        this.progress = value
+                        this.controller.updatePosition(this.progress)
+                    }
+                })
+
+            Row() {
+                Button("start")
+                    .onClick(() => {
+                        this.mockPlayer()
+                    })
+
+                Button("change")
+                    .onClick(() => {
+                        this.mockChanged()
+                    })
+            }.width("100%")
+            .justifyContent(FlexAlign.SpaceEvenly)
         }
+        .height('100%')
+        .width('100%')
+    }
+
+    private changeCount = 0
+
+    private mockPlayer() {
+        clearInterval(this.timer)
+        this.progress = 0
+        this.timer = setInterval(() => {
+            this.progress += 300
+            this.controller.updatePosition(this.progress)
+        }, 300)
+    }
+
+    // change data source
+    private mockChanged() {
+        if (this.changeCount % 2 == 0) {
+            this.controller.lyric = new SampleLyricParser().parse(src2)
+            // replay
+            this.mockPlayer()
+        } else {
+            this.controller.lyric = new SampleLyricParser().parse(src1)
+            // replay
+            this.mockPlayer()
+        }
+        this.changeCount++
     }
 }
+
+
+
+
+
+
+

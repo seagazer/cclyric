@@ -1,5 +1,7 @@
 /**
  * The line info of lyric.
+ *
+ * @deprecated since v1.0.9
  */
 export class LyricLine {
     readonly text: string
