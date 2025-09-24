@@ -104,8 +104,8 @@ export struct CcLyricView {
                 this.viewWidth = this.getUIContext().vp2px(size.width as number)
                 this.middleLine =
                     Math.round(((h + this.controller.lineSpace) / (this.controller.textSize * 1.5 + this.controller.lineSpace) - 1) / 2)
-                console.warn("abc", "h= " + h + ", line= " + (this.controller.textSize) + ", lines= " + this.middleLine)
-                // todo 动态计算填充个数
+                MediaLogger.i(TAG, "view height= " + h + ", middle line= " + this.middleLine)
+                this.lyric = this.controller.getLyric()
                 if (this.lyric != undefined) {
                     this.setDataSource(this.lyric)
                 }
@@ -143,7 +143,6 @@ export struct CcLyricView {
             const line = lines[i];
             // measure and break line
             const textWidth = this.measureText(line.text, this.controller.textSize, 1.1)
-            // console.info("abc", line.text + ", textWidth= " + textWidth + ", viewWidth= " + this.maxWidth)
             if (textWidth > this.viewWidth) {
                 // break line
                 this.breakLine(line, textWidth)
@@ -163,20 +162,17 @@ export struct CcLyricView {
             const singleLineCharSize = Math.floor(lineWordList.length * this.viewWidth / textWidth) //单行字符数
             const maxLineCharSize = lineWordList.length
             const breakLines = Math.floor(line.text.length / singleLineCharSize) + 1 //折行数
-            // console.info("abc", JSON.stringify(lineWordList))
-            // todo break line normal lrc, not krc
             for (let j = 0; j < breakLines; j++) {
                 const begin = singleLineCharSize * j
                 const end = Math.min(begin + singleLineCharSize, maxLineCharSize)
-                const singLineText = line.text.substring(begin, end) //[begin,end)
-                // console.warn("abc", singLineText + "--- " + begin + "->" + end)
-                const singLrcLine: LrcLine = {
-                    text: singLineText,
+                const text = line.text.substring(begin, end) //[begin,end)
+                const singKrcLine: LrcLine = {
+                    text: text,
                     beginTime: lineWordList[begin].beginTime,
                     endTime: lineWordList[end - 1].endTime,
                     wordList: lineWordList.slice(begin, end) //[begin,end)
                 }
-                const view = this.createLrcView(singLrcLine)
+                const view = this.createLrcView(singKrcLine)
                 this.lrcDataSource.addData(view, false)
             }
         } else { //lrc
@@ -188,7 +184,7 @@ export struct CcLyricView {
                 const begin = singleLineCharSize * j
                 const end = Math.min(begin + singleLineCharSize, line.text.length)
                 const text = line.text.substring(begin, end)
-                const beginTime = j * lineTime
+                const beginTime = j * lineTime + line.beginTime
                 const endTime = Math.min(beginTime + lineTime, line.endTime)
                 const singLrcLine: LrcLine = {
                     text: text,
@@ -237,11 +233,11 @@ export struct CcLyricView {
                 if (this.focusIndex != i) {
                     if (this.focusView) {
                         this.focusView.stop()
-                        console.error("abc", this.focusView.getLyric().text + "----stop")
+                        MediaLogger.d(TAG, this.focusView.getLyric().text + "--stop")
                         this.focusView = undefined
                     }
                     this.focusView = this.lrcDataSource.getData(i)
-                    console.warn("abc", this.focusView?.getLyric().text + "----start")
+                    MediaLogger.d(TAG, this.focusView?.getLyric().text + "--start")
                     this.focusIndex = i
                     const centerScrollIndex = i - this.middleLine
                     this.scroller.scrollToIndex(centerScrollIndex, true)

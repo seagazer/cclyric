@@ -1,4 +1,5 @@
 import { Lrc } from './bean/Lrc'
+import { MediaLogger } from './extensions/MediaLogger'
 
 /**
  * The controller of CcLyricView to control the view.
@@ -7,13 +8,21 @@ import { Lrc } from './bean/Lrc'
  * Date: 2025/9/21
  */
 export class CcLrcController {
+    private lyric?: Lrc | undefined = undefined
     private _textSize: number = 20
     private _lineSpace: number = 12
-    private _lyric?: Lrc | undefined = undefined
     private _textColor: number = 0xff000000
     private _textHighlightColor: number = 0xffff0000
-    private _emptyHint: ResourceStr = "没有歌词";
-    private _fadeColor: ResourceColor = "#ffffffff";
+    private _emptyHint: ResourceStr = "没有歌词"
+    private _fadeColor: ResourceColor = "#ffffffff"
+
+    /**
+     * Open the debug log or not, default is false.
+     * @param debug
+     */
+    setDebugger(debug: boolean) {
+        MediaLogger.setDebugger(debug)
+    }
 
     /**
      * Set the hint when the lyric is null.
@@ -45,13 +54,13 @@ export class CcLrcController {
      * Set the lyric.
      * @param value The lyric.
      */
-    public set lyric(value: Lrc | undefined) {
-        this._lyric = value
+    public setLyric(value: Lrc | undefined) {
+        this.lyric = value
         this.onDataChanged?.(value)
     }
 
-    public get lyric(): Lrc | undefined {
-        return this._lyric
+    public getLyric(): Lrc | undefined {
+        return this.lyric
     }
 
     /**

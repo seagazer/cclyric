@@ -16,6 +16,7 @@ export { LyricController } from './src/main/ets/LyricController'
 
 export { LyricHelper } from './src/main/ets/LyricHelper'
 
+// new component
 export { Lrc } from './src/main/ets/bean/Lrc'
 
 export { LrcLine } from './src/main/ets/bean/LrcLine'
