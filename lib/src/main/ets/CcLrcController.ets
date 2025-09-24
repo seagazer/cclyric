@@ -15,6 +15,10 @@ export class CcLrcController {
     private _emptyHint: ResourceStr = "没有歌词";
     private _fadeColor: ResourceColor = "#ffffffff";
 
+    /**
+     * Set the hint when the lyric is null.
+     * @param value The hint text.
+     */
     public set emptyHint(value: ResourceStr) {
         this._emptyHint = value;
         this.invalidate()
@@ -24,6 +28,10 @@ export class CcLrcController {
         return this._emptyHint;
     }
 
+    /**
+     * Set the fade color on edge of the lyric view.
+     * @param value The fade color.
+     */
     public set fadeColor(value: ResourceColor) {
         this._fadeColor = value;
         this.invalidate()
@@ -33,16 +41,23 @@ export class CcLrcController {
         return this._fadeColor;
     }
 
+    /**
+     * Set the lyric.
+     * @param value The lyric.
+     */
     public set lyric(value: Lrc | undefined) {
         this._lyric = value
         this.onDataChanged?.(value)
-        // todo lrc changed
     }
 
     public get lyric(): Lrc | undefined {
         return this._lyric
     }
 
+    /**
+     * Set the text size of lyric.
+     * @param value The text size, the unit is vp.
+     */
     public set textSize(value: number) {
         this._textSize = value
         this.invalidate()
@@ -52,6 +67,10 @@ export class CcLrcController {
         return this._textSize
     }
 
+    /**
+     * Set the space between lyric line.
+     * @param value The space value, the unit is vp.
+     */
     public set lineSpace(value: number) {
         this._lineSpace = value
         this.invalidate()
@@ -61,6 +80,10 @@ export class CcLrcController {
         return this._lineSpace
     }
 
+    /**
+     * Set the text color of lyric.
+     * @param value The text color.
+     */
     public set textColor(value) {
         this._textColor = value
         this.invalidate()
@@ -70,6 +93,10 @@ export class CcLrcController {
         return this._textColor
     }
 
+    /**
+     * Set the highlight text color of lyric.
+     * @param value The text color.
+     */
     public set textHighlightColor(value: number) {
         this._textHighlightColor = value
         this.invalidate()
@@ -79,6 +106,10 @@ export class CcLrcController {
         return this._textHighlightColor
     }
 
+    /**
+     * Update the progress of media player.
+     * @param position The progress of media player, the unit is ms.
+     */
     updatePosition(position: number) {
         this.onProgressChanged?.(position)
     }
@@ -87,7 +118,16 @@ export class CcLrcController {
         this.onAttributeChanged?.()
     }
 
+    /**
+     * Attention: Not call by user.
+     */
     onProgressChanged?: (position: number) => void = undefined
+    /**
+     * Attention: Not call by user.
+     */
     onAttributeChanged?: () => void = undefined
+    /**
+     * Attention: Not call by user.
+     */
     onDataChanged?: (lyric: Lrc | undefined) => void = undefined
 }

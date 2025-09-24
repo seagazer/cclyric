@@ -24,7 +24,7 @@ export struct CcLyricView {
     private focusView?: LrcLineView = undefined
     private scroller = new Scroller()
     private middleLine = -1
-    private maxWidth = 0
+    private viewWidth = 0
 
     aboutToAppear(): void {
         // set controller
@@ -101,7 +101,7 @@ export struct CcLyricView {
         .onSizeChange((_, size) => {
             if (this.middleLine === -1) {
                 const h = size.height as number
-                this.maxWidth = this.getUIContext().vp2px(size.width as number)
+                this.viewWidth = this.getUIContext().vp2px(size.width as number)
                 this.middleLine =
                     Math.round(((h + this.controller.lineSpace) / (this.controller.textSize * 1.5 + this.controller.lineSpace) - 1) / 2)
                 console.warn("abc", "h= " + h + ", line= " + (this.controller.textSize) + ", lines= " + this.middleLine)
@@ -144,7 +144,7 @@ export struct CcLyricView {
             // measure and break line
             const textWidth = this.measureText(line.text, this.controller.textSize, 1.1)
             // console.info("abc", line.text + ", textWidth= " + textWidth + ", viewWidth= " + this.maxWidth)
-            if (textWidth > this.maxWidth) {
+            if (textWidth > this.viewWidth) {
                 // break line
                 this.breakLine(line, textWidth)
             } else {
@@ -158,26 +158,47 @@ export struct CcLyricView {
     }
 
     private breakLine(line: LrcLine, textWidth: number) {
-        const singleLineCharSize = Math.floor(line.wordList.length * this.maxWidth / textWidth) //单行字符数
-        const maxLineCharSize = line.wordList.length
-        const breakLines = Math.floor(line.text.length / singleLineCharSize) + 1 //折行数
         const lineWordList = line.wordList //单个字符结构
-        // console.info("abc", JSON.stringify(lineWordList))
-        // todo break line normal lrc, not krc
-        for (let j = 0; j < breakLines; j++) {
-            const begin = singleLineCharSize * j
-            const end = Math.min(begin + singleLineCharSize, maxLineCharSize)
-            const singLineText = line.text.substring(begin, end) //[begin,end)
-
-            // console.warn("abc", singLineText + "--- " + begin + "->" + end)
-            const singLrcLine: LrcLine = {
-                text: singLineText,
-                beginTime: lineWordList[begin].startTime,
-                endTime: lineWordList[end - 1].endTime,
-                wordList: lineWordList.slice(begin, end) //[begin,end)
+        if (lineWordList !== undefined && lineWordList.length > 0) { //krc
+            const singleLineCharSize = Math.floor(lineWordList.length * this.viewWidth / textWidth) //单行字符数
+            const maxLineCharSize = lineWordList.length
+            const breakLines = Math.floor(line.text.length / singleLineCharSize) + 1 //折行数
+            // console.info("abc", JSON.stringify(lineWordList))
+            // todo break line normal lrc, not krc
+            for (let j = 0; j < breakLines; j++) {
+                const begin = singleLineCharSize * j
+                const end = Math.min(begin + singleLineCharSize, maxLineCharSize)
+                const singLineText = line.text.substring(begin, end) //[begin,end)
+                // console.warn("abc", singLineText + "--- " + begin + "->" + end)
+                const singLrcLine: LrcLine = {
+                    text: singLineText,
+                    beginTime: lineWordList[begin].beginTime,
+                    endTime: lineWordList[end - 1].endTime,
+                    wordList: lineWordList.slice(begin, end) //[begin,end)
+                }
+                const view = this.createLrcView(singLrcLine)
+                this.lrcDataSource.addData(view, false)
             }
-            const view = this.createLrcView(singLrcLine)
-            this.lrcDataSource.addData(view, false)
+        } else { //lrc
+            const singleLineCharSize = Math.floor(line.text.length * this.viewWidth / textWidth)
+            const breakLines = Math.floor(line.text.length / singleLineCharSize) + 1
+            const duration = line.endTime - line.beginTime
+            const lineTime = duration * singleLineCharSize / line.text.length
+            for (let j = 0; j < breakLines; j++) {
+                const begin = singleLineCharSize * j
+                const end = Math.min(begin + singleLineCharSize, line.text.length)
+                const text = line.text.substring(begin, end)
+                const beginTime = j * lineTime
+                const endTime = Math.min(beginTime + lineTime, line.endTime)
+                const singLrcLine: LrcLine = {
+                    text: text,
+                    beginTime: beginTime,
+                    endTime: endTime,
+                }
+                const view = this.createLrcView(singLrcLine)
+                this.lrcDataSource.addData(view, false)
+
+            }
         }
     }
 

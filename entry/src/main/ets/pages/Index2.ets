@@ -181,7 +181,7 @@ class SampleLyricParser {
             const wordList: LrcWord[] = chars.map((text, i) => {
                 const data: LrcWord = {
                     text,
-                    startTime: times[i],
+                    beginTime: times[i],
                     endTime: times[i + 1]
                 }
                 return data
