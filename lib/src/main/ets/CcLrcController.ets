@@ -13,6 +13,7 @@ export class CcLrcController {
     private _lineSpace: number = 12
     private _textColor: number = 0xff000000
     private _textHighlightColor: number = 0xffff0000
+    private _highlightScale: number = 1.1
     private _emptyHint: ResourceStr = "没有歌词"
     private _fadeColor: ResourceColor = "#ffffffff"
 
@@ -113,6 +114,19 @@ export class CcLrcController {
 
     public get textHighlightColor(): number {
         return this._textHighlightColor
+    }
+
+    /**
+     * Set the highlight scale of the text, default is 1.1f.
+     * @param value The scale value.
+     */
+    public set highlightScale(value: number) {
+        this._highlightScale = value
+        this.onAttributeChanged?.()
+    }
+
+    public get highlightScale(): number {
+        return this._highlightScale
     }
 
     /**

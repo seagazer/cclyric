@@ -2,6 +2,9 @@ import { AnimatorResult, FrameNode, NodeController, RenderNode } from '@kit.ArkU
 import { LrcLine } from '../bean/LrcLine'
 import { common2D, drawing } from '@kit.ArkGraphics2D'
 import { ColorHelper } from '../extensions/ColorHelper'
+import { MediaLogger } from '../extensions/MediaLogger'
+
+const TAG = "[LrcLineView]"
 
 /**
  *
@@ -72,7 +75,7 @@ export class LrcLineView extends NodeController {
 
     aboutToResize(size: Size): void {
         if (this.isEmptyLine) {
-            // todo warning
+            MediaLogger.w(TAG, "The lyric is null!")
             return
         }
         if (this.lyricTextView === null) {

@@ -17,7 +17,10 @@ const TAG = "[CcLyricView]"
  */
 @ComponentV2
 export struct CcLyricView {
-    @Require @Param controller: CcLrcController = new CcLrcController()
+    /**
+     * The controller to control this view.
+     */
+    @Require @Param controller: CcLrcController
     @Local lrcDataSource: ListAdapter<LrcLineView | undefined> = new ListAdapter()
     @Local focusIndex: number = -1
     @Local lyric?: Lrc = undefined
@@ -35,6 +38,9 @@ export struct CcLyricView {
             this.focusView = undefined
             this.lyric = lrc
             this.setDataSource(lrc)
+        }
+        this.controller.onAttributeChanged = () => {
+
         }
     }
 
@@ -70,7 +76,8 @@ export struct CcLyricView {
                         }
                         .width("100%")
                         .height(this.controller.textSize * 1.5)
-                        .scale(this.focusIndex === index ? { x: 1.1, y: 1.1 } : { x: 1, y: 1 })
+                        .scale(this.focusIndex === index ? { x: this.controller.highlightScale, y: this.controller.highlightScale } :
+                            { x: 1, y: 1 })
                         .animation({ duration: 300 })
                     }, (krc: LrcLineView | undefined, index: number) => {
                         if (krc != undefined) {
@@ -142,7 +149,7 @@ export struct CcLyricView {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             // measure and break line
-            const textWidth = this.measureText(line.text, this.controller.textSize, 1.1)
+            const textWidth = this.measureText(line.text, this.controller.textSize, this.controller.highlightScale)
             if (textWidth > this.viewWidth) {
                 // break line
                 this.breakLine(line, textWidth)
@@ -233,11 +240,11 @@ export struct CcLyricView {
                 if (this.focusIndex != i) {
                     if (this.focusView) {
                         this.focusView.stop()
-                        MediaLogger.d(TAG, this.focusView.getLyric().text + "--stop")
+                        MediaLogger.d(TAG, this.focusView.getLyric().text + "--unHighlight")
                         this.focusView = undefined
                     }
                     this.focusView = this.lrcDataSource.getData(i)
-                    MediaLogger.d(TAG, this.focusView?.getLyric().text + "--start")
+                    MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
                     this.focusIndex = i
                     const centerScrollIndex = i - this.middleLine
                     this.scroller.scrollToIndex(centerScrollIndex, true)
