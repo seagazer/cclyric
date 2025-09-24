@@ -6,13 +6,11 @@ import { MockData, StringParser } from './MockData';
 @ComponentV2
 struct Index2 {
     private timer = -1
-    @Local focusIndex: number = -1
-    @Local userSeekIndex: number = -1
+    private changeCount = 0
+    private parser = new StringParser()
     @Local progress: number = 0
     @Require @Param controller: CcLrcController = new CcLrcController()
     @Local lyric?: Lrc = undefined
-    private changeCount = 0
-    private parser = new StringParser()
 
     aboutToAppear(): void {
         // set controller
@@ -50,7 +48,7 @@ struct Index2 {
             Row() {
                 Button("start")
                     .onClick(() => {
-                        this.mockPlayer()
+                        this.mockMediaPlay()
                     })
 
                 Button("change")
@@ -74,7 +72,7 @@ struct Index2 {
         this.controller.setLyric(undefined)
     }
 
-    private mockPlayer() {
+    private mockMediaPlay() {
         clearInterval(this.timer)
         this.progress = 0
         this.timer = setInterval(() => {
@@ -88,14 +86,12 @@ struct Index2 {
         if (this.changeCount % 2 == 0) {
             this.lyric = this.parser.parse(MockData.krc2)
             this.controller.setLyric(this.lyric)
-            // replay
-            this.mockPlayer()
         } else {
             this.lyric = this.parser.parse(MockData.krc1)
             this.controller.setLyric(this.lyric)
-            // replay
-            this.mockPlayer()
         }
+        // replay
+        this.mockMediaPlay()
         this.changeCount++
     }
 }
