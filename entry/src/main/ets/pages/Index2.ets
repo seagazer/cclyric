@@ -9,8 +9,8 @@ struct Index2 {
     private changeCount = 0
     private parser = new StringParser()
     @Local progress: number = 0
-    @Require @Param controller: CcLrcController = new CcLrcController()
     @Local lyric?: Lrc = undefined
+    private controller: CcLrcController = new CcLrcController()
 
     aboutToAppear(): void {
         // set controller

@@ -7,10 +7,33 @@ import { LrcLine } from './LrcLine';
  * Date: 2025/9/21
  */
 export interface Lrc {
-    artist?: string; // 艺术家
-    title?: string; // 标题
-    album?: string; // 专辑
-    by?: string; // 制作
-    offset?: number; // 偏移量(ms)
-    lyricList: LrcLine[]; // 歌词行列表
+    /**
+     * The artist info.
+     */
+    artist?: string;
+
+    /**
+     * The media title.
+     */
+    title?: string;
+
+    /**
+     * The album info.
+     */
+    album?: string;
+
+    /**
+     * The creator info.
+     */
+    by?: string;
+
+    /**
+     * The offset.
+     */
+    offset?: number;
+
+    /**
+     * The lyric line list.
+     */
+    lyricList: LrcLine[];
 }

@@ -5,7 +5,18 @@
  * Date: 2025/9/21
  */
 export interface LrcWord {
-    text: string; // 单个字符
-    beginTime: number; // 开始时间(ms)
-    endTime: number; // 结束时间(ms)
+    /**
+     * The text of lyric word.
+     */
+    text: string;
+
+    /**
+     * The begin time of the lyric word, the unit is ms.
+     */
+    beginTime: number;
+
+    /**
+     * The begin time of the lyric word, the unit is ms.
+     */
+    endTime: number;
 }

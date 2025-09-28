@@ -14,7 +14,7 @@ export class CcLrcController {
     private _textColor: number = 0xff000000
     private _textHighlightColor: number = 0xffff0000
     private _highlightScale: number = 1.1
-    private _emptyHint: ResourceStr = "没有歌词"
+    private _emptyHint: ResourceStr = "--"
     private _fadeColor: ResourceColor = "#ffffffff"
 
     /**
@@ -27,10 +27,10 @@ export class CcLrcController {
 
     /**
      * Set the hint when the lyric is null.
-     * @param value The hint text.
+     * @param hintText The hint text.
      */
-    public setEmptyHint(value: ResourceStr): CcLrcController {
-        this._emptyHint = value;
+    public setEmptyHint(hintText: ResourceStr): CcLrcController {
+        this._emptyHint = hintText;
         this.invalidate()
         return this
     }
