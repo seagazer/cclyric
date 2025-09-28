@@ -200,14 +200,14 @@ export struct CcLyricView {
     }
 
     private breakLine(line: LrcLine, textWidth: number) {
-        const lineWordList = line.wordList //单个字符结构
+        const lineWordList = line.wordList
         if (lineWordList !== undefined && lineWordList.length > 0) { //krc
-            const singleLineCharSize = Math.floor(lineWordList.length * this.viewWidth / textWidth) //单行字符数
-            const maxLineCharSize = lineWordList.length
-            const breakLines = Math.floor(line.text.length / singleLineCharSize) + 1 //折行数
-            for (let j = 0; j < breakLines; j++) {
-                const begin = singleLineCharSize * j
-                const end = Math.min(begin + singleLineCharSize, maxLineCharSize)
+            const krcWordSize = lineWordList.length
+            const singleKrcLineWordSize = Math.floor(krcWordSize * this.viewWidth / textWidth)
+            const breakLines = Math.floor(krcWordSize / singleKrcLineWordSize) + 1
+            for (let i = 0; i < breakLines; i++) {
+                const begin = singleKrcLineWordSize * i
+                const end = Math.min(begin + singleKrcLineWordSize, krcWordSize)
                 const text = line.text.substring(begin, end) //[begin,end)
                 const singKrcLine: LrcLine = {
                     text: text,
@@ -219,16 +219,17 @@ export struct CcLyricView {
                 this.lrcDataSource.addData(view, false)
             }
         } else { //lrc
-            const singleLineCharSize = Math.floor(line.text.length * this.viewWidth / textWidth)
-            const breakLines = Math.floor(line.text.length / singleLineCharSize) + 1
-            const duration = line.endTime - line.beginTime
-            const lineTime = duration * singleLineCharSize / line.text.length
-            for (let j = 0; j < breakLines; j++) {
-                const begin = singleLineCharSize * j
-                const end = Math.min(begin + singleLineCharSize, line.text.length)
+            const lrcCharSize = line.text.length
+            const singleLrcLineCharSize = Math.floor(lrcCharSize * this.viewWidth / textWidth)
+            const lineTotalDuration = line.endTime - line.beginTime
+            const singleLineDuration = lineTotalDuration * singleLrcLineCharSize / lrcCharSize
+            const breakLines = Math.floor(lrcCharSize / singleLrcLineCharSize) + 1
+            for (let i = 0; i < breakLines; i++) {
+                const begin = singleLrcLineCharSize * i
+                const end = Math.min(begin + singleLrcLineCharSize, lrcCharSize)
                 const text = line.text.substring(begin, end)
-                const beginTime = j * lineTime + line.beginTime
-                const endTime = Math.min(beginTime + lineTime, line.endTime)
+                const beginTime = i * singleLineDuration + line.beginTime
+                const endTime = Math.min(beginTime + singleLineDuration, line.endTime)
                 const singLrcLine: LrcLine = {
                     text: text,
                     beginTime: beginTime,
@@ -236,7 +237,6 @@ export struct CcLyricView {
                 }
                 const view = this.createLrcView(singLrcLine)
                 this.lrcDataSource.addData(view, false)
-
             }
         }
     }
