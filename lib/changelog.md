@@ -1,6 +1,10 @@
 # 1.0.8
-- 优化歌词文件解析性能
-- 
+- 新增CcLyricView组件和CcLrcController控制器
+- 新增Lrc数据结构，配合CcLyricView使用
+- 支持卡拉ok逐字歌词效果
+- 歌词组件性能大幅增强
+- 废弃LyricView和LyricView2
+
 # 1.0.7
 - 适配OpenHarmony 5.0-Release和HarmonyOS Next
 
