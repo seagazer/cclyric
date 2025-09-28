@@ -29,35 +29,38 @@ export class CcLrcController {
      * Set the hint when the lyric is null.
      * @param value The hint text.
      */
-    public set emptyHint(value: ResourceStr) {
+    public setEmptyHint(value: ResourceStr): CcLrcController {
         this._emptyHint = value;
         this.invalidate()
+        return this
     }
 
-    public get emptyHint(): ResourceStr {
+    public getEmptyHint(): ResourceStr {
         return this._emptyHint;
     }
 
     /**
      * Set the fade color on edge of the lyric view.
-     * @param value The fade color.
+     * @param color The fade color.
      */
-    public set fadeColor(value: ResourceColor) {
-        this._fadeColor = value;
+    public setFadeColor(color: ResourceColor): CcLrcController {
+        this._fadeColor = color;
         this.invalidate()
+        return this
     }
 
-    public get fadeColor(): ResourceColor {
+    public getFadeColor(): ResourceColor {
         return this._fadeColor;
     }
 
     /**
      * Set the lyric.
-     * @param value The lyric.
+     * @param data The lyric.
      */
-    public setLyric(value: Lrc | undefined) {
-        this.lyric = value
-        this.onDataChanged?.(value)
+    public setLyric(data: Lrc | undefined): CcLrcController {
+        this.lyric = data
+        this.onDataChanged?.(data)
+        return this
     }
 
     public getLyric(): Lrc | undefined {
@@ -66,66 +69,71 @@ export class CcLrcController {
 
     /**
      * Set the text size of lyric.
-     * @param value The text size, the unit is vp.
+     * @param size The text size, the unit is vp.
      */
-    public set textSize(value: number) {
-        this._textSize = value
+    public setTextSize(size: number): CcLrcController {
+        this._textSize = size
         this.invalidate()
+        return this
     }
 
-    public get textSize(): number {
+    public getTextSize(): number {
         return this._textSize
     }
 
     /**
      * Set the space between lyric line.
-     * @param value The space value, the unit is vp.
+     * @param space The space value, the unit is vp.
      */
-    public set lineSpace(value: number) {
-        this._lineSpace = value
+    public setLineSpace(space: number): CcLrcController {
+        this._lineSpace = space
         this.invalidate()
+        return this
     }
 
-    public get lineSpace(): number {
+    public getLineSpace(): number {
         return this._lineSpace
     }
 
     /**
      * Set the text color of lyric.
-     * @param value The text color.
+     * @param color The text color.
      */
-    public set textColor(value) {
-        this._textColor = value
+    public setTextColor(color: number): CcLrcController {
+        this._textColor = color
         this.invalidate()
+        return this
     }
 
-    public get textColor() {
+    public getTextColor() {
         return this._textColor
     }
 
     /**
      * Set the highlight text color of lyric.
-     * @param value The text color.
+     * @param color The text color.
      */
-    public set textHighlightColor(value: number) {
-        this._textHighlightColor = value
+    public setTextHighlightColor(color: number): CcLrcController {
+        this._textHighlightColor = color
         this.invalidate()
+        return this
     }
 
-    public get textHighlightColor(): number {
+    public getTextHighlightColor(): number {
         return this._textHighlightColor
     }
 
     /**
      * Set the highlight scale of the text, default is 1.1f.
-     * @param value The scale value.
+     * @param scale The scale value.
      */
-    public set highlightScale(value: number) {
-        this._highlightScale = value
-        this.onAttributeChanged?.()
+    public setHighlightScale(scale: number): CcLrcController {
+        this._highlightScale = scale
+        this.invalidate()
+        return this
     }
 
-    public get highlightScale(): number {
+    public getHighlightScale(): number {
         return this._highlightScale
     }
 

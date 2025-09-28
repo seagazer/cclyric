@@ -24,13 +24,22 @@ export struct CcLyricView {
     @Local lrcDataSource: ListAdapter<LrcLineView | undefined> = new ListAdapter()
     @Local focusIndex: number = -1
     @Local lyric?: Lrc = undefined
+    @Local lineSpace: number = 0
+    @Local fadeColor: ResourceColor = "#00ffffff"
+    @Local emptyHint: ResourceStr = ""
     private focusView?: LrcLineView = undefined
     private scroller = new Scroller()
     private middleLine = -1
     private viewWidth = 0
+    private isUserMoving: boolean = false
+    private userMoveTimeout = -1
+    private centerIndex = -1
 
     aboutToAppear(): void {
         // set controller
+        this.emptyHint = this.controller.getEmptyHint()
+        this.lineSpace = this.controller.getLineSpace()
+        this.fadeColor = this.controller.getFadeColor()
         this.controller.onProgressChanged = (position) => {
             this.updatePosition(position)
         }
@@ -40,8 +49,23 @@ export struct CcLyricView {
             this.setDataSource(lrc)
         }
         this.controller.onAttributeChanged = () => {
-
+            MediaLogger.d(TAG, "attribute changed: " + JSON.stringify(this.controller))
+            this.emptyHint = this.controller.getEmptyHint()
+            this.lineSpace = this.controller.getLineSpace()
+            this.fadeColor = this.controller.getFadeColor()
+            for (let i = 0; i < this.lrcDataSource.totalCount(); i++) {
+                const itemView = this.lrcDataSource.getData(i)
+                if (itemView !== undefined) {
+                    itemView.setTextSize(this.controller.getTextSize())
+                    itemView.setTextColor(this.controller.getTextColor())
+                    itemView.setTextHighlightColor(this.controller.getTextHighlightColor())
+                }
+            }
         }
+    }
+
+    aboutToDisappear(): void {
+        clearInterval(this.userMoveTimeout)
     }
 
     @Builder
@@ -53,7 +77,7 @@ export struct CcLyricView {
             .backgroundColor(Color.Transparent)
             .linearGradient({
                 angle: 0,
-                colors: [[this.controller.fadeColor, 0], ["#00ffffff", 0.2], ["#00ffffff", 0.8], [this.controller.fadeColor, 1]],
+                colors: [[this.fadeColor, 0], ["#00ffffff", 0.2], ["#00ffffff", 0.8], [this.fadeColor, 1]],
                 repeating: false
             })
     }
@@ -61,7 +85,7 @@ export struct CcLyricView {
     build() {
         Stack() {
             if (this.lyric !== undefined && this.lrcDataSource !== undefined && this.lrcDataSource.totalCount() > 0) {
-                List({ scroller: this.scroller, space: this.controller.lineSpace }) {
+                List({ scroller: this.scroller, space: this.lineSpace }) {
                     LazyForEach(this.lrcDataSource, (krc: LrcLineView | undefined, index: number) => {
                         ListItem() {
                             if (krc && !krc.isEmpty()) {
@@ -75,8 +99,8 @@ export struct CcLyricView {
                             }
                         }
                         .width("100%")
-                        .height(this.controller.textSize * 1.5)
-                        .scale(this.focusIndex === index ? { x: this.controller.highlightScale, y: this.controller.highlightScale } :
+                        .height(this.controller.getTextSize() * 1.5)
+                        .scale(this.focusIndex === index ? { x: this.controller.getHighlightScale(), y: this.controller.getHighlightScale() } :
                             { x: 1, y: 1 })
                         .animation({ duration: 300 })
                     }, (krc: LrcLineView | undefined, index: number) => {
@@ -92,15 +116,26 @@ export struct CcLyricView {
                 .edgeEffect(EdgeEffect.None)
                 .scrollBar(BarState.Off)
                 .onScrollIndex((start, end, center) => {
-                    // currentCenter lyric line is center+1
+                    this.centerIndex = center
                 })
                 .onTouch((event) => {
-                    // todo handle seek action
+                    switch (event.type) {
+                        case TouchType.Down:
+                            clearInterval(this.userMoveTimeout)
+                            this.isUserMoving = true
+                            break
+                        case TouchType.Up:
+                        case TouchType.Cancel:
+                            this.userMoveTimeout = setTimeout(() => {
+                                this.isUserMoving = false
+                            }, 800)
+                            break
+                    }
                 })
             } else {
-                Text(this.controller.emptyHint)
-                    .fontSize(this.controller.textSize)
-                    .fontColor(this.controller.textColor)
+                Text(this.emptyHint)
+                    .fontSize(this.controller.getTextSize())
+                    .fontColor(this.controller.getTextColor())
             }
         }
         .width("100%")
@@ -110,7 +145,8 @@ export struct CcLyricView {
                 const h = size.height as number
                 this.viewWidth = this.getUIContext().vp2px(size.width as number)
                 this.middleLine =
-                    Math.round(((h + this.controller.lineSpace) / (this.controller.textSize * 1.5 + this.controller.lineSpace) - 1) / 2)
+                    Math.round(((h + this.controller.getLineSpace()) / (this.controller.getTextSize() * 1.5 + this.controller.getLineSpace()) - 1) /
+                        2)
                 MediaLogger.i(TAG, "view height= " + h + ", middle line= " + this.middleLine)
                 this.lyric = this.controller.getLyric()
                 if (this.lyric != undefined) {
@@ -149,7 +185,7 @@ export struct CcLyricView {
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             // measure and break line
-            const textWidth = this.measureText(line.text, this.controller.textSize, this.controller.highlightScale)
+            const textWidth = this.measureText(line.text, this.controller.getTextSize(), this.controller.getHighlightScale())
             if (textWidth > this.viewWidth) {
                 // break line
                 this.breakLine(line, textWidth)
@@ -213,9 +249,9 @@ export struct CcLyricView {
 
     private createLrcView(line: LrcLine) {
         const view = new LrcLineView(line);
-        view.setTextSize(this.controller.textSize);
-        view.setTextColor(this.controller.textColor);
-        view.setTextHighlightColor(this.controller.textHighlightColor);
+        view.setTextSize(this.controller.getTextSize());
+        view.setTextColor(this.controller.getTextColor());
+        view.setTextHighlightColor(this.controller.getTextHighlightColor());
         return view;
     }
 
@@ -246,8 +282,10 @@ export struct CcLyricView {
                     this.focusView = this.lrcDataSource.getData(i)
                     MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
                     this.focusIndex = i
-                    const centerScrollIndex = i - this.middleLine
-                    this.scroller.scrollToIndex(centerScrollIndex, true)
+                    if (!this.isUserMoving) {
+                        const centerScrollIndex = i - this.middleLine
+                        this.scroller.scrollToIndex(centerScrollIndex, true)
+                    }
                 }
                 break
             }

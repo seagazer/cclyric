@@ -179,7 +179,7 @@ export class MockData {
     ];
 }
 
-// generate by ai
+// generate by cursor
 export class StringParser {
     parse(lyricLines: string[]): Lrc {
         const lyric: Lrc = {

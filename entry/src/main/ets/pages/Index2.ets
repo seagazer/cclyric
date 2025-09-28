@@ -15,11 +15,11 @@ struct Index2 {
     aboutToAppear(): void {
         // set controller
         this.controller.setDebugger(true)
-        this.controller.textSize = 18
-        this.controller.lineSpace = 12
-        this.controller.textColor = 0xCC000000
-        this.controller.textHighlightColor = 0xffe7107f
-        this.controller.fadeColor = "#ffffffff"
+        this.controller.setTextSize(18)
+            .setLineSpace(12)
+            .setTextColor(0xCC000000)
+            .setTextHighlightColor(0xffe7107f)
+            .setFadeColor("#ffffffff")
         this.lyric = this.parser.parse(MockData.krc1)
         this.controller.setLyric(this.lyric)
     }
@@ -58,6 +58,15 @@ struct Index2 {
                 Button("empty")
                     .onClick(() => {
                         this.setEmpty()
+                    })
+                Button("update")
+                    .onClick(() => {
+                        this.controller.setEmptyHint("No Lyric")
+                            .setLineSpace(8)
+                            .setTextSize(20)
+                            .setTextColor(0xFFAAE347)
+                            .setTextHighlightColor(0xFFD47F31)
+                            .setHighlightScale(1.2)
                     })
             }.width("100%")
             .justifyContent(FlexAlign.SpaceEvenly)
