@@ -1,6 +1,8 @@
-import { IParser, Lyric, LyricParser } from '@seagazer/cclyric';
 import fs from '@ohos.file.fs';
+import { Lyric } from '../bean/Lyric';
 import { printD, printW } from '../extensions/Extension';
+import { IParser } from './IParser';
+import { LyricParser } from './LyricParser';
 
 /**
  * Author: seagazer
