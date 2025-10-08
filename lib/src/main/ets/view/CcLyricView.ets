@@ -5,6 +5,7 @@ import { LrcLineView } from './LrcLineView'
 import { drawing } from '@kit.ArkGraphics2D'
 import { LrcLine } from '../bean/LrcLine'
 import { MediaLogger } from '../extensions/MediaLogger'
+import { duration2text } from '../extensions/Extension'
 
 
 const TAG = "[CcLyricView]"
@@ -21,19 +22,21 @@ export struct CcLyricView {
      * The controller to control this view.
      */
     @Require @Param controller: CcLrcController
+    @Param supportSeek: boolean = true
+    @Event onSeekAction: (position: number) => void
     @Local lrcDataSource: ListAdapter<LrcLineView | undefined> = new ListAdapter()
     @Local focusIndex: number = -1
     @Local lyric?: Lrc = undefined
     @Local lineSpace: number = 0
     @Local fadeColor: ResourceColor = "#00ffffff"
     @Local emptyHint: ResourceStr = ""
+    @Local isUserMoving: boolean = false
+    @Local centerLrcLine?: LrcLine = undefined
     private focusView?: LrcLineView = undefined
     private scroller = new Scroller()
     private middleLine = -1
     private viewWidth = 0
-    private isUserMoving: boolean = false
     private userMoveTimeout = -1
-    private centerIndex = -1
 
     aboutToAppear(): void {
         // set controller
@@ -84,6 +87,32 @@ export struct CcLyricView {
 
     build() {
         Stack() {
+            if (this.supportSeek) {
+                Row() {
+                    Text(this.centerLrcLine !== undefined ? duration2text(this.centerLrcLine.beginTime) : "--:--")
+                        .textAlign(TextAlign.Center)
+                        .fontSize(16)
+                        .width(56)
+                        .height("100%")
+                    Blank()
+                        .layoutWeight(1)
+                        .height(1)
+                        .backgroundColor("#80717171")
+                    Image($r('app.media.cclyric_play'))
+                        .width(56)
+                        .height("100%")
+                        .objectFit(ImageFit.Contain)
+                        .onClick(() => {
+                            if (this.centerLrcLine) {
+                                this.onSeekAction?.(this.centerLrcLine.beginTime)
+                            }
+                        })
+                }
+                .width("100%")
+                .height(this.controller.getTextSize() * 1.6)
+                .visibility(this.isUserMoving ? Visibility.Visible : Visibility.Hidden)
+                .animation({ duration: 300 })
+            }
             if (this.lyric !== undefined && this.lrcDataSource !== undefined && this.lrcDataSource.totalCount() > 0) {
                 List({ scroller: this.scroller, space: this.lineSpace }) {
                     LazyForEach(this.lrcDataSource, (krc: LrcLineView | undefined, index: number) => {
@@ -112,11 +141,15 @@ export struct CcLyricView {
                 }
                 .width("100%")
                 .height("100%")
+                .hitTestBehavior(HitTestMode.Transparent)
                 .overlay(this.FadeOverlay())
                 .edgeEffect(EdgeEffect.None)
                 .scrollBar(BarState.Off)
-                .onScrollIndex((start, end, center) => {
-                    this.centerIndex = center
+                .onScrollIndex((_, __, center) => {
+                    const view = this.lrcDataSource.getData(center)
+                    if (view !== undefined) {
+                        this.centerLrcLine = view.getLyric()
+                    }
                 })
                 .onTouch((event) => {
                     switch (event.type) {

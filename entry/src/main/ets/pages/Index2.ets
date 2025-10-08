@@ -28,7 +28,11 @@ struct Index2 {
         Column() {
             Stack() {
                 CcLyricView({
-                    controller: this.controller
+                    controller: this.controller,
+                    supportSeek: true, // support scroll seek
+                    onSeekAction: (position) => {
+                        this.mockPlayerSeek(position)
+                    }
                 })
             }
             .width("100%")
@@ -84,6 +88,16 @@ struct Index2 {
     private mockMediaPlay() {
         clearInterval(this.timer)
         this.progress = 0
+        this.timer = setInterval(() => {
+            this.progress += 300
+            this.controller.updatePosition(this.progress)
+        }, 300)
+    }
+
+    private mockPlayerSeek(position: number) {
+        clearInterval(this.timer)
+        this.progress = position
+        this.controller.updatePosition(this.progress)
         this.timer = setInterval(() => {
             this.progress += 300
             this.controller.updatePosition(this.progress)
