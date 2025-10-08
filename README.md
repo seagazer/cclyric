@@ -6,6 +6,7 @@
 
 - 支持逐字歌词(卡拉ok效果)
 - 支持逐行歌词
+- 支持滑动seek操作
 - 支持歌词滚动显示
 - 支持自定义样式，包括歌词行距，字体大小/颜色，聚焦大小/颜色等
 
@@ -18,7 +19,7 @@
 
 ## 注意事项
 
-- 从 1.0.8 版本开始，新增逐字歌词能力，新增了 CcLyricView 组件和 CcLrcController 控制器，取缔之前的 LyricView（不再维护）。
+- 从 1.0.8 版本开始，新增逐字歌词能力，新增了 CcLyricView 组件和 CcLrcController 控制器，取替之前的 LyricView（不再维护）。
 - 从 1.0.8 版本开始，不再提供默认的歌词解析器，建议提供数据源格式和Lrc数据结构，使用AI工具编写解析代码。
 
 ## 依赖方式
@@ -31,39 +32,15 @@ ohpm install @seagazer/cclyric
 
 **cclyric** 提供视图组件 **CcLyricView**，用户可以通过 **CcLyricController** 来操作组件。
 
-### Lrc
+### CcLyricView
 
-歌词数据结构
+歌词组件
 
-| 属性      | 属性类型        | 属性说明     |
-| --------- | --------------- | ------------ |
-| artist    | string          | 艺术家       |
-| title     | string          | 标题         |
-| album     | string          | 专辑         |
-| by        | string          | 作者         |
-| offset    | number          | 时间戳偏移量 |
-| lyricList | Array\<LrcLine> | 歌词行数组   |
-
-### LrcLine
-
-单行歌词数据结构
-
-| 属性      | 属性类型               | 属性说明                                     |
-| --------- | ---------------------- | -------------------------------------------- |
-| text      | string                 | 歌词内容                                     |
-| beginTime | number                 | 当前行歌词起始时间戳                         |
-| endTime   | number                 | 当前行歌词结束时间戳                         |
-| wordList  | LrcWord[] \| undefined | 单个字的时间信息，Lrc逐行歌词场景为undefined |
-
-### LrcWord
-
-单个字数据结构
-
-| 属性      | 属性类型 | 属性说明         |
-| --------- | -------- | ---------------- |
-| text      | string   | 字符文本         |
-| beginTime | number   | 该字符起始时间戳 |
-| endTime   | number   | 该字符结束时间戳 |
+| 属性         | 属性类型                   | 属性说明                        | 必填 |
+| ------------ | -------------------------- | ------------------------------- | ---- |
+| controller   | CcLyricController          | 歌词组件控制器                  | 是   |
+| supportSeek  | boolean                    | 是否开启滑动seek能力，默认false | 否   |
+| onSeekAction | (position: number) => void | seek回调                        | 否   |
 
 ### CcLyricController
 
@@ -149,14 +126,40 @@ CcLyricView 组件控制器
 | -------- | -------- | --------------------- |
 | position | number   | 媒体播放进度(单位 ms) |
 
+### Lrc
 
-### CcLyricView
+歌词数据结构
 
-歌词组件
+| 属性      | 属性类型        | 属性说明     |
+| --------- | --------------- | ------------ |
+| artist    | string          | 艺术家       |
+| title     | string          | 标题         |
+| album     | string          | 专辑         |
+| by        | string          | 作者         |
+| offset    | number          | 时间戳偏移量 |
+| lyricList | Array\<LrcLine> | 歌词行数组   |
 
-| 属性       | 属性类型          | 属性说明       | 必填 |
-| ---------- | ----------------- | -------------- | ---- |
-| controller | CcLyricController | 歌词组件控制器 | 是   |
+### LrcLine
+
+单行歌词数据结构
+
+| 属性      | 属性类型               | 属性说明                                     |
+| --------- | ---------------------- | -------------------------------------------- |
+| text      | string                 | 歌词内容                                     |
+| beginTime | number                 | 当前行歌词起始时间戳                         |
+| endTime   | number                 | 当前行歌词结束时间戳                         |
+| wordList  | LrcWord[] \| undefined | 单个字的时间信息，Lrc逐行歌词场景为undefined |
+
+### LrcWord
+
+单个字数据结构
+
+| 属性      | 属性类型 | 属性说明         |
+| --------- | -------- | ---------------- |
+| text      | string   | 字符文本         |
+| beginTime | number   | 该字符起始时间戳 |
+| endTime   | number   | 该字符结束时间戳 |
+
 
 
 ## 场景示例
@@ -188,7 +191,11 @@ struct Index {
         Column() {
             // 4. init the view
             CcLyricView({
-                controller: this.controller
+                controller: this.controller,
+                supportSeek: true, // support scroll seek
+                    onSeekAction: (position) => {
+                        this.mockPlayerSeek(position)
+                    }
             })
             .width("100%")
             .height("100%)
@@ -201,9 +208,14 @@ struct Index {
         // 5. update the mediaplayer position
         this.controller.updatePosition(position)
     }
+
+    mockPlayerSeek(position: number) {
+        // 6. update the mediaplayer position
+        this.player.seekTo(position)
+    }
 }    
 ```
 
 - 更多使用场景和示例，可以参考本库代码仓的 entry 工程：  https://github.com/seagazer/cclyric
-- 播放器场景，推荐使用@seagazer/ccplayer搭配（三方库中心仓地址https://ohpm.openharmony.cn/#/cn/detail/@seagazer%2Fccplayer） ，可以快捷构建媒体播放应用
+- 播放器场景，推荐使用@seagazer/ccplayer搭配（三方库中心仓地址 https://ohpm.openharmony.cn/#/cn/detail/@seagazer%2Fccplayer ） ，可以快捷构建媒体播放应用
 - 使用过程中存在任何相关问题欢迎各位开发者提Issue和PR，或者加群反馈（Q群:1051643574），欢迎大家一起共建完善该库，如果觉得对你有用，请给个star鼓励一下谢谢。
