@@ -7,7 +7,7 @@ import { MediaLogger } from './extensions/MediaLogger'
  * Author: Seagazer
  * Date: 2025/9/21
  */
-export class CcLrcController {
+export class CcLyricController {
     private lyric?: Lrc | undefined = undefined
     private _textSize: number = 20
     private _lineSpace: number = 12
@@ -29,7 +29,7 @@ export class CcLrcController {
      * Set the hint when the lyric is null.
      * @param hintText The hint text.
      */
-    public setEmptyHint(hintText: ResourceStr): CcLrcController {
+    public setEmptyHint(hintText: ResourceStr): CcLyricController {
         this._emptyHint = hintText;
         this.invalidate()
         return this
@@ -43,7 +43,7 @@ export class CcLrcController {
      * Set the fade color on edge of the lyric view.
      * @param color The fade color.
      */
-    public setFadeColor(color: ResourceColor): CcLrcController {
+    public setFadeColor(color: ResourceColor): CcLyricController {
         this._fadeColor = color;
         this.invalidate()
         return this
@@ -57,7 +57,7 @@ export class CcLrcController {
      * Set the lyric.
      * @param data The lyric.
      */
-    public setLyric(data: Lrc | undefined): CcLrcController {
+    public setLyric(data: Lrc | undefined): CcLyricController {
         this.lyric = data
         this.onDataChanged?.(data)
         return this
@@ -71,7 +71,7 @@ export class CcLrcController {
      * Set the text size of lyric.
      * @param size The text size, the unit is vp.
      */
-    public setTextSize(size: number): CcLrcController {
+    public setTextSize(size: number): CcLyricController {
         this._textSize = size
         this.invalidate()
         return this
@@ -85,7 +85,7 @@ export class CcLrcController {
      * Set the space between lyric line.
      * @param space The space value, the unit is vp.
      */
-    public setLineSpace(space: number): CcLrcController {
+    public setLineSpace(space: number): CcLyricController {
         this._lineSpace = space
         this.invalidate()
         return this
@@ -99,7 +99,7 @@ export class CcLrcController {
      * Set the text color of lyric.
      * @param color The text color.
      */
-    public setTextColor(color: number): CcLrcController {
+    public setTextColor(color: number): CcLyricController {
         this._textColor = color
         this.invalidate()
         return this
@@ -113,7 +113,7 @@ export class CcLrcController {
      * Set the highlight text color of lyric.
      * @param color The text color.
      */
-    public setTextHighlightColor(color: number): CcLrcController {
+    public setTextHighlightColor(color: number): CcLyricController {
         this._textHighlightColor = color
         this.invalidate()
         return this
@@ -127,7 +127,7 @@ export class CcLrcController {
      * Set the highlight scale of the text, default is 1.1f.
      * @param scale The scale value.
      */
-    public setHighlightScale(scale: number): CcLrcController {
+    public setHighlightScale(scale: number): CcLyricController {
         this._highlightScale = scale
         this.invalidate()
         return this

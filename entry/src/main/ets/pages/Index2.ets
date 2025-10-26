@@ -1,4 +1,4 @@
-import { CcLrcController, CcLyricView, Lrc } from '@seagazer/cclyric';
+import { CcLyricController, CcLyricView, Lrc } from '@seagazer/cclyric';
 import { MockData, StringParser } from './MockData';
 
 
@@ -10,7 +10,7 @@ struct Index2 {
     private parser = new StringParser()
     @Local progress: number = 0
     @Local lyric?: Lrc = undefined
-    private controller: CcLrcController = new CcLrcController()
+    private controller: CcLyricController = new CcLyricController()
 
     aboutToAppear(): void {
         // set controller

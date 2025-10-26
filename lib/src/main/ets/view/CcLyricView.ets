@@ -1,5 +1,5 @@
 import { Lrc } from '../bean/Lrc'
-import { CcLrcController } from '../CcLrcController'
+import { CcLyricController } from '../CcLyricController'
 import { ListAdapter } from '../extensions/ListAdapter'
 import { LrcLineView } from './LrcLineView'
 import { drawing } from '@kit.ArkGraphics2D'
@@ -21,7 +21,7 @@ export struct CcLyricView {
     /**
      * The controller to control this view.
      */
-    @Require @Param controller: CcLrcController
+    @Require @Param controller: CcLyricController
     @Param supportSeek: boolean = true
     @Event onSeekAction: (position: number) => void
     @Local lrcDataSource: ListAdapter<LrcLineView | undefined> = new ListAdapter()

@@ -25,4 +25,6 @@ export { LrcWord } from './src/main/ets/bean/LrcWord'
 
 export { CcLyricView } from './src/main/ets/view/CcLyricView'
 
-export { CcLrcController } from './src/main/ets/CcLrcController'
+export { CcLyricController } from './src/main/ets/CcLyricController'
+
+export { CcLyricController as CcLrcController } from './src/main/ets/CcLyricController'
