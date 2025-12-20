@@ -6,6 +6,7 @@ import { drawing } from '@kit.ArkGraphics2D'
 import { LrcLine } from '../bean/LrcLine'
 import { MediaLogger } from '../extensions/MediaLogger'
 import { duration2text } from '../extensions/Extension'
+import { AlignMode } from '../bean/AlignMode'
 
 
 const TAG = "[CcLyricView]"
@@ -24,6 +25,9 @@ export struct CcLyricView {
     @Require @Param controller: CcLyricController
     @Param supportSeek: boolean = true
     @Event onSeekAction: (position: number) => void
+    @Param autoHideSeekUIDelay: number = 800
+    @Event onScrollChanged: (centerLine: LrcLine | undefined) => void
+    @Event onScrollStateChanged: (scrolling: boolean) => void
     @Local lrcDataSource: ListAdapter<LrcLineView | undefined> = new ListAdapter()
     @Local focusIndex: number = -1
     @Local lyric?: Lrc = undefined
@@ -32,11 +36,14 @@ export struct CcLyricView {
     @Local emptyHint: ResourceStr = ""
     @Local isUserMoving: boolean = false
     @Local centerLrcLine?: LrcLine = undefined
+    @Event onDataSourceReady: () => void
+    private isDataSourceReady = false
     private focusView?: LrcLineView = undefined
     private scroller = new Scroller()
     private middleLine = -1
     private viewWidth = 0
     private userMoveTimeout = -1
+    private measureFont = new drawing.Font()
 
     aboutToAppear(): void {
         // set controller
@@ -62,6 +69,7 @@ export struct CcLyricView {
                     itemView.setTextSize(this.controller.getTextSize())
                     itemView.setTextColor(this.controller.getTextColor())
                     itemView.setTextHighlightColor(this.controller.getTextHighlightColor())
+                    itemView.setAlignMode(this.controller.getAlignMode())
                 }
             }
         }
@@ -129,8 +137,13 @@ export struct CcLyricView {
                         }
                         .width("100%")
                         .height(this.controller.getTextSize() * 1.5)
-                        .scale(this.focusIndex === index ? { x: this.controller.getHighlightScale(), y: this.controller.getHighlightScale() } :
-                            { x: 1, y: 1 })
+                        .scale(this.focusIndex === index ?
+                            {
+                                x: this.controller.getHighlightScale(),
+                                y: this.controller.getHighlightScale(),
+                                centerX: this.controller.getAlignMode() === AlignMode.CENTER ? "50%" : 0
+                            } :
+                            { x: 1, y: 1, centerX: this.controller.getAlignMode() === AlignMode.CENTER ? "50%" : 0 })
                         .animation({ duration: 300 })
                     }, (krc: LrcLineView | undefined, index: number) => {
                         if (krc != undefined) {
@@ -145,11 +158,24 @@ export struct CcLyricView {
                 .overlay(this.FadeOverlay())
                 .edgeEffect(EdgeEffect.None)
                 .scrollBar(BarState.Off)
+                .scrollSnapAlign(ScrollSnapAlign.CENTER)
                 .onScrollIndex((_, __, center) => {
                     const view = this.lrcDataSource.getData(center)
                     if (view !== undefined) {
-                        this.centerLrcLine = view.getLyric()
+                        const curCenter = view.getLyric()
+                        if (this.centerLrcLine != curCenter) {
+                            this.centerLrcLine = curCenter
+                            this.onScrollChanged?.(this.centerLrcLine)
+                        }
                     }
+                })
+                .onScrollStart(() => {
+                    this.onScrollStateChanged?.(this.isUserMoving)
+                })
+                .onScrollStop(() => {
+                    this.userMoveTimeout = setTimeout(() => {
+                        this.onScrollStateChanged?.(this.isUserMoving)
+                    }, this.autoHideSeekUIDelay)
                 })
                 .onTouch((event) => {
                     switch (event.type) {
@@ -159,9 +185,13 @@ export struct CcLyricView {
                             break
                         case TouchType.Up:
                         case TouchType.Cancel:
-                            this.userMoveTimeout = setTimeout(() => {
+                            if (this.supportSeek) {
+                                this.userMoveTimeout = setTimeout(() => {
+                                    this.isUserMoving = false
+                                }, this.autoHideSeekUIDelay)
+                            } else {
                                 this.isUserMoving = false
-                            }, 800)
+                            }
                             break
                     }
                 })
@@ -190,9 +220,8 @@ export struct CcLyricView {
     }
 
     private measureText(text: string, textSize: number, scale: number): number {
-        const font = new drawing.Font()
-        font.setSize(this.getUIContext().vp2px(textSize))
-        const bound = drawing.TextBlob.makeFromString(text, font)
+        this.measureFont.setSize(this.getUIContext().vp2px(textSize))
+        const bound = drawing.TextBlob.makeFromString(text, this.measureFont)
         const rect = bound.bounds()
         const textWidth = rect.right - rect.left
         return textWidth * scale
@@ -212,6 +241,7 @@ export struct CcLyricView {
             MediaLogger.w(TAG, "The size of view is not ready.")
             return
         }
+        this.isDataSourceReady = false
         this.lrcDataSource.clear(false)
         this.fillPaddingData()
         const lines = lyric.lyricList;
@@ -229,7 +259,11 @@ export struct CcLyricView {
         }
         this.fillPaddingData()
         this.lrcDataSource.notifyDataReload();
-        this.scroller.scrollToIndex(0);
+        setTimeout(() => {
+            this.scroller.scrollToIndex(0);
+            this.isDataSourceReady = true
+            this.onDataSourceReady?.()
+        }, 50)
     }
 
     private breakLine(line: LrcLine, textWidth: number) {
@@ -285,11 +319,17 @@ export struct CcLyricView {
         view.setTextSize(this.controller.getTextSize());
         view.setTextColor(this.controller.getTextColor());
         view.setTextHighlightColor(this.controller.getTextHighlightColor());
+        view.setAlignMode(this.controller.getAlignMode())
         return view;
     }
 
     private updatePosition(position: number) {
         if (this.lrcDataSource === undefined || this.lyric === undefined) {
+            MediaLogger.w(TAG, "The lrc source is not set!")
+            return
+        }
+        if (!this.isDataSourceReady) {
+            MediaLogger.w(TAG, "The lrc source is not ready!")
             return
         }
         if (this.focusView !== undefined) {

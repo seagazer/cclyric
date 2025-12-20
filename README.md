@@ -8,7 +8,10 @@
 - 支持逐行歌词
 - 支持滑动seek操作
 - 支持歌词滚动显示
-- 支持自定义样式，包括歌词行距，字体大小/颜色，聚焦大小/颜色等
+- 支持歌词左对齐和居中显示模式
+- 支持自定义seek界面
+- 支持自定义歌词样式，包括歌词行距，字体大小/颜色，聚焦大小/颜色等
+
 
 ## 示例效果
 | 逐字歌词                                                                          | 逐行歌词                                                                          | 自定义样式                                                                        |
@@ -34,11 +37,14 @@ ohpm install @seagazer/cclyric
 
 歌词组件
 
-| 属性         | 属性类型                   | 属性说明                        | 必填 |
-| ------------ | -------------------------- | ------------------------------- | ---- |
-| controller   | CcLyricController          | 歌词组件控制器                  | 是   |
-| supportSeek  | boolean                    | 是否开启滑动seek能力，默认false | 否   |
-| onSeekAction | (position: number) => void | seek回调                        | 否   |
+| 属性                 | 属性类型                     | 属性说明                        | 必填                   |
+| -------------------- | ---------------------------- | ------------------------------- | ---------------------- |
+| controller           | CcLyricController            | 歌词组件控制器                  | 是                     |
+| supportSeek          | boolean                      | 是否开启滑动seek能力，默认false | 否                     |
+| onSeekAction         | (position: number) => void   | seek回调                        | 否                     |
+| onScrollChanged      | (centerLine: LrcLine \| undefined) => void              | 滑动时中间歌词信息回调 | 否 |
+| onScrollStateChanged | (scrolling: boolean) => void | 用户手动滑动状态回调            | 否                     |
+| onDataSourceReady    | () => void                   | 歌词数据加载完成回调            | 否                     |
 
 ### CcLyricController
 
@@ -48,17 +54,25 @@ CcLyricView 组件控制器
 
 设置是否开启调试日志，默认false
 
-| 参数  | 参数类型 | 参数说明 |
-| ----- | -------- | -------- |
+| 参数  | 参数类型 | 参数说明         |
+| ----- | -------- | ---------------- |
 | debug | boolean  | 是否开启调试日志 |
 
 #### setLyric(lyric: Lrc | undefined): void
 
 设置歌词内容，需要通过提供的 LyricParser 或者自定义 IParser 解析歌词。
 
-| 参数  | 参数类型             | 参数说明                    |
-| ----- |------------------| --------------------------- |
-| lyric | Lrc \| undefined | 歌词，没有歌词设置undefined |
+| 参数  | 参数类型        | 参数说明                    |
+| ----- | --------------- | --------------------------- |
+| lyric | Lrc \|undefined | 歌词，没有歌词设置undefined |
+
+#### setAlignMode(mode: AlignMode): void
+
+设置歌词显示的对齐模式，当前支持左对齐和居中对齐，默认居中显示。**注意：该属性暂不支持动态设置，在绑定CcLyricView前请设置。**
+
+| 参数 | 参数类型  | 参数说明           |
+| ---- | --------- | ------------------ |
+| mode | AlignMode | 歌词显示的对齐模式 |
 
 #### setEmptyHint(hint: ResourceStr): CcLyricController
 
@@ -102,7 +116,7 @@ CcLyricView 组件控制器
 
 #### setHighlightScale(scale: number): CcLyricController
 
-设置歌词文本聚焦缩放，当前播放的歌词属于聚焦状态，默认为 1.1f。
+设置歌词文本聚焦缩放，当前播放的歌词属于聚焦状态，默认为 1.1f。**注意：该属性暂不支持动态设置，在绑定CcLyricView前请设置。**
 
 | 参数  | 参数类型 | 参数说明         |
 | ----- | -------- | ---------------- |
@@ -110,7 +124,7 @@ CcLyricView 组件控制器
 
 #### setLineSpace(lineSpace: number): CcLyricController
 
-设置歌词行间距，默认为 12vp。
+设置歌词行间距，默认为 12vp。**注意：该属性暂不支持动态设置，在绑定CcLyricView前请设置。**
 
 | 参数      | 参数类型 | 参数说明            |
 | --------- | -------- | ------------------- |
@@ -158,6 +172,15 @@ CcLyricView 组件控制器
 | beginTime | number   | 该字符起始时间戳 |
 | endTime   | number   | 该字符结束时间戳 |
 
+### AlignMode
+
+歌词对齐模式枚举
+
+| 属性   | 属性说明 |
+| ------ | -------- |
+| CENTER | 居中对齐 |
+| START  | 左对齐   |
+
 
 
 ## 场景示例
@@ -190,6 +213,7 @@ struct Index {
             // 4. init the view
             CcLyricView({
                 controller: this.controller,
+                // 使用默认的seekui
                 supportSeek: true, // support scroll seek
                     onSeekAction: (position) => {
                         this.mockPlayerSeek(position)
@@ -197,6 +221,87 @@ struct Index {
             })
             .width("100%")
             .height("100%)
+        }
+        .height('100%')
+        .width('100%')
+    }
+
+    onPlayerPositionUpdate(position: number) {
+        // 5. update the mediaplayer position
+        this.controller.updatePosition(position)
+    }
+
+    mockPlayerSeek(position: number) {
+        // 6. update the mediaplayer position
+        this.player.seekTo(position)
+    }
+}    
+```
+
+- 自定义滑动seek界面：
+```ts
+@Entry
+@ComponentV2
+struct Index {
+    @Local lyric?: Lrc = undefined
+    // 1.init the controller
+    private controller: CcLrcController = new CcLrcController()
+    // 自定义ui数据
+    @Local userScrolling: boolean = false
+    @Local scrollTargetTime: number = 0
+
+    aboutToAppear(): void {
+        // 2. setup the attribute
+        this.controller.setDebugger(true)
+        this.controller.setTextSize(18)
+            .setLineSpace(12)
+            .setTextColor(0xCC000000)
+            .setTextHighlightColor(0xffe7107f)
+            .setFadeColor("#ffffffff")
+        this.lyric = this.parser.parse(MockData.krc1)
+        // 3. set the lyric
+        this.controller.setLyric(this.lyric)
+    }
+
+    build() {
+        Column() {
+            Stack() {
+                Stack() {
+                    CcLyricView({
+                        controller: this.controller,
+                        // custom seek ui: 1.set supportSeek false, 2.get current center duration from onScrollChanged and onScrollStateChanged callback
+                        supportSeek: false, //设置默认seek属性为false
+                        onScrollChanged: (centerLine) => {
+                            if (centerLine !== undefined) {
+                                this.scrollTargetTime = centerLine.beginTime
+                            }
+                        },
+                        onScrollStateChanged: (scrolling) => {
+                            this.userScrolling = scrolling
+                        }
+                    })
+                }.padding(12)
+                // 自定义seekui，数据从上面的onScrollChanged和onScrollStateChanged回调获取
+                if (this.userScrolling && this.scrollTargetTime >= 0) {
+                    Row() {
+                        Blank()
+                        Text(duration2text(this.scrollTargetTime))
+                            .fontSize(18)
+                        SymbolGlyph($r("sys.symbol.play_fill"))
+                            .fontSize(32)
+                            .onClick(() => {
+                                this.mockPlayerSeek(this.scrollTargetTime)
+                                this.userScrolling = false
+                            })
+                    }
+                    .width("95%")
+                    .height(42)
+                    .border({ radius: 8 })
+                    .backgroundColor("#808d8d8d")
+                }
+            }
+            .width("100%")
+            .height('100%')
         }
         .height('100%')
         .width('100%')

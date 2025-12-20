@@ -27,4 +27,4 @@ export { CcLyricView } from './src/main/ets/view/CcLyricView'
 
 export { CcLyricController } from './src/main/ets/CcLyricController'
 
-export { CcLyricController as CcLrcController } from './src/main/ets/CcLyricController'
+export { AlignMode } from './src/main/ets/bean/AlignMode'

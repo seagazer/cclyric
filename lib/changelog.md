@@ -1,3 +1,11 @@
+# 1.0.9
+- 重构动画，增加动画缓存池，性能提升
+- 新增setAlignMode接口，支持歌词左对齐和居中显示模式
+- 新增onScrollChanged和onScrollStateChanged接口，支持自定义seek界面
+- CcLyricView新增onDataSourceReady数据加载完成回调
+- 修复updatePosition在数据未加载完成前调用可能发生异常问题
+- 完善接口注释，增加接口注意事项
+
 # 1.0.8
 - 新增CcLyricView组件和CcLrcController控制器
 - 新增Lrc数据结构，配合CcLyricView使用

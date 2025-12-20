@@ -1,8 +1,10 @@
-import { AnimatorResult, FrameNode, NodeController, RenderNode } from '@kit.ArkUI'
+import { FrameNode, NodeController, RenderNode } from '@kit.ArkUI'
 import { LrcLine } from '../bean/LrcLine'
 import { common2D, drawing } from '@kit.ArkGraphics2D'
 import { ColorHelper } from '../extensions/ColorHelper'
 import { MediaLogger } from '../extensions/MediaLogger'
+import { AlignMode } from '../bean/AlignMode'
+import { Animator, AnimatorProvider } from './Animation'
 
 const TAG = "[LrcLineView]"
 
@@ -20,6 +22,12 @@ export class LrcLineView extends NodeController {
     private textSize: number = -1
     private textColor: number = -1
     private textHighlightColor: number = -1
+    private mode: AlignMode = AlignMode.CENTER
+
+    setAlignMode(mode: AlignMode) {
+        this.lyricTextView?.setAlignMode(mode)
+        this.mode = mode
+    }
 
     public setTextSize(size: number) {
         this.textSize = size
@@ -90,6 +98,7 @@ export class LrcLineView extends NodeController {
             if (this.textHighlightColor !== -1) {
                 this.setTextHighlightColor(this.textHighlightColor)
             }
+            this.setAlignMode(this.mode)
             const renderNode = this.rootView?.getRenderNode()
             if (renderNode) {
                 renderNode.appendChild(this.lyricTextView)
@@ -125,7 +134,7 @@ class LrcTextView extends RenderNode {
     private textHighlightColor: number = 0xFFFF0000
     // "#ffff0000"
     private lyricTextBlob?: drawing.TextBlob = undefined
-    private anim?: AnimatorResult = undefined
+    private anim?: Animator = undefined
     private textWidth: number = 0
     private textHeight: number = 0
     private beginX = -1
@@ -137,6 +146,7 @@ class LrcTextView extends RenderNode {
     private endPoint: common2D.Point = { x: 0, y: 0 }
     private isKrc = false
     private isHighlight = false
+    private mode: AlignMode = AlignMode.CENTER
 
     constructor(uiContext: UIContext, lyricLine: LrcLine) {
         super()
@@ -145,26 +155,13 @@ class LrcTextView extends RenderNode {
         this.lyricLine = lyricLine
         this.isKrc = lyricLine.wordList != undefined && lyricLine.wordList.length > 0
         this.totalDuration = this.lyricLine.endTime - this.lyricLine.beginTime
-        if (this.isKrc) {
-            this.initAnimation()
-        }
         this.updateConfig()
     }
 
-    private initAnimation() {
-        this.anim = this.context.createAnimator({
-            duration: 250,
-            delay: 0,
-            easing: "linear",
-            fill: 'forwards',
-            direction: "normal",
-            iterations: 1,
-            begin: 0,
-            end: 1
-        })
-        this.anim.onFrame = (progress) => {
-            this.drawingWidth = progress
-            this.invalidate()
+    setAlignMode(mode: AlignMode) {
+        if (this.mode !== mode) {
+            this.mode = mode
+            this.updateConfig()
         }
     }
 
@@ -196,7 +193,7 @@ class LrcTextView extends RenderNode {
         const bound = this.lyricTextBlob.bounds()
         this.textWidth = bound.right - bound.left
         this.textHeight = bound.bottom - bound.top
-        this.beginX = (this.context.vp2px(this.frame.width) - this.textWidth) / 2
+        this.beginX = this.mode === AlignMode.CENTER ? (this.context.vp2px(this.frame.width) - this.textWidth) / 2 : 0
         this.beginY = this.context.vp2px(this.frame.height / 2) + this.textHeight / 2
         if (!this.isKrc) {
             const argb = ColorHelper.hex2Argb(this.textHighlightColor)
@@ -220,7 +217,7 @@ class LrcTextView extends RenderNode {
             width: width,
             height: height
         }
-        this.beginX = (this.context.vp2px(width) - this.textWidth) / 2
+        this.beginX = this.mode === AlignMode.CENTER ? (this.context.vp2px(this.frame.width) - this.textWidth) / 2 : 0
         this.beginY = this.context.vp2px(height) / 2 + this.textHeight / 2
         this.invalidate()
     }
@@ -240,6 +237,8 @@ class LrcTextView extends RenderNode {
 
     reset() {
         this.anim?.finish()
+        this.anim?.stop()
+        this.anim = undefined
         this.relativePosition = -1
         this.drawBeginWidth = 0
         this.drawingWidth = 0
@@ -250,6 +249,13 @@ class LrcTextView extends RenderNode {
     private updateAnimation() {
         const currentPercent = this.relativePosition / this.totalDuration
         const drawTargetWidth = this.textWidth * currentPercent
+        if (this.anim === undefined) {
+            this.anim = AnimatorProvider.getInstance(this.context).getAnimator()
+            this.anim.addCallback((progress) => {
+                this.drawingWidth = progress
+                this.invalidate()
+            })
+        }
         this.anim!.reset({
             duration: 250,
             delay: 0,
@@ -260,7 +266,7 @@ class LrcTextView extends RenderNode {
             begin: this.drawBeginWidth,
             end: drawTargetWidth
         })
-        this.anim!.play()
+        this.anim!.run()
         this.drawBeginWidth = drawTargetWidth
     }
 

@@ -1,3 +1,4 @@
+import { AlignMode } from './bean/AlignMode'
 import { Lrc } from './bean/Lrc'
 import { MediaLogger } from './extensions/MediaLogger'
 
@@ -16,6 +17,7 @@ export class CcLyricController {
     private _highlightScale: number = 1.1
     private _emptyHint: ResourceStr = "--"
     private _fadeColor: ResourceColor = "#ffffffff"
+    private alignMode = AlignMode.CENTER
 
     /**
      * Open the debug log or not, default is false.
@@ -23,6 +25,20 @@ export class CcLyricController {
      */
     setDebugger(debug: boolean) {
         MediaLogger.setDebugger(debug)
+    }
+
+    /**
+     * Set the align mode, must set before bind the CcLyricView.
+     * @param mode The align mode.{@link AlignMode}
+     */
+    setAlignMode(mode: AlignMode): CcLyricController {
+        this.alignMode = mode
+        this.onAttributeChanged?.()
+        return this
+    }
+
+    getAlignMode() {
+        return this.alignMode
     }
 
     /**
@@ -68,7 +84,7 @@ export class CcLyricController {
     }
 
     /**
-     * Set the text size of lyric.
+     * Set the text size of lyric, must set before bind the CcLyricView.
      * @param size The text size, the unit is vp.
      */
     public setTextSize(size: number): CcLyricController {
@@ -82,7 +98,7 @@ export class CcLyricController {
     }
 
     /**
-     * Set the space between lyric line.
+     * Set the space between lyric line, must set before bind the CcLyricView.
      * @param space The space value, the unit is vp.
      */
     public setLineSpace(space: number): CcLyricController {
@@ -124,7 +140,7 @@ export class CcLyricController {
     }
 
     /**
-     * Set the highlight scale of the text, default is 1.1f.
+     * Set the highlight scale of the text, default is 1.1f, must set before bind the CcLyricView.
      * @param scale The scale value.
      */
     public setHighlightScale(scale: number): CcLyricController {
