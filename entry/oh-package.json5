@@ -7,8 +7,6 @@
   "main": "",
   "version": "1.0.0",
   "dependencies": {
-    "@seagazer/cclyric": "file:../lib",
-    "@seagazer/ccplayer": "^1.2.6"
-  },
-  "dynamicDependencies": {}
+    '@seagazer/cclyric': "file:../lib"
+  }
 }
