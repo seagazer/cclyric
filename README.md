@@ -14,9 +14,9 @@
 
 
 ## 示例效果
-| 逐字歌词                                                                          | 逐行歌词                                                                          | 自定义样式                                                                        |
-| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| <img src="https://s21.ax1x.com/2025/09/28/pVoZ0KJ.jpg" width="180" height="360"/> | <img src="https://s21.ax1x.com/2025/09/28/pVoZ28O.jpg" width="180" height="360"/> | <img src="https://s21.ax1x.com/2025/09/28/pVoZyUx.jpg" width="180" height="360"/> |
+| 居中对齐                                                                          | 左对齐                                                                            | 自定义样式                                                                        | 自定义seek界面                                                                    |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| <img src="https://s41.ax1x.com/2025/12/20/pZ3QfQH.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3Qhyd.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3Qre1.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3QWSe.png" width="180" height="360"/> |
 
 ## 注意事项
 
@@ -37,18 +37,18 @@ ohpm install @seagazer/cclyric
 
 歌词组件
 
-| 属性                 | 属性类型                     | 属性说明                        | 必填                   |
-| -------------------- | ---------------------------- | ------------------------------- | ---------------------- |
-| controller           | CcLyricController            | 歌词组件控制器                  | 是                     |
-| supportSeek          | boolean                      | 是否开启滑动seek能力，默认false | 否                     |
-| onSeekAction         | (position: number) => void   | seek回调                        | 否                     |
-| onScrollChanged      | (centerLine: LrcLine \| undefined) => void              | 滑动时中间歌词信息回调 | 否 |
-| onScrollStateChanged | (scrolling: boolean) => void | 用户手动滑动状态回调            | 否                     |
-| onDataSourceReady    | () => void                   | 歌词数据加载完成回调            | 否                     |
+| 属性                 | 属性类型                                   | 属性说明                                 | 必填 |
+| -------------------- | ------------------------------------------ | ---------------------------------------- | ---- |
+| controller           | CcLyricController                          | 歌词组件控制器                           | 是   |
+| supportSeek          | boolean                                    | 是否开启滑动seek能力，默认false          | 否   |
+| onSeekAction         | (position: number) => void                 | seek回调                                 | 否   |
+| onScrollChanged      | (centerLine: LrcLine \| undefined) => void | 滑动时中间歌词信息回调，用于自定义seekui | 否   |
+| onScrollStateChanged | (scrolling: boolean) => void               | 用户手动滑动状态回调，用于自定义seekui   | 否   |
+| onDataSourceReady    | () => void                                 | 歌词数据加载完成回调                     | 否   |
 
 ### CcLyricController
 
-CcLyricView 组件控制器
+CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 
 #### setDebugger(debug: boolean): void
 
@@ -58,15 +58,15 @@ CcLyricView 组件控制器
 | ----- | -------- | ---------------- |
 | debug | boolean  | 是否开启调试日志 |
 
-#### setLyric(lyric: Lrc | undefined): void
+#### setLyric(lyric: Lrc | undefined): CcLyricController
 
-设置歌词内容，需要通过提供的 LyricParser 或者自定义 IParser 解析歌词。
+设置歌词数据。
 
 | 参数  | 参数类型        | 参数说明                    |
 | ----- | --------------- | --------------------------- |
 | lyric | Lrc \|undefined | 歌词，没有歌词设置undefined |
 
-#### setAlignMode(mode: AlignMode): void
+#### setAlignMode(mode: AlignMode): CcLyricController
 
 设置歌词显示的对齐模式，当前支持左对齐和居中对齐，默认居中显示。**注意：该属性暂不支持动态设置，在绑定CcLyricView前请设置。**
 
