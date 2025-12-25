@@ -273,7 +273,7 @@ class LrcTextView extends RenderNode {
             })
         }
         this.anim!.reset({
-            duration: 100,
+            duration: this.animDuration,
             delay: 0,
             easing: "linear",
             fill: 'forwards',
