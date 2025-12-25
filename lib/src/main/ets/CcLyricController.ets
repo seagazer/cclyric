@@ -18,6 +18,7 @@ export class CcLyricController {
     private _emptyHint: ResourceStr = "--"
     private _fadeColor: ResourceColor = "#ffffffff"
     private alignMode = AlignMode.CENTER
+    private _AnimDuration = 250
 
     /**
      * Open the debug log or not, default is false.
@@ -151,6 +152,20 @@ export class CcLyricController {
 
     public getHighlightScale(): number {
         return this._highlightScale
+    }
+
+    /**
+     * Set the duration for lyric highlight animation.
+     * @param duration The duration of animation, default is 250ms.
+     */
+    public setLrcAnimDuration(duration: number): CcLyricController {
+        this._AnimDuration = duration
+        this.invalidate()
+        return this
+    }
+
+    public getLrcAnimDuration() {
+        return this._AnimDuration
     }
 
     /**

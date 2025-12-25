@@ -66,6 +66,7 @@ export struct CcLyricView {
             for (let i = 0; i < this.lrcDataSource.totalCount(); i++) {
                 const itemView = this.lrcDataSource.getData(i)
                 if (itemView !== undefined) {
+                    itemView.setAnimationDuration(this.controller.getLrcAnimDuration())
                     itemView.setTextSize(this.controller.getTextSize())
                     itemView.setTextColor(this.controller.getTextColor())
                     itemView.setTextHighlightColor(this.controller.getTextHighlightColor())
@@ -316,6 +317,7 @@ export struct CcLyricView {
 
     private createLrcView(line: LrcLine) {
         const view = new LrcLineView(line);
+        view.setAnimationDuration(this.controller.getLrcAnimDuration())
         view.setTextSize(this.controller.getTextSize());
         view.setTextColor(this.controller.getTextColor());
         view.setTextHighlightColor(this.controller.getTextHighlightColor());

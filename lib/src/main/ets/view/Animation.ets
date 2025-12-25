@@ -13,6 +13,7 @@ export class AnimatorProvider {
     private context: UIContext
     private idlePool: Animator[] = []
     private runningPool: Animator[] = []
+    private animationDuration = 250
     private stateChangedListener = (anim: Animator, isRunning: boolean) => {
         if (isRunning) {
             const index = this.idlePool.indexOf(anim)
@@ -34,6 +35,10 @@ export class AnimatorProvider {
         this.context = context
     }
 
+    setAnimationDuration(duration: number) {
+        this.animationDuration = duration
+    }
+
     static getInstance(context: UIContext): AnimatorProvider {
         if (AnimatorProvider.sInstance === undefined) {
             AnimatorProvider.sInstance = new AnimatorProvider(context)
@@ -44,7 +49,7 @@ export class AnimatorProvider {
     getAnimator(): Animator {
         if (this.idlePool.length <= 0) {
             const animation = this.context.createAnimator({
-                duration: 250,
+                duration: 100,
                 delay: 0,
                 easing: "linear",
                 fill: 'forwards',

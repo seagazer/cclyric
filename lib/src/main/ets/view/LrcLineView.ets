@@ -23,10 +23,16 @@ export class LrcLineView extends NodeController {
     private textColor: number = -1
     private textHighlightColor: number = -1
     private mode: AlignMode = AlignMode.CENTER
+    private animDuration = 250
 
     setAlignMode(mode: AlignMode) {
         this.lyricTextView?.setAlignMode(mode)
         this.mode = mode
+    }
+
+    public setAnimationDuration(duration: number) {
+        this.animDuration = duration
+        this.lyricTextView?.setAnimationDuration(duration)
     }
 
     public setTextSize(size: number) {
@@ -89,6 +95,9 @@ export class LrcLineView extends NodeController {
         if (this.lyricTextView === null) {
             this.lyricTextView = new LrcTextView(this.context!, this.lyricLine)
             this.lyricTextView.onSizeChanged(size.width, size.height)
+            if (this.animDuration !== 250) {
+                this.setAnimationDuration(this.animDuration)
+            }
             if (this.textSize !== -1) {
                 this.setTextSize(this.textSize)
             }
@@ -147,6 +156,7 @@ class LrcTextView extends RenderNode {
     private isKrc = false
     private isHighlight = false
     private mode: AlignMode = AlignMode.CENTER
+    private animDuration = 250
 
     constructor(uiContext: UIContext, lyricLine: LrcLine) {
         super()
@@ -156,6 +166,10 @@ class LrcTextView extends RenderNode {
         this.isKrc = lyricLine.wordList != undefined && lyricLine.wordList.length > 0
         this.totalDuration = this.lyricLine.endTime - this.lyricLine.beginTime
         this.updateConfig()
+    }
+
+    setAnimationDuration(duration: number) {
+        this.animDuration = duration
     }
 
     setAlignMode(mode: AlignMode) {
@@ -250,14 +264,16 @@ class LrcTextView extends RenderNode {
         const currentPercent = this.relativePosition / this.totalDuration
         const drawTargetWidth = this.textWidth * currentPercent
         if (this.anim === undefined) {
-            this.anim = AnimatorProvider.getInstance(this.context).getAnimator()
+            const animator = AnimatorProvider.getInstance(this.context)
+            animator.setAnimationDuration(this.animDuration)
+            this.anim = animator.getAnimator()
             this.anim.addCallback((progress) => {
                 this.drawingWidth = progress
                 this.invalidate()
             })
         }
         this.anim!.reset({
-            duration: 250,
+            duration: 100,
             delay: 0,
             easing: "linear",
             fill: 'forwards',

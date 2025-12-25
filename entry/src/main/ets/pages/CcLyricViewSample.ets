@@ -23,6 +23,7 @@ struct CcLyricViewSample {
             .setTextHighlightColor(0xffe7107f)
             .setFadeColor("#00000000")
             .setEmptyHint("未找到歌词")
+            .setLrcAnimDuration(100)
         this.lyric = this.parser.parse(MockData.krc1)
         this.controller.setLyric(this.lyric)
     }
