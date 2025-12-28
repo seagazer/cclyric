@@ -49,7 +49,7 @@ export class AnimatorProvider {
     getAnimator(): Animator {
         if (this.idlePool.length <= 0) {
             const animation = this.context.createAnimator({
-                duration: 100,
+                duration: this.animationDuration,
                 delay: 0,
                 easing: "linear",
                 fill: 'forwards',
