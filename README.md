@@ -193,7 +193,7 @@ CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 struct Index {
     @Local lyric?: Lrc = undefined
     // 1.init the controller
-    private controller: CcLrcController = new CcLrcController()
+    private controller: CcLyricController = new CcLyricController()
 
     aboutToAppear(): void {
         // 2. setup the attribute
@@ -245,7 +245,7 @@ struct Index {
 struct Index {
     @Local lyric?: Lrc = undefined
     // 1.init the controller
-    private controller: CcLrcController = new CcLrcController()
+    private controller: CcLyricController = new CcLyricController()
     // 自定义ui数据
     @Local userScrolling: boolean = false
     @Local scrollTargetTime: number = 0
