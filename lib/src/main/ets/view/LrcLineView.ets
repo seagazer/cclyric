@@ -309,7 +309,7 @@ class LrcTextView extends RenderNode {
             fill: 'forwards',
             direction: "normal",
             iterations: 1,
-            begin: this.drawBeginWidth,
+            begin: this.drawingWidth ,
             end: drawTargetWidth
         })
         this.anim!.run()
