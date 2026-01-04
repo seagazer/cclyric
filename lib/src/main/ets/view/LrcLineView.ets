@@ -238,7 +238,8 @@ class LrcTextView extends RenderNode {
 
     update(position: number) {
         if (this.isKrc) {
-            this.relativePosition = position - this.lyricLine.beginTime
+            // this.relativePosition = position - this.lyricLine.beginTime
+            this.relativePosition = position
             this.updateAnimation()
         } else {
             if (this.isHighlight) {
@@ -260,9 +261,38 @@ class LrcTextView extends RenderNode {
         this.invalidate()
     }
 
+    private lastWordIndex = 0
+
     private updateAnimation() {
-        const currentPercent = this.relativePosition / this.totalDuration
-        const drawTargetWidth = this.textWidth * currentPercent
+        // const currentPercent = this.relativePosition / this.totalDuration
+        // const drawTargetWidth = this.textWidth * currentPercent
+        const wordList = this.lyricLine.wordList!
+        let currentWordIndex = -1
+        let animDuration = this.animDuration
+        let targetText = ""
+        for (let i = 0; i < wordList.length; i++) {
+            const word = wordList[i]
+            targetText += word.text
+            if (this.relativePosition > word.beginTime && this.relativePosition < word.endTime) {
+                if (i === this.lastWordIndex) {
+                    break
+                }
+                currentWordIndex = i
+                this.lastWordIndex = i
+                animDuration = word.endTime - word.beginTime
+                break
+            }
+        }
+        if (currentWordIndex < 0) {
+            return
+        }
+        const lyricTextBlob = drawing.TextBlob.makeFromString(targetText, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+        const bound = lyricTextBlob.bounds()
+        const drawTargetWidth = bound.right - bound.left
+        MediaLogger.w("abcd",
+            "word= " + this.lyricLine.text + ", word= " + wordList[currentWordIndex].text + ", duration= " + animDuration + ", beginW= " +
+            this.drawBeginWidth + ", targetW= " +
+                drawTargetWidth)
         if (this.anim === undefined) {
             const animator = AnimatorProvider.getInstance(this.context)
             animator.setAnimationDuration(this.animDuration)
@@ -273,7 +303,7 @@ class LrcTextView extends RenderNode {
             })
         }
         this.anim!.reset({
-            duration: this.animDuration,
+            duration: animDuration,
             delay: 0,
             easing: "linear",
             fill: 'forwards',
