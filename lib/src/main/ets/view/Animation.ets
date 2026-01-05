@@ -86,16 +86,22 @@ export class Animator {
         }
     }
 
-    finish() {
+    pause() {
+        this.anim.onFrame = () => {
+        }
         this.anim.finish()
     }
 
     reset(option: AnimatorOptions) {
-        this.anim.reset(option)
+        try {
+            this.anim.reset(option)
+        } catch (error) {
+            MediaLogger.e(TAG, "reset error= " + JSON.stringify(error))
+        }
     }
 
     stop() {
-        this.isRunning = true
+        this.anim.finish()
         if (this.isRunning) {
             this.isRunning = false
             this.onStateChanged(this, false)

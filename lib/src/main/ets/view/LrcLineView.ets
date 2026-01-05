@@ -84,7 +84,7 @@ export class LrcLineView extends NodeController {
      * Stop the effect animation.
      */
     stop() {
-        this.lyricTextView?.reset()
+        this.lyricTextView?.stop()
     }
 
     aboutToResize(size: Size): void {
@@ -141,22 +141,20 @@ class LrcTextView extends RenderNode {
         alpha: 255
     }
     private textHighlightColor: number = 0xFFFF0000
-    // "#ffff0000"
     private lyricTextBlob?: drawing.TextBlob = undefined
     private anim?: Animator = undefined
     private textWidth: number = 0
     private textHeight: number = 0
     private beginX = -1
     private beginY = -1
-    private relativePosition = -1
-    private totalDuration = 0
-    private drawBeginWidth = 0
+    private playPosition = -1
     private drawingWidth = 0
     private endPoint: common2D.Point = { x: 0, y: 0 }
     private isKrc = false
     private isHighlight = false
     private mode: AlignMode = AlignMode.CENTER
     private animDuration = 250
+    private lastWordPosition = 0
 
     constructor(uiContext: UIContext, lyricLine: LrcLine) {
         super()
@@ -164,7 +162,6 @@ class LrcTextView extends RenderNode {
         this.textSize = uiContext.vp2px(this.defaultTextSize)
         this.lyricLine = lyricLine
         this.isKrc = lyricLine.wordList != undefined && lyricLine.wordList.length > 0
-        this.totalDuration = this.lyricLine.endTime - this.lyricLine.beginTime
         this.updateConfig()
     }
 
@@ -238,8 +235,7 @@ class LrcTextView extends RenderNode {
 
     update(position: number) {
         if (this.isKrc) {
-            // this.relativePosition = position - this.lyricLine.beginTime
-            this.relativePosition = position
+            this.playPosition = position
             this.updateAnimation()
         } else {
             if (this.isHighlight) {
@@ -250,60 +246,54 @@ class LrcTextView extends RenderNode {
         }
     }
 
-    reset() {
-        this.anim?.finish()
+    stop() {
         this.anim?.stop()
         this.anim = undefined
-        this.relativePosition = -1
-        this.drawBeginWidth = 0
+        this.playPosition = -1
         this.drawingWidth = 0
         this.isHighlight = false
         this.invalidate()
     }
 
-    private lastWordIndex = 0
+    private animCallback = (progress: number) => {
+        this.drawingWidth = progress
+        this.invalidate()
+    }
 
     private updateAnimation() {
-        // const currentPercent = this.relativePosition / this.totalDuration
-        // const drawTargetWidth = this.textWidth * currentPercent
         const wordList = this.lyricLine.wordList!
-        let currentWordIndex = -1
-        let animDuration = this.animDuration
+        let currentWordPosition = -1
+        let duration = this.animDuration
         let targetText = ""
         for (let i = 0; i < wordList.length; i++) {
             const word = wordList[i]
             targetText += word.text
-            if (this.relativePosition > word.beginTime && this.relativePosition < word.endTime) {
-                if (i === this.lastWordIndex) {
+            if (this.playPosition > word.beginTime && this.playPosition < word.endTime) {
+                if (i === this.lastWordPosition) {
                     break
                 }
-                currentWordIndex = i
-                this.lastWordIndex = i
-                animDuration = word.endTime - word.beginTime
+                currentWordPosition = i
+                this.lastWordPosition = i
+                duration = word.endTime - word.beginTime
                 break
             }
         }
-        if (currentWordIndex < 0) {
+        if (currentWordPosition < 0) {
+            MediaLogger.d(TAG, "word position is not changed")
             return
         }
         const lyricTextBlob = drawing.TextBlob.makeFromString(targetText, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
         const bound = lyricTextBlob.bounds()
         const drawTargetWidth = bound.right - bound.left
-        MediaLogger.w("abcd",
-            "word= " + this.lyricLine.text + ", word= " + wordList[currentWordIndex].text + ", duration= " + animDuration + ", beginW= " +
-            this.drawBeginWidth + ", targetW= " +
-                drawTargetWidth)
         if (this.anim === undefined) {
             const animator = AnimatorProvider.getInstance(this.context)
-            animator.setAnimationDuration(this.animDuration)
+            animator.setAnimationDuration(duration)
             this.anim = animator.getAnimator()
-            this.anim.addCallback((progress) => {
-                this.drawingWidth = progress
-                this.invalidate()
-            })
+            this.anim.addCallback(this.animCallback)
         }
-        this.anim!.reset({
-            duration: animDuration,
+        this.anim.pause()
+        this.anim.reset({
+            duration: duration,
             delay: 0,
             easing: "linear",
             fill: 'forwards',
@@ -312,8 +302,8 @@ class LrcTextView extends RenderNode {
             begin: this.drawingWidth ,
             end: drawTargetWidth
         })
-        this.anim!.run()
-        this.drawBeginWidth = drawTargetWidth
+        this.anim.addCallback(this.animCallback)
+        this.anim.run()
     }
 
     draw(context: DrawContext): void {
@@ -346,7 +336,7 @@ class LrcTextView extends RenderNode {
     }
 
     private drawHighlight(canvas: drawing.Canvas) {
-        if (this.relativePosition > 0) {
+        if (this.playPosition > 0) {
             this.endPoint.x = this.drawingWidth + this.beginX
             const shaderEffect = drawing.ShaderEffect.createLinearGradient({ x: 0, y: 0 }, this.endPoint,
                 [this.textHighlightColor, this.textHighlightColor], drawing.TileMode.DECAL)

@@ -17,6 +17,8 @@ export class CcLyricController {
     private _highlightScale: number = 1.1
     private _emptyHint: ResourceStr = "--"
     private _fadeColor: ResourceColor = "#ffffffff"
+    private _fadeEnable: boolean = true
+    private _fadePercent: number = 0.2
     private alignMode = AlignMode.CENTER
     private _AnimDuration = 250
 
@@ -57,17 +59,50 @@ export class CcLyricController {
     }
 
     /**
+     * @deprecated since v1.1.1
+     *
      * Set the fade color on edge of the lyric view.
      * @param color The fade color.
      */
     public setFadeColor(color: ResourceColor): CcLyricController {
-        this._fadeColor = color;
-        this.invalidate()
+        // this._fadeColor = color;
+        // this.invalidate()
         return this
     }
 
     public getFadeColor(): ResourceColor {
         return this._fadeColor;
+    }
+
+    /**
+     * Show the fade edge of the lyric view or not.
+     * @param enable
+     */
+    public setFadeEnable(enable: boolean): CcLyricController {
+        this._fadeEnable = enable
+        this.invalidate()
+        return this
+    }
+
+    public getFadeEnable(): boolean {
+        return this._fadeEnable
+    }
+
+    /**
+     * Set the fade edge percent of the lyric view, the value is [0,1].
+     * @param percent The fade edge percent of the view height.
+     */
+    public setFadePercent(percent: number): CcLyricController {
+        if (percent < 0 || percent > 1) {
+            throw new Error("The fade edge percent value must in [0,1]")
+        }
+        this._fadePercent = percent
+        this.invalidate()
+        return this
+    }
+
+    public getFadePercent(): number {
+        return this._fadePercent
     }
 
     /**
@@ -155,12 +190,14 @@ export class CcLyricController {
     }
 
     /**
+     * @deprecated since v1.1.1
+     *
      * Set the duration for lyric highlight animation.
      * @param duration The duration of animation, default is 250ms.
      */
     public setLrcAnimDuration(duration: number): CcLyricController {
-        this._AnimDuration = duration
-        this.invalidate()
+        // this._AnimDuration = duration
+        // this.invalidate()
         return this
     }
 

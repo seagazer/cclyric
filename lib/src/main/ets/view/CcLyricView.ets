@@ -33,6 +33,8 @@ export struct CcLyricView {
     @Local lyric?: Lrc = undefined
     @Local lineSpace: number = 0
     @Local fadeColor: ResourceColor = "#00ffffff"
+    @Local fadeEnable: boolean = true
+    @Local fadePercent: number = 0.2
     @Local emptyHint: ResourceStr = ""
     @Local isUserMoving: boolean = false
     @Local centerLrcLine?: LrcLine = undefined
@@ -44,13 +46,17 @@ export struct CcLyricView {
     private viewWidth = 0
     private userMoveTimeout = -1
     private measureFont = new drawing.Font()
+    private playPosition = 0
 
     aboutToAppear(): void {
         // set controller
         this.emptyHint = this.controller.getEmptyHint()
         this.lineSpace = this.controller.getLineSpace()
-        this.fadeColor = this.controller.getFadeColor()
+        // this.fadeColor = this.controller.getFadeColor()
+        this.fadeEnable = this.controller.getFadeEnable()
+        this.fadePercent = this.controller.getFadePercent()
         this.controller.onProgressChanged = (position) => {
+            this.playPosition = this.playPosition
             this.updatePosition(position)
         }
         this.controller.onDataChanged = (lrc) => {
@@ -62,7 +68,9 @@ export struct CcLyricView {
             MediaLogger.d(TAG, "attribute changed: " + JSON.stringify(this.controller))
             this.emptyHint = this.controller.getEmptyHint()
             this.lineSpace = this.controller.getLineSpace()
-            this.fadeColor = this.controller.getFadeColor()
+            // this.fadeColor = this.controller.getFadeColor()
+            this.fadeEnable = this.controller.getFadeEnable()
+            this.fadePercent = this.controller.getFadePercent()
             for (let i = 0; i < this.lrcDataSource.totalCount(); i++) {
                 const itemView = this.lrcDataSource.getData(i)
                 if (itemView !== undefined) {
@@ -82,16 +90,19 @@ export struct CcLyricView {
 
     @Builder
     FadeOverlay() {
-        Column()
-            .width("100%")
-            .height("100%")
-            .hitTestBehavior(HitTestMode.Transparent)
-            .backgroundColor(Color.Transparent)
-            .linearGradient({
-                angle: 0,
-                colors: [[this.fadeColor, 0], ["#00ffffff", 0.2], ["#00ffffff", 0.8], [this.fadeColor, 1]],
-                repeating: false
-            })
+        if (this.fadeEnable) {
+            Column()
+                .width("100%")
+                .height("100%")
+                .hitTestBehavior(HitTestMode.Transparent)
+                .linearGradient({
+                    angle: 0,
+                    colors: [[this.fadeColor, 0], ["#ffffffff", this.fadePercent], ["#ffffffff", 1 - this.fadePercent],
+                        [this.fadeColor, 1]],
+                    repeating: false
+                })
+                .blendMode(BlendMode.DST_IN, BlendApplyType.OFFSCREEN)
+        }
     }
 
     build() {
@@ -157,6 +168,7 @@ export struct CcLyricView {
                 .height("100%")
                 .hitTestBehavior(HitTestMode.Transparent)
                 .overlay(this.FadeOverlay())
+                .blendMode(BlendMode.SRC_OVER, BlendApplyType.OFFSCREEN)
                 .edgeEffect(EdgeEffect.None)
                 .scrollBar(BarState.Off)
                 .scrollSnapAlign(ScrollSnapAlign.CENTER)
@@ -245,7 +257,8 @@ export struct CcLyricView {
         this.isDataSourceReady = false
         this.lrcDataSource.clear(false)
         this.fillPaddingData()
-        const lines = lyric.lyricList;
+        const lines = lyric.lyricList
+        let targetInitIndex = -1
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             // measure and break line
@@ -257,11 +270,18 @@ export struct CcLyricView {
                 const view = this.createLrcView(line);
                 this.lrcDataSource.addData(view, false);
             }
+            if (this.playPosition > 0 && this.playPosition >= line.beginTime && this.playPosition < line.endTime) {
+                targetInitIndex = i
+            }
         }
         this.fillPaddingData()
         this.lrcDataSource.notifyDataReload();
         setTimeout(() => {
-            this.scroller.scrollToIndex(0);
+            if (targetInitIndex == -1) {
+                this.scroller.scrollToIndex(0);
+            } else {
+                this.scroller.scrollToIndex(targetInitIndex);
+            }
             this.isDataSourceReady = true
             this.onDataSourceReady?.()
         }, 50)
