@@ -1,17 +1,42 @@
-import { CcLyricController, CcLyricView, Lrc } from '@seagazer/cclyric';
+import { AlignMode, CcLyricController, CcLyricView } from '@seagazer/cclyric';
+import { CcPlayer, MediaSource, MediaSourceFactory, PlayerState } from '@seagazer/ccplayer';
 import { MockData, StringParser } from './MockData';
 
 
 @Entry
 @ComponentV2
 struct CcLyricViewSample {
-    private timer = -1
-    private changeCount = 0
     private parser = new StringParser()
-    @Local progress: number = 0
-    @Local lyric?: Lrc = undefined
     private controller: CcLyricController = new CcLyricController()
-
+    @Local playingIndex: number = 0
+    private songList = ["我想更懂你.mp3", "画心.mp3"]
+    private krcList = [MockData.krc6, MockData.krc7]
+    @Local userProgress: number = 0
+    @Local playerProgress: number = 0
+    @Local duration: number = 0
+    @Local isPlaying: boolean = false
+    private isSeeking = false
+    private player = new CcPlayer(this.getUIContext().getHostContext()!)
+    private src?: MediaSource = undefined
+    private progressChangedListener = (position: number) => {
+        this.playerProgress = position
+        this.controller.updatePosition(this.playerProgress)
+        if (this.isSeeking) {
+            return
+        }
+        this.userProgress = position
+    }
+    private prepareListener = () => {
+        this.duration = this.player.getDuration()
+    }
+    private seekChangedListener = (position: number) => {
+        this.isSeeking = false
+        this.userProgress = position
+        this.playerProgress = position
+    }
+    private stateChangedListener = (state: PlayerState) => {
+        this.isPlaying = this.player.isPlaying()
+    }
     aboutToAppear(): void {
         // set controller
         this.controller.setDebugger(true)
@@ -21,19 +46,28 @@ struct CcLyricViewSample {
             .setHighlightScale(1.2) // only set once
             .setTextColor(0xCC707070)
             .setTextHighlightColor(0xffe7107f)
-            .setFadeColor("#00000000")
             .setEmptyHint("未找到歌词")
-            .setLrcAnimDuration(100)
-        this.lyric = this.parser.parse(MockData.krc1)
-        this.controller.setLyric(this.lyric)
+            .setAlignMode(AlignMode.START)
+        this.player.addOnProgressChangedListener(this.progressChangedListener)
+            .addOnPreparedListener(this.prepareListener)
+            .addOnSeekChangedListener(this.seekChangedListener)
+            .addOnStateChangedListener(this.stateChangedListener)
     }
 
     aboutToDisappear(): void {
-        clearInterval(this.timer)
+        this.player.removeOnProgressChangedListener(this.progressChangedListener)
+            .removeOnPreparedListener(this.prepareListener)
+            .removeOnSeekChangedListener(this.seekChangedListener)
+            .removeOnStateChangedListener(this.stateChangedListener)
+        this.player.release()
     }
 
     build() {
         Column() {
+            Text(this.songList[this.playingIndex])
+                .fontSize(24)
+                .padding(16)
+
             Stack() {
                 Stack() {
                     CcLyricView({
@@ -41,7 +75,7 @@ struct CcLyricViewSample {
                         // default seek ui: 1.set supportSeek true, 2.do player seek action at onSeekAction callback
                         supportSeek: true,
                         onSeekAction: (position) => {
-                            this.mockPlayerSeek(position)
+                            this.player.seekTo(position)
                         }
                     })
                 }.padding(12)
@@ -50,31 +84,55 @@ struct CcLyricViewSample {
             .layoutWeight(1)
 
             Slider({
-                value: this.progress,
-                max: this.lyric ? this.lyric.lyricList[this.lyric.lyricList.length-1].endTime : 0
+                value: this.userProgress,
+                max: this.duration
             }).width("100%").margin(8)
                 .onChange((value, mode) => {
-                    if (mode == SliderChangeMode.End) {
-                        this.progress = value
-                        this.controller.updatePosition(this.progress)
+                    if (mode === SliderChangeMode.Begin) {
+                        this.isSeeking = true
+                    } else if (mode === SliderChangeMode.End) {
+                        this.player.seekTo(value)
                     }
                 })
 
             Row() {
-                Button("start")
+                Text(duration2Text(this.playerProgress) + " / " + duration2Text(this.duration))
+                    .fontSize(18)
+                    .textAlign(TextAlign.Start)
+
+                SymbolGlyph(this.isPlaying ? $r("sys.symbol.pause_fill") : $r("sys.symbol.play_fill"))
+                    .fontSize(32)
                     .onClick(() => {
-                        this.mockMediaPlay()
+                        if (this.src === undefined) {
+                            const lyric = this.parser.parse(this.krcList[this.playingIndex])
+                            this.controller.setLyric(lyric)
+                            this.src = MediaSourceFactory.createAssets(this.songList[this.playingIndex], this.songList[this.playingIndex])
+                            this.player.setMediaSource(this.src, () => {
+                                this.player.start()
+                            })
+                        } else {
+                            if (this.player.isPlaying()) {
+                                this.player.pause()
+                            } else {
+                                this.player.start()
+                            }
+                        }
                     })
 
-                Button("next")
+                SymbolGlyph($r("sys.symbol.forward_end_fill"))
+                    .fontSize(32)
                     .onClick(() => {
-                        this.mockChanged()
+                        this.playingIndex++
+                        this.playingIndex %= 2
+                        const lyric = this.parser.parse(this.krcList[this.playingIndex])
+                        this.controller.setLyric(lyric)
+                        this.src = MediaSourceFactory.createAssets(this.songList[this.playingIndex], this.songList[this.playingIndex])
+                        this.player.setMediaSource(this.src, () => {
+                            this.player.start()
+                        })
                     })
-                Button("empty")
-                    .onClick(() => {
-                        this.setEmpty()
-                    })
-                Button("style")
+                SymbolGlyph($r("sys.symbol.paintpalette_fill"))
+                    .fontSize(32)
                     .onClick(() => {
                         this.controller
                             .setEmptyHint("No Lyric")
@@ -82,64 +140,24 @@ struct CcLyricViewSample {
                             .setTextHighlightColor(0xff32c64b)
                     })
             }.width("100%")
-            .justifyContent(FlexAlign.SpaceEvenly)
+            .justifyContent(FlexAlign.SpaceBetween)
         }
         .height('100%')
         .width('100%')
+        .padding(16)
     }
 
-    private setEmpty() {
-        clearInterval(this.timer)
-        this.progress = 0
-        this.controller.setLyric(undefined)
-    }
 
-    private mockMediaPlay() {
-        clearInterval(this.timer)
-        this.progress = 0
-        this.timer = setInterval(() => {
-            if (this.lyric && this.progress > this.lyric.lyricList[this.lyric.lyricList.length-1].endTime) {
-                this.progress = this.lyric.lyricList[this.lyric.lyricList.length-1].endTime
-                return
-            }
-            this.progress += 300
-            this.controller.updatePosition(this.progress)
-        }, 300)
-    }
-
-    private mockPlayerSeek(position: number) {
-        clearInterval(this.timer)
-        this.progress = position
-        this.controller.updatePosition(this.progress)
-        this.timer = setInterval(() => {
-            if (this.lyric && this.progress > this.lyric.lyricList[this.lyric.lyricList.length-1].endTime) {
-                this.progress = this.lyric.lyricList[this.lyric.lyricList.length-1].endTime
-                return
-            }
-            this.progress += 300
-            this.controller.updatePosition(this.progress)
-        }, 300)
-    }
-
-    // change data source
-    private mockChanged() {
-        if (this.changeCount % 3 == 0) {
-            this.lyric = this.parser.parse(MockData.krc3)
-            this.controller.setLyric(this.lyric)
-        } else if (this.changeCount % 2 == 0) {
-            this.lyric = this.parser.parse(MockData.krc2)
-            this.controller.setLyric(this.lyric)
-        } else {
-            this.lyric = this.parser.parse(MockData.krc1)
-            this.controller.setLyric(this.lyric)
-        }
-        // replay
-        this.mockMediaPlay()
-        this.changeCount++
-    }
 }
 
-
+export function duration2Text(duration: number): string {
+    const totalSeconds = Math.floor(duration / 1000);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    const minutesStr = minutes.toString().padStart(2, '0');
+    const secondsStr = seconds.toString().padStart(2, '0');
+    return `${minutesStr}:${secondsStr}`;
+}
 
 
 
