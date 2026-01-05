@@ -16,10 +16,10 @@
 ## 示例效果
 | 居中对齐                                                                          | 左对齐                                                                            | 自定义样式                                                                        | 自定义seek界面                                                                    |
 | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| <img src="https://s41.ax1x.com/2025/12/20/pZ3QfQH.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3Qhyd.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3Qre1.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3QWSe.png" width="180" height="360"/> |
+| <img src="https://s41.ax1x.com/2026/01/05/pZdi7AP.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2026/01/05/pZdFS7q.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2026/01/05/pZdF9A0.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3QWSe.png" width="180" height="360"/> |
 
 ## 注意事项
-
+- 从 1.1.1 版本开始，重构逐字动画逻辑，动效更加平滑和精准，因为采用了部分Api12+的接口，因此后续版本仅支持Api12以上。
 - 从 1.0.8 版本开始，新增逐字歌词能力，新增了 CcLyricView 组件和 CcLrcController 控制器，取替之前的 LyricView（不再维护）。
 - 从 1.0.8 版本开始，不再提供默认的歌词解析器，建议提供数据源格式和Lrc数据结构，使用AI工具编写解析代码。
 
@@ -84,11 +84,27 @@ CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 
 #### setFadeColor(color: ResourceColor): CcLyricController
 
-设置歌词上下边缘渐变颜色，默认为#00ffffff
+设置歌词上下边缘渐变颜色，默认为#00ffffff，**1.1.1版本开始废弃**。
 
 | 参数  | 参数类型      | 参数说明         |
 | ----- | ------------- | ---------------- |
 | color | ResourceColor | 歌词边缘渐变颜色 |
+
+#### setFadeEnable(enable: boolean): CcLyricController
+
+设置歌词上下边缘是否渐变显示，默认true
+
+| 参数   | 参数类型 | 参数说明                 |
+| ------ | -------- | ------------------------ |
+| enable | boolean  | 歌词上下边缘是否渐变显示 |
+
+#### setFadePercent(percent: number): CcLyricController
+
+设置歌词上下边缘渐变占比，默认0.2，取值范围为[0,1]。
+
+| 参数    | 参数类型 | 参数说明         |
+| ------- | -------- | ---------------- |
+| percent | number   | 上下边缘渐变占比 |
 
 #### setTextSize(textSize: number): CcLyricController
 
@@ -140,10 +156,10 @@ CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 
 #### setLrcAnimDuration(duration: number)
 
-设置逐字歌词的动效时间，默认250ms。
+设置逐字歌词的动效时间，默认250ms。**1.1.1版本开始废弃**。
 
-| 参数     | 参数类型 | 参数说明              |
-| -------- | -------- | --------------------- |
+| 参数     | 参数类型 | 参数说明          |
+| -------- | -------- | ----------------- |
 | duration | number   | 动效时间(单位 ms) |
 
 ### Lrc
@@ -210,7 +226,7 @@ struct Index {
             .setLineSpace(12)
             .setTextColor(0xCC000000)
             .setTextHighlightColor(0xffe7107f)
-            .setFadeColor("#ffffffff")
+            .setFadeEnable(true)
         this.lyric = this.parser.parse(MockData.krc1)
         // 3. set the lyric
         this.controller.setLyric(this.lyric)
@@ -265,7 +281,6 @@ struct Index {
             .setLineSpace(12)
             .setTextColor(0xCC000000)
             .setTextHighlightColor(0xffe7107f)
-            .setFadeColor("#ffffffff")
         this.lyric = this.parser.parse(MockData.krc1)
         // 3. set the lyric
         this.controller.setLyric(this.lyric)

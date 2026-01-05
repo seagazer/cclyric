@@ -1,3 +1,11 @@
+# 1.1.1
+- 修复CcLyricView组件在播放进度非0时初次显示也会从顶部开始显示问题
+- 重构逐字歌词动画逻辑，动效更加平滑精准
+- 歌词边缘渐变修改为使用blendMode实现(仅支持api12+)
+- CcLyricController废弃setFadeColor接口,新增setFadeEnable接口
+- CcLyricController新增setFadePercent接口设置渐变高度占比
+- CcLyricController废弃setLrcAnimDuration接口,动画时长由库内部动态修改
+
 # 1.1.0
 - 新增setLrcAnimDuration接口，设置逐字歌词动效时长
 - 优化部分细节
