@@ -5,6 +5,7 @@
 - CcLyricController废弃setFadeColor接口,新增setFadeEnable接口
 - CcLyricController新增setFadePercent接口设置渐变高度占比
 - CcLyricController废弃setLrcAnimDuration接口,动画时长由库内部动态修改
+- 兼容版本提升至14，编译版本提升至21
 
 # 1.1.0
 - 新增setLrcAnimDuration接口，设置逐字歌词动效时长

@@ -47,7 +47,7 @@ struct CcLyricViewSample {
             .setTextColor(0xCC707070)
             .setTextHighlightColor(0xffe7107f)
             .setEmptyHint("未找到歌词")
-            .setAlignMode(AlignMode.START)
+            .setAlignMode(AlignMode.CENTER)
         this.player.addOnProgressChangedListener(this.progressChangedListener)
             .addOnPreparedListener(this.prepareListener)
             .addOnSeekChangedListener(this.seekChangedListener)

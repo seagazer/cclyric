@@ -19,7 +19,7 @@
 | <img src="https://s41.ax1x.com/2026/01/05/pZdi7AP.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2026/01/05/pZdFS7q.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2026/01/05/pZdF9A0.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3QWSe.png" width="180" height="360"/> |
 
 ## 注意事项
-- 从 1.1.1 版本开始，重构逐字动画逻辑，动效更加平滑和精准，因为采用了部分Api12+的接口，因此后续版本仅支持Api12以上。
+- 从 1.1.1 版本开始，重构逐字动画逻辑，动效更加平滑和精准，因为采用了部分高版本接口，因此后续版本仅支持Api14以上。
 - 从 1.0.8 版本开始，新增逐字歌词能力，新增了 CcLyricView 组件和 CcLrcController 控制器，取替之前的 LyricView（不再维护）。
 - 从 1.0.8 版本开始，不再提供默认的歌词解析器，建议提供数据源格式和Lrc数据结构，使用AI工具编写解析代码。
 
