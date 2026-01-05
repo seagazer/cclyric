@@ -460,7 +460,7 @@ export class StringParser {
             }
             // 提取字符（索引2,4,6...）
             for (let i = 2; i < parts.length; i += 2) {
-                const char = parts[i].trim();
+                const char = parts[i];
                 if (char) {
                     chars.push(char);
                 }
