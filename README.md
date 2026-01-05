@@ -343,5 +343,5 @@ struct Index {
 ```
 
 - 更多使用场景和示例，可以参考本库代码仓的 entry 工程：  https://github.com/seagazer/cclyric
-- 播放器场景，推荐使用@seagazer/ccplayer搭配（三方库中心仓地址 https://ohpm.openharmony.cn/#/cn/detail/@seagazer%2Fccplayer ） ，可以快捷构建媒体播放应用
+- 播放器场景可以参考示例CcLyricViewSample.ets，使用ccplayer搭配使用（三方库中心仓地址 https://ohpm.openharmony.cn/#/cn/detail/@seagazer%2Fccplayer）可以快捷构建媒体播放应用
 - 使用过程中存在任何相关问题欢迎各位开发者提Issue和PR，或者加群反馈（Q群:1051643574），欢迎大家一起共建完善该库，如果觉得对你有用，请给个star鼓励一下谢谢。
