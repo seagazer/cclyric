@@ -48,6 +48,8 @@ struct CcLyricViewSample {
             .setTextHighlightColor(0xffe7107f)
             .setEmptyHint("未找到歌词")
             .setAlignMode(AlignMode.CENTER)
+            .setFadeEnable(true)
+            .setFadePercent(0.25)
         this.player.addOnProgressChangedListener(this.progressChangedListener)
             .addOnPreparedListener(this.prepareListener)
             .addOnSeekChangedListener(this.seekChangedListener)
