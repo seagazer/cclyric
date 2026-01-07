@@ -20,7 +20,7 @@ export class CcLyricController {
     private _fadeEnable: boolean = true
     private _fadePercent: number = 0.2
     private alignMode = AlignMode.CENTER
-    private _AnimDuration = 250
+    // private _AnimDuration = 250
 
     /**
      * Open the debug log or not, default is false.
@@ -125,7 +125,7 @@ export class CcLyricController {
      */
     public setTextSize(size: number): CcLyricController {
         this._textSize = size
-        this.invalidate()
+        this.resize()
         return this
     }
 
@@ -139,7 +139,7 @@ export class CcLyricController {
      */
     public setLineSpace(space: number): CcLyricController {
         this._lineSpace = space
-        this.invalidate()
+        this.resize()
         return this
     }
 
@@ -181,7 +181,7 @@ export class CcLyricController {
      */
     public setHighlightScale(scale: number): CcLyricController {
         this._highlightScale = scale
-        this.invalidate()
+        this.resize()
         return this
     }
 
@@ -201,9 +201,9 @@ export class CcLyricController {
         return this
     }
 
-    public getLrcAnimDuration() {
-        return this._AnimDuration
-    }
+    // public getLrcAnimDuration() {
+    //     return this._AnimDuration
+    // }
 
     /**
      * Update the progress of media player.
@@ -217,6 +217,14 @@ export class CcLyricController {
         this.onAttributeChanged?.()
     }
 
+    private resize() {
+        this.onResize?.()
+    }
+
+    /**
+     * Attention: Not call by user.
+     */
+    onResize?: () => void = undefined
     /**
      * Attention: Not call by user.
      */

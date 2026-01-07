@@ -23,16 +23,10 @@ export class LrcLineView extends NodeController {
     private textColor: number = -1
     private textHighlightColor: number = -1
     private mode: AlignMode = AlignMode.CENTER
-    private animDuration = 250
 
     setAlignMode(mode: AlignMode) {
         this.lyricTextView?.setAlignMode(mode)
         this.mode = mode
-    }
-
-    public setAnimationDuration(duration: number) {
-        this.animDuration = duration
-        this.lyricTextView?.setAnimationDuration(duration)
     }
 
     public setTextSize(size: number) {
@@ -95,9 +89,6 @@ export class LrcLineView extends NodeController {
         if (this.lyricTextView === null) {
             this.lyricTextView = new LrcTextView(this.context!, this.lyricLine)
             this.lyricTextView.onSizeChanged(size.width, size.height)
-            if (this.animDuration !== 250) {
-                this.setAnimationDuration(this.animDuration)
-            }
             if (this.textSize !== -1) {
                 this.setTextSize(this.textSize)
             }
@@ -163,10 +154,6 @@ class LrcTextView extends RenderNode {
         this.lyricLine = lyricLine
         this.isKrc = lyricLine.wordList != undefined && lyricLine.wordList.length > 0
         this.updateConfig()
-    }
-
-    setAnimationDuration(duration: number) {
-        this.animDuration = duration
     }
 
     setAlignMode(mode: AlignMode) {
@@ -282,9 +269,14 @@ class LrcTextView extends RenderNode {
             MediaLogger.d(TAG, "word position is not changed")
             return
         }
-        const lyricTextBlob = drawing.TextBlob.makeFromString(targetText, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
-        const bound = lyricTextBlob.bounds()
-        const drawTargetWidth = bound.right - bound.left
+        let drawTargetWidth = 0
+        if (currentWordPosition === wordList.length - 1) {
+            drawTargetWidth = this.textWidth
+        } else {
+            const lyricTextBlob = drawing.TextBlob.makeFromString(targetText, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+            const bound = lyricTextBlob.bounds()
+            drawTargetWidth = bound.right - bound.left
+        }
         if (this.anim === undefined) {
             const animator = AnimatorProvider.getInstance(this.context)
             animator.setAnimationDuration(duration)
@@ -299,7 +291,7 @@ class LrcTextView extends RenderNode {
             fill: 'forwards',
             direction: "normal",
             iterations: 1,
-            begin: this.drawingWidth ,
+            begin: this.drawingWidth,
             end: drawTargetWidth
         })
         this.anim.addCallback(this.animCallback)

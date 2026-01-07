@@ -15,6 +15,7 @@ struct CcLyricViewSample {
     @Local playerProgress: number = 0
     @Local duration: number = 0
     @Local isPlaying: boolean = false
+    private changeIndex = 0
     private isSeeking = false
     private player = new CcPlayer(this.getUIContext().getHostContext()!)
     private src?: MediaSource = undefined
@@ -37,19 +38,20 @@ struct CcLyricViewSample {
     private stateChangedListener = (state: PlayerState) => {
         this.isPlaying = this.player.isPlaying()
     }
+
     aboutToAppear(): void {
         // set controller
         this.controller.setDebugger(true)
         this.controller
             .setLineSpace(12)
             .setTextSize(18) // only set once
-            .setHighlightScale(1.2) // only set once
+            .setHighlightScale(1.1) // only set once
             .setTextColor(0xCC707070)
             .setTextHighlightColor(0xffe7107f)
             .setEmptyHint("未找到歌词")
             .setAlignMode(AlignMode.CENTER)
             .setFadeEnable(true)
-            .setFadePercent(0.25)
+            .setFadePercent(0.15)
         this.player.addOnProgressChangedListener(this.progressChangedListener)
             .addOnPreparedListener(this.prepareListener)
             .addOnSeekChangedListener(this.seekChangedListener)
@@ -136,10 +138,24 @@ struct CcLyricViewSample {
                 SymbolGlyph($r("sys.symbol.paintpalette_fill"))
                     .fontSize(32)
                     .onClick(() => {
-                        this.controller
-                            .setEmptyHint("No Lyric")
-                            .setTextColor(0x80809241)
-                            .setTextHighlightColor(0xff32c64b)
+                        if (this.changeIndex % 2 == 0) {
+                            this.controller
+                                .setTextColor(0x80809241)
+                                .setTextHighlightColor(0xff32c64b)
+                                .setLineSpace(20)
+                                .setTextSize(20)
+                                .setHighlightScale(1.25)
+                                .setAlignMode(AlignMode.START)
+                        } else {
+                            this.controller
+                                .setTextColor(0xCC707070)
+                                .setTextHighlightColor(0xffe7107f)
+                                .setLineSpace(12)
+                                .setTextSize(18)
+                                .setHighlightScale(1.1)
+                                .setAlignMode(AlignMode.CENTER)
+                        }
+                        this.changeIndex++
                     })
             }.width("100%")
             .justifyContent(FlexAlign.SpaceBetween)
@@ -148,8 +164,6 @@ struct CcLyricViewSample {
         .width('100%')
         .padding(16)
     }
-
-
 }
 
 export function duration2Text(duration: number): string {

@@ -44,6 +44,7 @@ export struct CcLyricView {
     private scroller = new Scroller()
     private middleLine = -1
     private viewWidth = 0
+    private viewHeight = 0
     private userMoveTimeout = -1
     private measureFont = new drawing.Font()
     private playPosition = 0
@@ -64,17 +65,30 @@ export struct CcLyricView {
             this.lyric = lrc
             this.setDataSource(lrc)
         }
+        this.controller.onResize = () => {
+            this.lineSpace = this.controller.getLineSpace()
+            if (this.lyric !== undefined) { // changed size when lyric displaying
+                const ml = this.middleLine
+                this.middleLine =
+                    Math.round(((this.viewHeight + this.controller.getLineSpace()) /
+                        (this.controller.getTextSize() * 1.5 + this.controller.getLineSpace()) - 1) /
+                        2)
+                if (ml === this.middleLine) {
+                    return
+                }
+                MediaLogger.i(TAG, "middle line= " + this.middleLine)
+                this.setDataSource(this.lyric)
+            }
+        }
         this.controller.onAttributeChanged = () => {
             MediaLogger.d(TAG, "attribute changed: " + JSON.stringify(this.controller))
             this.emptyHint = this.controller.getEmptyHint()
-            this.lineSpace = this.controller.getLineSpace()
             // this.fadeColor = this.controller.getFadeColor()
             this.fadeEnable = this.controller.getFadeEnable()
             this.fadePercent = this.controller.getFadePercent()
             for (let i = 0; i < this.lrcDataSource.totalCount(); i++) {
                 const itemView = this.lrcDataSource.getData(i)
                 if (itemView !== undefined) {
-                    itemView.setAnimationDuration(this.controller.getLrcAnimDuration())
                     itemView.setTextSize(this.controller.getTextSize())
                     itemView.setTextColor(this.controller.getTextColor())
                     itemView.setTextHighlightColor(this.controller.getTextHighlightColor())
@@ -217,13 +231,13 @@ export struct CcLyricView {
         .width("100%")
         .height("100%")
         .onSizeChange((_, size) => {
-            if (this.middleLine === -1) {
-                const h = size.height as number
-                this.viewWidth = this.getUIContext().vp2px(size.width as number)
-                this.middleLine =
-                    Math.round(((h + this.controller.getLineSpace()) / (this.controller.getTextSize() * 1.5 + this.controller.getLineSpace()) - 1) /
-                        2)
-                MediaLogger.i(TAG, "view height= " + h + ", middle line= " + this.middleLine)
+            this.viewHeight = size.height as number
+            this.viewWidth = this.getUIContext().vp2px(size.width as number)
+            const middleLine = Math.round(((this.viewHeight + this.controller.getLineSpace()) /
+                (this.controller.getTextSize() * 1.5 + this.controller.getLineSpace()) - 1) / 2)
+            if (this.middleLine !== middleLine) {
+                MediaLogger.i(TAG, "view height= " + this.viewHeight + ", middle line= " + this.middleLine)
+                this.middleLine = middleLine
                 this.lyric = this.controller.getLyric()
                 if (this.lyric != undefined) {
                     this.setDataSource(this.lyric)
@@ -337,7 +351,6 @@ export struct CcLyricView {
 
     private createLrcView(line: LrcLine) {
         const view = new LrcLineView(line);
-        view.setAnimationDuration(this.controller.getLrcAnimDuration())
         view.setTextSize(this.controller.getTextSize());
         view.setTextColor(this.controller.getTextColor());
         view.setTextHighlightColor(this.controller.getTextHighlightColor());
@@ -357,6 +370,7 @@ export struct CcLyricView {
         if (this.focusView !== undefined) {
             this.focusView.play(position)
         }
+        // [0-middleLine] is fillPadding empty data
         const beginIndex = this.middleLine
         const endIndex = this.lrcDataSource.totalCount() - 1
         for (let i = beginIndex; i < endIndex; i++) {
@@ -367,23 +381,42 @@ export struct CcLyricView {
             const lyricLine = lyric.getLyric()
             const start = lyricLine.beginTime
             const end = lyricLine.endTime
-            if (position >= start && position < end) {
+            if (position >= start && position < end) { //between a lyric line
                 if (this.focusIndex != i) {
-                    if (this.focusView) {
-                        this.focusView.stop()
-                        MediaLogger.d(TAG, this.focusView.getLyric().text + "--unHighlight")
-                        this.focusView = undefined
-                    }
-                    this.focusView = this.lrcDataSource.getData(i)
-                    MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
-                    this.focusIndex = i
-                    if (!this.isUserMoving) {
-                        const centerScrollIndex = i - this.middleLine
-                        this.scroller.scrollToIndex(centerScrollIndex, true)
-                    }
+                    this.changeFocusLine(lyric, i)
                 }
                 break
+            } else if (i < endIndex - 2) { // between at two lyric lines
+                const next = i + 1
+                const nextItem = this.lrcDataSource.getData(next)
+                let nextEnd = 0
+                if (nextItem === undefined) {
+                    nextEnd = end
+                } else {
+                    nextEnd = nextItem.getLyric().beginTime
+                }
+                if (position >= start && position < nextEnd) {
+                    if (this.focusIndex != next) {
+                        this.changeFocusLine(nextItem, next)
+                    }
+                    break
+                }
             }
+        }
+    }
+
+    private changeFocusLine(lyric: LrcLineView | undefined, focusIndex: number) {
+        if (this.focusView) {
+            this.focusView.stop()
+            MediaLogger.d(TAG, this.focusView.getLyric().text + "--unHighlight")
+            this.focusView = undefined
+        }
+        this.focusView = lyric
+        MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
+        this.focusIndex = focusIndex
+        if (!this.isUserMoving) {
+            const centerScrollIndex = focusIndex - this.middleLine
+            this.scroller.scrollToIndex(centerScrollIndex, true)
         }
     }
 }
