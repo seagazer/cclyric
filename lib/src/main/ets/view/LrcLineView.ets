@@ -221,6 +221,7 @@ class LrcTextView extends RenderNode {
     }
 
     update(position: number) {
+        this.isHighlight = true
         if (this.isKrc) {
             this.playPosition = position
             this.updateAnimation()
@@ -228,7 +229,6 @@ class LrcTextView extends RenderNode {
             if (this.isHighlight) {
                 return
             }
-            this.isHighlight = true
             this.invalidate()
         }
     }
