@@ -9,8 +9,8 @@ struct CcLyricViewSample {
     private parser = new StringParser()
     private controller: CcLyricController = new CcLyricController()
     @Local playingIndex: number = 0
-    private songList = ["Delacey - Dream It Possible.flac", "画心.mp3"]
-    private krcList = [MockData.krc8, MockData.krc7]
+    private songList = ["我想更懂你.mp3", "画心.mp3"]
+    private krcList = [MockData.krc6, MockData.krc7]
     @Local userProgress: number = 0
     @Local playerProgress: number = 0
     @Local duration: number = 0
@@ -86,7 +86,7 @@ struct CcLyricViewSample {
                     })
                 }.padding(12)
             }
-            .width("80%")
+            .width("100%")
             .layoutWeight(1)
 
             Slider({
