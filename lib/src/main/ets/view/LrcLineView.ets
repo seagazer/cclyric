@@ -145,9 +145,9 @@ class LrcTextView extends RenderNode {
         alpha: 255
     }
     private textKrcBgColor: common2D.Color = {
-        red: 90,
-        green: 90,
-        blue: 90,
+        red: 0,
+        green: 0,
+        blue: 0,
         alpha: 255
     }
     private textHighlightColor: number = 0xFFFF0000

@@ -9,8 +9,8 @@ struct CcLyricViewSample {
     private parser = new StringParser()
     private controller: CcLyricController = new CcLyricController()
     @Local playingIndex: number = 0
-    private songList = ["我想更懂你.mp3", "画心.mp3"]
-    private krcList = [MockData.krc6, MockData.krc7]
+    private songList = ["Delacey - Dream It Possible.flac", "画心.mp3"]
+    private krcList = [MockData.krc8, MockData.krc7]
     @Local userProgress: number = 0
     @Local playerProgress: number = 0
     @Local duration: number = 0
@@ -46,12 +46,14 @@ struct CcLyricViewSample {
             .setLineSpace(12)
             .setTextSize(18) // only set once
             .setHighlightScale(1.1) // only set once
-            .setTextColor(0xCC707070)
-            .setTextHighlightColor(0xffe7107f)
+            .setTextColor(0xCC707070) //"#CC707070"
+            .setTextHighlightColor(0xffe7107f) //"#ffe7107f"
+            .setKrcTextBgColor(0xffd79a75) //"#ffd79a75"
             .setEmptyHint("未找到歌词")
             .setAlignMode(AlignMode.CENTER)
             .setFadeEnable(true)
             .setFadePercent(0.15)
+            .setTopOffset(300)
         this.player.addOnProgressChangedListener(this.progressChangedListener)
             .addOnPreparedListener(this.prepareListener)
             .addOnSeekChangedListener(this.seekChangedListener)
@@ -84,7 +86,7 @@ struct CcLyricViewSample {
                     })
                 }.padding(12)
             }
-            .width("100%")
+            .width("80%")
             .layoutWeight(1)
 
             Slider({

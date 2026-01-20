@@ -10,9 +10,9 @@ import { MediaLogger } from './extensions/MediaLogger'
  */
 export class CcLyricController {
     private lyric?: Lrc | undefined = undefined
-    private _textSize: number = 20
-    private _lineSpace: number = 12
-    private _textColor: number = 0xffb5b5b5
+    private _textSize: number = 20 //fp
+    private _lineSpace: number = 12 //vp
+    private _textColor: number = 0xff000000
     private _krcTextBgColor: number = 0xff000000
     private _textHighlightColor: number = 0xffff0000
     private _highlightScale: number = 1.1
@@ -166,7 +166,7 @@ export class CcLyricController {
     }
 
     /**
-     * Set the text color of lyric.
+     * Set the text color of lyric, default is 0xff000000.
      * @param color The text color.
      */
     public setTextColor(color: number): CcLyricController {
@@ -180,7 +180,7 @@ export class CcLyricController {
     }
 
     /**
-     * Set the background text color of krc line.
+     * Set the background text color of krc line, default is 0xff000000.
      * @param color The background text color of krc line.
      */
     public setKrcTextBgColor(color: number): CcLyricController {
@@ -194,7 +194,7 @@ export class CcLyricController {
     }
 
     /**
-     * Set the highlight text color of lyric.
+     * Set the highlight text color of lyric, default is 0xffff0000.
      * @param color The text color.
      */
     public setTextHighlightColor(color: number): CcLyricController {
