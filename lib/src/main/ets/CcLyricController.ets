@@ -12,7 +12,8 @@ export class CcLyricController {
     private lyric?: Lrc | undefined = undefined
     private _textSize: number = 20
     private _lineSpace: number = 12
-    private _textColor: number = 0xff000000
+    private _textColor: number = 0xffb5b5b5
+    private _krcTextBgColor: number = 0xff000000
     private _textHighlightColor: number = 0xffff0000
     private _highlightScale: number = 1.1
     private _emptyHint: ResourceStr = "--"
@@ -176,6 +177,20 @@ export class CcLyricController {
 
     public getTextColor() {
         return this._textColor
+    }
+
+    /**
+     * Set the background text color of krc line.
+     * @param color The background text color of krc line.
+     */
+    public setKrcTextBgColor(color: number): CcLyricController {
+        this._krcTextBgColor = color
+        this.invalidate()
+        return this
+    }
+
+    public getKrcTextBgColor() {
+        return this._krcTextBgColor
     }
 
     /**

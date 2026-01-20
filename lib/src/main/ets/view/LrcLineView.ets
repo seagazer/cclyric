@@ -21,8 +21,13 @@ export class LrcLineView extends NodeController {
     private isEmptyLine = false
     private textSize: number = -1
     private textColor: number = -1
+    private krcTextBgColor: number = -1
     private textHighlightColor: number = -1
     private mode: AlignMode = AlignMode.CENTER
+
+    markHighlight() {
+        this.lyricTextView?.markHighlight()
+    }
 
     setAlignMode(mode: AlignMode) {
         this.lyricTextView?.setAlignMode(mode)
@@ -37,6 +42,11 @@ export class LrcLineView extends NodeController {
     public setTextColor(color: number) {
         this.textColor = color
         this.lyricTextView?.setTextColor(color)
+    }
+
+    public setKrcTextBgColor(color: number) {
+        this.krcTextBgColor = color
+        this.lyricTextView?.setKrcTextBgColor(color)
     }
 
     public setTextHighlightColor(color: number) {
@@ -95,6 +105,9 @@ export class LrcLineView extends NodeController {
             if (this.textColor !== -1) {
                 this.setTextColor(this.textColor)
             }
+            if (this.krcTextBgColor !== -1) {
+                this.setKrcTextBgColor(this.krcTextBgColor)
+            }
             if (this.textHighlightColor !== -1) {
                 this.setTextHighlightColor(this.textHighlightColor)
             }
@@ -131,6 +144,12 @@ class LrcTextView extends RenderNode {
         blue: 0,
         alpha: 255
     }
+    private textKrcBgColor: common2D.Color = {
+        red: 90,
+        green: 90,
+        blue: 90,
+        alpha: 255
+    }
     private textHighlightColor: number = 0xFFFF0000
     private lyricTextBlob?: drawing.TextBlob = undefined
     private anim?: Animator = undefined
@@ -156,6 +175,11 @@ class LrcTextView extends RenderNode {
         this.updateConfig()
     }
 
+    markHighlight() {
+        this.isHighlight = true
+        this.invalidate()
+    }
+
     setAlignMode(mode: AlignMode) {
         if (this.mode !== mode) {
             this.mode = mode
@@ -171,6 +195,17 @@ class LrcTextView extends RenderNode {
     setTextColor(textColor: number) {
         const colors = ColorHelper.hex2Argb(textColor) //argb
         this.textColor = {
+            red: colors[1],
+            green: colors[2],
+            blue: colors[3],
+            alpha: colors[0]
+        }
+        this.updateConfig()
+    }
+
+    setKrcTextBgColor(textColor: number) {
+        const colors = ColorHelper.hex2Argb(textColor) //argb
+        this.textKrcBgColor = {
             red: colors[1],
             green: colors[2],
             blue: colors[3],
@@ -350,6 +385,11 @@ class LrcTextView extends RenderNode {
     }
 
     private drawNormal(canvas: drawing.Canvas) {
+        if (this.isHighlight) {
+            this.normalPen.setColor(this.textKrcBgColor)
+        } else {
+            this.normalPen.setColor(this.textColor)
+        }
         canvas.attachBrush(this.normalPen)
         canvas.drawTextBlob(this.lyricTextBlob, this.beginX, this.beginY)
         canvas.detachBrush()

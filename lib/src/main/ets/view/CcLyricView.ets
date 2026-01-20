@@ -82,6 +82,7 @@ export struct CcLyricView {
                 if (itemView !== undefined) {
                     itemView.setTextSize(this.controller.getTextSize())
                     itemView.setTextColor(this.controller.getTextColor())
+                    itemView.setKrcTextBgColor(this.controller.getKrcTextBgColor())
                     itemView.setTextHighlightColor(this.controller.getTextHighlightColor())
                     itemView.setAlignMode(this.controller.getAlignMode())
                 }
@@ -373,6 +374,7 @@ export struct CcLyricView {
         const view = new LrcLineView(line);
         view.setTextSize(this.controller.getTextSize())
         view.setTextColor(this.controller.getTextColor())
+        view.setKrcTextBgColor(this.controller.getKrcTextBgColor())
         view.setTextHighlightColor(this.controller.getTextHighlightColor())
         view.setAlignMode(this.controller.getAlignMode())
         return view
@@ -428,6 +430,7 @@ export struct CcLyricView {
             this.focusView = undefined
         }
         this.focusView = focusLine
+        this.focusView?.markHighlight()
         this.focusIndex = focusIndex
         MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
         if (!this.isUserMoving) {
