@@ -129,6 +129,21 @@ CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 | 参数  | 参数类型 | 参数说明     |
 | ----- | -------- | ------------ |
 | color | number   | 文本聚焦颜色 |
+#### setKrcTextBgColor(color: number): CcLyricController
+
+设置逐字歌词聚焦行文本背景颜色（前景色设置为setHighlightColor），默认和歌词文本普通颜色保持一致：0xff000000。
+
+| 参数  | 参数类型 | 参数说明               |
+| ----- | -------- | ---------------------- |
+| color | number   | 逐字歌词聚焦行文本颜色 |
+
+#### setTopOffset(offset: number): CcLyricController
+
+设置歌词首行距离顶部的距离，单位vp，默认为100vp。
+
+| 参数   | 参数类型 | 参数说明               |
+| ------ | -------- | ---------------------- |
+| offset | number   | 歌词首行距离顶部的距离 |
 
 #### setHighlightScale(scale: number): CcLyricController
 
