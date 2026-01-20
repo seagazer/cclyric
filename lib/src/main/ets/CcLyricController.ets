@@ -19,7 +19,9 @@ export class CcLyricController {
     private _fadeColor: ResourceColor = "#ffffffff"
     private _fadeEnable: boolean = true
     private _fadePercent: number = 0.2
+    private _topOffset: number = 100 //vp
     private alignMode = AlignMode.CENTER
+
     // private _AnimDuration = 250
 
     /**
@@ -28,6 +30,21 @@ export class CcLyricController {
      */
     setDebugger(debug: boolean) {
         MediaLogger.setDebugger(debug)
+    }
+
+    /**
+     * Set the padding of lyric content by the top edge of view, default is 100vp.
+     * @param offset The padding of lyric content by the top edge of view.
+     * @returns
+     */
+    setTopOffset(offset: number): CcLyricController {
+        this._topOffset = offset
+        this.onAttributeChanged?.()
+        return this
+    }
+
+    getTopOffset(): number {
+        return this._topOffset
     }
 
     /**

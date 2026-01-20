@@ -249,53 +249,81 @@ class LrcTextView extends RenderNode {
 
     private updateAnimation() {
         const wordList = this.lyricLine.wordList!
-        let currentWordPosition = -1
         let duration = this.animDuration
         let targetText = ""
-        for (let i = 0; i < wordList.length; i++) {
-            const word = wordList[i]
-            targetText += word.text
-            if (this.playPosition > word.beginTime && this.playPosition < word.endTime) {
-                if (i === this.lastWordPosition) {
+        if (wordList.length === 1) { // single word line
+            if (this.anim !== undefined) {
+                MediaLogger.w(TAG, "single word line anim is running, not changed!")
+                return
+            }
+            const word = wordList[0]
+            targetText = word.text
+            duration = word.endTime - word.beginTime
+            if (this.anim === undefined) { //创建动画实例
+                const animator = AnimatorProvider.getInstance(this.context)
+                animator.setAnimationDuration(duration)
+                this.anim = animator.getAnimator()
+                this.anim.reset({
+                    duration: duration,
+                    delay: 0,
+                    easing: "linear",
+                    fill: 'forwards',
+                    direction: "normal",
+                    iterations: 1,
+                    begin: 0,
+                    end: this.textWidth
+                })
+                this.anim.addCallback(this.animCallback)
+                this.anim.run()
+            }
+        } else { // multi words line
+            let currentWordPosition = -1
+            for (let i = 0; i < wordList.length; i++) {
+                const word = wordList[i]
+                targetText += word.text
+                if (this.playPosition > word.beginTime && this.playPosition < word.endTime) {
+                    if (i === this.lastWordPosition) {
+                        MediaLogger.d(TAG, "word position is not changed")
+                        break
+                    }
+                    currentWordPosition = i
+                    this.lastWordPosition = i
+                    duration = word.endTime - word.beginTime
                     break
                 }
-                currentWordPosition = i
-                this.lastWordPosition = i
-                duration = word.endTime - word.beginTime
-                break
             }
-        }
-        if (currentWordPosition < 0) {
-            MediaLogger.d(TAG, "word position is not changed")
-            return
-        }
-        let drawTargetWidth = 0
-        if (currentWordPosition === wordList.length - 1) {
-            drawTargetWidth = this.textWidth
-        } else {
-            const lyricTextBlob = drawing.TextBlob.makeFromString(targetText, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
-            const bound = lyricTextBlob.bounds()
-            drawTargetWidth = bound.right - bound.left
-        }
-        if (this.anim === undefined) {
-            const animator = AnimatorProvider.getInstance(this.context)
-            animator.setAnimationDuration(duration)
-            this.anim = animator.getAnimator()
+            if (currentWordPosition < 0) { //目标word未改变，继续执行当前动画即可，无需更新
+                MediaLogger.i(TAG, "word position is not changed, keep current animation")
+                return
+            }
+            let drawTargetWidth = 0
+            if (currentWordPosition === wordList.length - 1) { //最后一行，动画目标为文本view的宽度，即动画结束完全显示
+                drawTargetWidth = this.textWidth
+            } else { //非最后一行，动画目标为当前文本所占的宽度，即显示当前占比
+                const lyricTextBlob = drawing.TextBlob.makeFromString(targetText, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+                const bound = lyricTextBlob.bounds()
+                drawTargetWidth = bound.right - bound.left //目标占比宽度
+            }
+            if (this.anim === undefined) { //创建动画实例
+                const animator = AnimatorProvider.getInstance(this.context)
+                animator.setAnimationDuration(duration)
+                this.anim = animator.getAnimator()
+                this.anim.addCallback(this.animCallback)
+            }
+            this.anim.pause()
+            this.anim.reset({
+                duration: duration,
+                delay: 0,
+                easing: "linear",
+                fill: 'forwards',
+                direction: "normal",
+                iterations: 1,
+                begin: this.drawingWidth,
+                end: drawTargetWidth
+            })
             this.anim.addCallback(this.animCallback)
+            this.anim.run()
         }
-        this.anim.pause()
-        this.anim.reset({
-            duration: duration,
-            delay: 0,
-            easing: "linear",
-            fill: 'forwards',
-            direction: "normal",
-            iterations: 1,
-            begin: this.drawingWidth,
-            end: drawTargetWidth
-        })
-        this.anim.addCallback(this.animCallback)
-        this.anim.run()
     }
 
     draw(context: DrawContext): void {

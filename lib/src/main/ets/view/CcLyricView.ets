@@ -2,11 +2,12 @@ import { Lrc } from '../bean/Lrc'
 import { CcLyricController } from '../CcLyricController'
 import { ListAdapter } from '../extensions/ListAdapter'
 import { LrcLineView } from './LrcLineView'
-import { drawing } from '@kit.ArkGraphics2D'
+import { drawing, text } from '@kit.ArkGraphics2D'
 import { LrcLine } from '../bean/LrcLine'
 import { MediaLogger } from '../extensions/MediaLogger'
 import { duration2text } from '../extensions/Extension'
 import { AlignMode } from '../bean/AlignMode'
+import { LrcWord } from '../bean/LrcWord'
 
 
 const TAG = "[CcLyricView]"
@@ -38,20 +39,20 @@ export struct CcLyricView {
     @Local emptyHint: ResourceStr = ""
     @Local isUserMoving: boolean = false
     @Local centerLrcLine?: LrcLine = undefined
+    @Local topOffset: number = 100
     @Event onDataSourceReady: () => void
     private isDataSourceReady = false
     private focusView?: LrcLineView = undefined
     private scroller = new Scroller()
-    private viewWidth = 0
-    @Local topOffset: number = 100
+    private viewWidth = 0 // px
     private userMoveTimeout = -1
-    private measureFont = new drawing.Font()
     private playPosition = 0
 
     aboutToAppear(): void {
         // set controller
         this.emptyHint = this.controller.getEmptyHint()
         this.lineSpace = this.controller.getLineSpace()
+        this.topOffset = this.controller.getTopOffset()
         // this.fadeColor = this.controller.getFadeColor()
         this.fadeEnable = this.controller.getFadeEnable()
         this.fadePercent = this.controller.getFadePercent()
@@ -75,6 +76,7 @@ export struct CcLyricView {
             this.emptyHint = this.controller.getEmptyHint()
             this.fadeEnable = this.controller.getFadeEnable()
             this.fadePercent = this.controller.getFadePercent()
+            this.topOffset = this.controller.getTopOffset()
             for (let i = 0; i < this.lrcDataSource.totalCount(); i++) {
                 const itemView = this.lrcDataSource.getData(i)
                 if (itemView !== undefined) {
@@ -138,10 +140,10 @@ export struct CcLyricView {
             }
             if (this.lyric !== undefined && this.lrcDataSource !== undefined && this.lrcDataSource.totalCount() > 0) {
                 List({ scroller: this.scroller, space: this.lineSpace }) {
-                    LazyForEach(this.lrcDataSource, (krc: LrcLineView | undefined, index: number) => {
+                    LazyForEach(this.lrcDataSource, (itemView: LrcLineView | undefined, index: number) => {
                         ListItem() {
-                            if (krc && !krc.isEmpty()) {
-                                NodeContainer(krc)
+                            if (itemView && !itemView.isEmpty()) {
+                                NodeContainer(itemView)
                                     .width("100%")
                                     .height("100%")
                             } else {
@@ -151,7 +153,7 @@ export struct CcLyricView {
                             }
                         }
                         .width("100%")
-                        .height(this.controller.getTextSize() * 1.5)
+                        .height(this.controller.getTextSize() * 1.5) // todo multiline
                         .scale(this.focusIndex === index ?
                             {
                                 x: this.controller.getHighlightScale(),
@@ -232,15 +234,6 @@ export struct CcLyricView {
         })
     }
 
-    // todo 带空格字符测量异常
-    private measureText(text: string, textSize: number, scale: number): number {
-        this.measureFont.setSize(this.getUIContext().vp2px(textSize))
-        const bound = drawing.TextBlob.makeFromString(text, this.measureFont)
-        const rect = bound.bounds()
-        const textWidth = rect.right - rect.left
-        return textWidth * scale
-    }
-
     private setDataSource(lyric: Lrc | undefined) {
         if (this.focusView !== undefined) {
             this.focusView.stop()
@@ -257,72 +250,123 @@ export struct CcLyricView {
         let targetInitIndex = -1
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
-            // measure and break line
-            const textWidth = this.measureText(line.text, this.controller.getTextSize(), this.controller.getHighlightScale())
-            if (textWidth > this.viewWidth) {
-                // break line
-                this.breakLine(line, textWidth)
-            } else {
-                const view = this.createLrcView(line);
-                this.lrcDataSource.addData(view, false);
-            }
-            if (this.playPosition > 0 && this.playPosition >= line.beginTime && this.playPosition < line.endTime) {
-                targetInitIndex = i
-            }
+            this.checkBreakLine(line)
         }
         this.lrcDataSource.notifyDataReload();
         setTimeout(() => {
             if (targetInitIndex == -1) {
-                this.scroller.scrollToIndex(0);
+                this.scroller.scrollToIndex(0, false);
             } else {
-                this.scroller.scrollToIndex(targetInitIndex);
+                this.scroller.scrollToIndex(targetInitIndex, false);
             }
             this.isDataSourceReady = true
             this.onDataSourceReady?.()
         }, 50)
     }
 
-    private breakLine(line: LrcLine, textWidth: number) {
-        const lineWordList = line.wordList
-        // todo 英文断行异常
-        if (lineWordList !== undefined && lineWordList.length > 0) { //krc
-            const krcWordSize = lineWordList.length
-            const singleKrcLineWordSize = Math.floor(krcWordSize * this.viewWidth / textWidth)
-            const breakLines = Math.floor(krcWordSize / singleKrcLineWordSize) + 1
-            for (let i = 0; i < breakLines; i++) {
-                const begin = singleKrcLineWordSize * i
-                const end = Math.min(begin + singleKrcLineWordSize, krcWordSize)
-                const text = line.text.substring(begin, end) //[begin,end)
-                const singKrcLine: LrcLine = {
-                    text: text,
-                    beginTime: lineWordList[begin].beginTime,
-                    endTime: lineWordList[end - 1].endTime,
-                    wordList: lineWordList.slice(begin, end) //[begin,end)
-                }
-                const view = this.createLrcView(singKrcLine)
-                this.lrcDataSource.addData(view, false)
-            }
-        } else { //lrc
-            const lrcCharSize = line.text.length
-            const singleLrcLineCharSize = Math.floor(lrcCharSize * this.viewWidth / textWidth)
-            const lineTotalDuration = line.endTime - line.beginTime
-            const singleLineDuration = lineTotalDuration * singleLrcLineCharSize / lrcCharSize
-            const breakLines = Math.floor(lrcCharSize / singleLrcLineCharSize) + 1
-            for (let i = 0; i < breakLines; i++) {
-                const begin = singleLrcLineCharSize * i
-                const end = Math.min(begin + singleLrcLineCharSize, lrcCharSize)
-                const text = line.text.substring(begin, end)
-                const beginTime = i * singleLineDuration + line.beginTime
-                const endTime = Math.min(beginTime + singleLineDuration, line.endTime)
-                const singLrcLine: LrcLine = {
-                    text: text,
-                    beginTime: beginTime,
-                    endTime: endTime,
-                }
-                const view = this.createLrcView(singLrcLine)
-                this.lrcDataSource.addData(view, false)
+    private fontCollection = new text.FontCollection()
+
+    private checkBreakLine(lrcLine: LrcLine) {
+        MediaLogger.w("abcd", "break line= " + lrcLine.text)
+        const style: text.ParagraphStyle = {
+            wordBreak: text.WordBreak.NORMAL,
+            textStyle: {
+                fontSize: this.getUIContext().vp2px(this.controller.getTextSize() * this.controller.getHighlightScale())
             }
         }
+        const builder = new text.ParagraphBuilder(style, this.fontCollection)
+        builder.addText(lrcLine.text)
+        const paragraph = builder.build()
+        paragraph.layoutSync(this.viewWidth)
+        const breakLineSize = paragraph.getLineCount()
+        MediaLogger.e("abcd", "---------------break line count= " + breakLineSize)
+        if (breakLineSize > 1) { // multi lines
+            const isKrc = lrcLine.wordList !== undefined && lrcLine.wordList.length > 0
+            const averageLineTime = (lrcLine.endTime - lrcLine.beginTime) / breakLineSize
+            if (isKrc) {
+                const lines: string[] = []
+                for (let i = 0; i < breakLineSize; i++) {
+                    const lineMetric = paragraph.getLineMetrics(i)
+                    if (lineMetric !== undefined) {
+                        const text = lrcLine.text.substring(lineMetric.startIndex, lineMetric.endIndex)
+                        lines.push(text)
+                    }
+                }
+                MediaLogger.w("abcd", "--------------lines= " + JSON.stringify(lines))
+                const wordList = lrcLine.wordList!
+                MediaLogger.w("abcd", "--------------wordList= " + JSON.stringify(wordList))
+                const breakResult = this.splitWordsByLines(lines, wordList)
+                for (let i = 0; i < breakResult.length; i++) {
+                    const breakIndex = breakResult[i]
+                    MediaLogger.i("abcd", "break index= " + JSON.stringify(breakIndex))
+                    const begin = wordList[breakIndex[0]]
+                    const end = wordList[breakIndex[1]]
+                    MediaLogger.i("abcd", "begin= " + JSON.stringify(begin))
+                    MediaLogger.i("abcd", "end= " + JSON.stringify(end))
+                    MediaLogger.w("abcd", "break words= " + JSON.stringify(wordList.slice(breakIndex[0], breakIndex[1] + 1)))
+                    const singLrcLine: LrcLine = {
+                        text: lines[i],
+                        beginTime: begin.beginTime,
+                        endTime: end.endTime,
+                        wordList: wordList.slice(breakIndex[0], breakIndex[1] + 1)
+                    }
+                    const view = this.createLrcView(singLrcLine)
+                    this.lrcDataSource.addData(view, false)
+                }
+            } else {
+                for (let i = 0; i < breakLineSize; i++) {
+                    const lineMetric = paragraph.getLineMetrics(i)
+                    if (lineMetric !== undefined) {
+                        const start = lineMetric.startIndex
+                        const end = lineMetric.endIndex
+                        const newLineText = lrcLine.text.substring(start, end)
+                        const singLrcLine: LrcLine = {
+                            text: newLineText,
+                            beginTime: averageLineTime * i,
+                            endTime: Math.min(averageLineTime * (i + 1), lrcLine.endTime),
+                        }
+                        const view = this.createLrcView(singLrcLine)
+                        this.lrcDataSource.addData(view, false)
+                    }
+                }
+            }
+        } else { // single line
+            const view = this.createLrcView(lrcLine)
+            this.lrcDataSource.addData(view, false)
+        }
+    }
+
+    private splitWordsByLines(lines: string[], words: LrcWord[]): number[][] {
+        let result: number[][] = [];
+        let wordIndex: number = 0;
+        for (let line of lines) {
+            let targetLine: string = line.trim();
+            let startIndex: number = wordIndex;
+            let matchedText: string = "";
+            while (wordIndex < words.length) {
+                // 直接拼接word，保留原始空格（不额外添加空格）
+                let nextText: string = matchedText + words[wordIndex].text;
+                let nextTextTrimmed: string = nextText.trim();
+                // 检查trim后的文本是否匹配目标行开头
+                if (targetLine.startsWith(nextTextTrimmed)) {
+                    matchedText = nextText;
+                    wordIndex++;
+                    if (nextTextTrimmed === targetLine) break;
+                } else {
+                    // 尝试去除末尾标点后匹配（处理 "us," 匹配 "us who we" 的情况）
+                    let textNoPunct: string = nextTextTrimmed.replace(/[^\w\s\u4e00-\u9fa5]+$/, "");
+                    if (textNoPunct !== nextTextTrimmed && targetLine.startsWith(textNoPunct)) {
+                        matchedText = nextText;
+                        wordIndex++;
+                        if (textNoPunct === targetLine) break;
+                    } else {
+                        break;
+                    }
+                }
+            }
+            result.push([startIndex, wordIndex > startIndex ? wordIndex - 1 : startIndex]);
+        }
+        return result;
     }
 
     private createLrcView(line: LrcLine) {
@@ -377,15 +421,15 @@ export struct CcLyricView {
         }
     }
 
-    private changeFocusLine(view: LrcLineView | undefined, focusIndex: number) {
+    private changeFocusLine(focusLine: LrcLineView | undefined, focusIndex: number) {
         if (this.focusView) {
             this.focusView.stop()
             MediaLogger.d(TAG, this.focusView.getLyric().text + "--unHighlight")
             this.focusView = undefined
         }
-        this.focusView = view
-        MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
+        this.focusView = focusLine
         this.focusIndex = focusIndex
+        MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
         if (!this.isUserMoving) {
             const centerScrollIndex = focusIndex
             this.scroller.scrollToIndex(centerScrollIndex, true)
