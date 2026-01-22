@@ -134,6 +134,7 @@ class LrcTextView extends RenderNode {
     private context: UIContext
     private lyricLine: LrcLine
     private normalPen: drawing.Brush = new drawing.Brush()
+    private krcNormalPen: drawing.Brush = new drawing.Brush()
     private highlightPen: drawing.Brush = new drawing.Brush()
     private font = new drawing.Font()
     private readonly defaultTextSize = 16 //vp
@@ -221,6 +222,7 @@ class LrcTextView extends RenderNode {
 
     private updateConfig() {
         this.normalPen.setColor(this.textColor)
+        this.krcNormalPen.setColor(this.textKrcBgColor)
         this.font.setSize(this.textSize)
         this.lyricTextBlob = drawing.TextBlob.makeFromString(this.lyricLine.text, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
         const bound = this.lyricTextBlob.bounds()
@@ -379,23 +381,19 @@ class LrcTextView extends RenderNode {
 
     private drawKrc(canvas: drawing.Canvas) {
         // draw background
-        this.drawNormal(canvas);
+        this.drawKrcBackground(canvas);
         // draw foreground
-        this.drawHighlight(canvas);
+        this.drawKrcForeground(canvas);
     }
 
-    private drawNormal(canvas: drawing.Canvas) {
-        if (this.isHighlight) {
-            this.normalPen.setColor(this.textKrcBgColor)
-        } else {
-            this.normalPen.setColor(this.textColor)
-        }
-        canvas.attachBrush(this.normalPen)
+    private drawKrcBackground(canvas: drawing.Canvas) {
+        const pen = this.isHighlight ? this.krcNormalPen : this.normalPen
+        canvas.attachBrush(pen)
         canvas.drawTextBlob(this.lyricTextBlob, this.beginX, this.beginY)
         canvas.detachBrush()
     }
 
-    private drawHighlight(canvas: drawing.Canvas) {
+    private drawKrcForeground(canvas: drawing.Canvas) {
         if (this.playPosition > 0) {
             this.endPoint.x = this.drawingWidth + this.beginX
             const shaderEffect = drawing.ShaderEffect.createLinearGradient({ x: 0, y: 0 }, this.endPoint,

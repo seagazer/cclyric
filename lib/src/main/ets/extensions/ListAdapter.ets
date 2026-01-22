@@ -1,4 +1,4 @@
-import ArrayList from '@ohos.util.ArrayList';
+import { ArrayList } from '@kit.ArkTS'
 
 export class ListAdapter<T> implements IDataSource {
     private listeners: ArrayList<DataChangeListener> = new ArrayList()
