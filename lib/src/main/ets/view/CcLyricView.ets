@@ -61,8 +61,12 @@ export struct CcLyricView {
             this.updatePosition(position)
         }
         this.controller.onDataChanged = (lrc) => {
-            this.focusView = undefined
             this.lyric = lrc
+            this.focusIndex = -1
+            if (this.focusView != undefined) {
+                this.focusView.stop()
+                this.focusView = undefined
+            }
             this.setDataSource(lrc)
         }
         this.controller.onResize = () => {
@@ -248,21 +252,21 @@ export struct CcLyricView {
         this.isDataSourceReady = false
         this.lrcDataSource.clear(false)
         const lines = lyric.lyricList
-        let targetInitIndex = -1
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i];
             this.checkBreakLine(line)
         }
         this.lrcDataSource.notifyDataReload();
-        setTimeout(() => {
-            if (targetInitIndex == -1) {
-                this.scroller.scrollToIndex(0, false);
-            } else {
-                this.scroller.scrollToIndex(targetInitIndex, false);
-            }
-            this.isDataSourceReady = true
+        this.isDataSourceReady = true
+        if (this.focusIndex === -1) {
+            this.scroller.scrollToIndex(0, false);
             this.onDataSourceReady?.()
-        }, 50)
+        } else {
+            setTimeout(() => {
+                this.scroller.scrollToIndex(this.focusIndex, false);
+                this.onDataSourceReady?.()
+            }, 100)
+        }
     }
 
     private fontCollection = new text.FontCollection()
@@ -434,8 +438,7 @@ export struct CcLyricView {
         this.focusIndex = focusIndex
         MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
         if (!this.isUserMoving) {
-            const centerScrollIndex = focusIndex
-            this.scroller.scrollToIndex(centerScrollIndex, true)
+            this.scroller.scrollToIndex(focusIndex, true)
         }
     }
 }
