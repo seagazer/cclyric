@@ -131,10 +131,10 @@ struct CcLyricViewSample {
                         this.playingIndex++
                         this.playingIndex %= 2
                         const lyric = this.parser.parse(this.krcList[this.playingIndex])
-                        this.controller.setLyric(lyric)
                         this.src = MediaSourceFactory.createAssets(this.songList[this.playingIndex], this.songList[this.playingIndex])
                         this.player.setMediaSource(this.src, () => {
                             this.player.start()
+                            this.controller.setLyric(lyric)
                         })
                     })
                 SymbolGlyph($r("sys.symbol.paintpalette_fill"))

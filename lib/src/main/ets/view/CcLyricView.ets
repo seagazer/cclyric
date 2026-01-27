@@ -260,19 +260,16 @@ export struct CcLyricView {
         this.isDataSourceReady = true
         if (this.focusIndex === -1) {
             this.scroller.scrollToIndex(0, false);
-            this.onDataSourceReady?.()
         } else {
-            setTimeout(() => {
-                this.scroller.scrollToIndex(this.focusIndex, false);
-                this.onDataSourceReady?.()
-            }, 100)
+            this.scroller.scrollToIndex(this.focusIndex, false);
         }
+        this.onDataSourceReady?.()
     }
 
     private fontCollection = new text.FontCollection()
 
     private checkBreakLine(lrcLine: LrcLine) {
-        MediaLogger.w("abcd", "break line= " + lrcLine.text)
+        MediaLogger.d(TAG, "break line= " + lrcLine.text)
         const style: text.ParagraphStyle = {
             wordBreak: text.WordBreak.NORMAL,
             textStyle: {
@@ -284,7 +281,7 @@ export struct CcLyricView {
         const paragraph = builder.build()
         paragraph.layoutSync(this.viewWidth)
         const breakLineSize = paragraph.getLineCount()
-        MediaLogger.e("abcd", "---------------break line count= " + breakLineSize)
+        MediaLogger.d(TAG, "break line size= " + breakLineSize)
         if (breakLineSize > 1) { // multi lines
             const isKrc = lrcLine.wordList !== undefined && lrcLine.wordList.length > 0
             const averageLineTime = (lrcLine.endTime - lrcLine.beginTime) / breakLineSize
@@ -297,18 +294,12 @@ export struct CcLyricView {
                         lines.push(text)
                     }
                 }
-                MediaLogger.w("abcd", "--------------lines= " + JSON.stringify(lines))
                 const wordList = lrcLine.wordList!
-                MediaLogger.w("abcd", "--------------wordList= " + JSON.stringify(wordList))
                 const breakResult = this.splitWordsByLines(lines, wordList)
                 for (let i = 0; i < breakResult.length; i++) {
                     const breakIndex = breakResult[i]
-                    MediaLogger.i("abcd", "break index= " + JSON.stringify(breakIndex))
                     const begin = wordList[breakIndex[0]]
                     const end = wordList[breakIndex[1]]
-                    MediaLogger.i("abcd", "begin= " + JSON.stringify(begin))
-                    MediaLogger.i("abcd", "end= " + JSON.stringify(end))
-                    MediaLogger.w("abcd", "break words= " + JSON.stringify(wordList.slice(breakIndex[0], breakIndex[1] + 1)))
                     const singLrcLine: LrcLine = {
                         text: lines[i],
                         beginTime: begin.beginTime,
@@ -356,14 +347,18 @@ export struct CcLyricView {
                 if (targetLine.startsWith(nextTextTrimmed)) {
                     matchedText = nextText;
                     wordIndex++;
-                    if (nextTextTrimmed === targetLine) break;
+                    if (nextTextTrimmed === targetLine) {
+                        break;
+                    }
                 } else {
                     // 尝试去除末尾标点后匹配（处理 "us," 匹配 "us who we" 的情况）
                     let textNoPunct: string = nextTextTrimmed.replace(/[^\w\s\u4e00-\u9fa5]+$/, "");
                     if (textNoPunct !== nextTextTrimmed && targetLine.startsWith(textNoPunct)) {
                         matchedText = nextText;
                         wordIndex++;
-                        if (textNoPunct === targetLine) break;
+                        if (textNoPunct === targetLine) {
+                            break;
+                        }
                     } else {
                         break;
                     }
