@@ -12,6 +12,12 @@ import { LrcWord } from '../bean/LrcWord'
 
 const TAG = "[CcLyricView]"
 
+interface LyricTimelineItem {
+    beginTime: number
+    endTime: number
+    view: LrcLineView
+}
+
 /**
  * A view to play animation of Lrc or Krc for music player.
  *
@@ -47,6 +53,7 @@ export struct CcLyricView {
     private viewWidth = 0 // px
     private userMoveTimeout = -1
     private playPosition = 0
+    private lyricTimeline: LyricTimelineItem[] = []
 
     aboutToAppear(): void {
         // set controller
@@ -57,12 +64,15 @@ export struct CcLyricView {
         this.fadeEnable = this.controller.getFadeEnable()
         this.fadePercent = this.controller.getFadePercent()
         this.controller.onProgressChanged = (position) => {
-            this.playPosition = this.playPosition
+            this.playPosition = position
             this.updatePosition(position)
         }
         this.controller.onDataChanged = (lrc) => {
             this.lyric = lrc
             this.focusIndex = -1
+            this.centerLrcLine = undefined
+            this.isUserMoving = false
+            clearTimeout(this.userMoveTimeout)
             if (this.focusView != undefined) {
                 this.focusView.stop()
                 this.focusView = undefined
@@ -95,7 +105,7 @@ export struct CcLyricView {
     }
 
     aboutToDisappear(): void {
-        clearInterval(this.userMoveTimeout)
+        clearTimeout(this.userMoveTimeout)
     }
 
     @Builder
@@ -197,27 +207,31 @@ export struct CcLyricView {
                     }
                 })
                 .onScrollStart(() => {
-                    this.onScrollStateChanged?.(this.isUserMoving)
+                    this.onScrollStateChanged?.(true)
                 })
                 .onScrollStop(() => {
                     this.userMoveTimeout = setTimeout(() => {
-                        this.onScrollStateChanged?.(this.isUserMoving)
+                        this.isUserMoving = false
+                        this.onScrollStateChanged?.(false)
                     }, this.autoHideSeekUIDelay)
                 })
                 .onTouch((event) => {
                     switch (event.type) {
                         case TouchType.Down:
-                            clearInterval(this.userMoveTimeout)
+                            clearTimeout(this.userMoveTimeout)
                             this.isUserMoving = true
+                            this.onScrollStateChanged?.(true)
                             break
                         case TouchType.Up:
                         case TouchType.Cancel:
                             if (this.supportSeek) {
                                 this.userMoveTimeout = setTimeout(() => {
                                     this.isUserMoving = false
+                                    this.onScrollStateChanged?.(false)
                                 }, this.autoHideSeekUIDelay)
                             } else {
                                 this.isUserMoving = false
+                                this.onScrollStateChanged?.(false)
                             }
                             break
                     }
@@ -246,23 +260,27 @@ export struct CcLyricView {
         }
         if (lyric === undefined) {
             this.lrcDataSource.clear(true)
+            this.focusIndex = -1
+            this.centerLrcLine = undefined
             MediaLogger.w(TAG, "The lyric is null, set empty view.")
+            return
+        }
+        if (this.viewWidth <= 0) {
+            MediaLogger.w(TAG, "The view width is invalid, skip rebuilding lyric source.")
             return
         }
         this.isDataSourceReady = false
         this.lrcDataSource.clear(false)
+        this.lyricTimeline = []
         const lines = lyric.lyricList
         for (let i = 0; i < lines.length; i++) {
-            const line = lines[i];
+            const line = lines[i]
             this.checkBreakLine(line)
         }
-        this.lrcDataSource.notifyDataReload();
+        this.lrcDataSource.notifyDataReload()
         this.isDataSourceReady = true
-        if (this.focusIndex === -1) {
-            this.scroller.scrollToIndex(0, false);
-        } else {
-            this.scroller.scrollToIndex(this.focusIndex, false);
-        }
+        const targetIndex = this.resolveFocusIndex(this.playPosition)
+        this.scrollToIndexSafely(targetIndex, false)
         this.onDataSourceReady?.()
     }
 
@@ -308,6 +326,7 @@ export struct CcLyricView {
                     }
                     const view = this.createLrcView(singLrcLine)
                     this.lrcDataSource.addData(view, false)
+                    this.lyricTimeline.push({ beginTime: singLrcLine.beginTime, endTime: singLrcLine.endTime, view })
                 }
             } else {
                 for (let i = 0; i < breakLineSize; i++) {
@@ -323,54 +342,67 @@ export struct CcLyricView {
                         }
                         const view = this.createLrcView(singLrcLine)
                         this.lrcDataSource.addData(view, false)
+                        this.lyricTimeline.push({ beginTime: singLrcLine.beginTime, endTime: singLrcLine.endTime, view })
                     }
                 }
             }
         } else { // single line
             const view = this.createLrcView(lrcLine)
             this.lrcDataSource.addData(view, false)
+            this.lyricTimeline.push({ beginTime: lrcLine.beginTime, endTime: lrcLine.endTime, view })
         }
     }
 
     private splitWordsByLines(lines: string[], words: LrcWord[]): number[][] {
-        let result: number[][] = [];
-        let wordIndex: number = 0;
-        for (let line of lines) {
-            let targetLine: string = line.trim();
-            let startIndex: number = wordIndex;
-            let matchedText: string = "";
+        const result: number[][] = []
+        let wordIndex = 0
+        for (const line of lines) {
+            const targetLine = line.trim()
+            const startIndex = wordIndex
+            let matchedText = ""
+            let matchedCount = 0
             while (wordIndex < words.length) {
-                // 直接拼接word，保留原始空格（不额外添加空格）
-                let nextText: string = matchedText + words[wordIndex].text;
-                let nextTextTrimmed: string = nextText.trim();
-                // 检查trim后的文本是否匹配目标行开头
-                if (targetLine.startsWith(nextTextTrimmed)) {
-                    matchedText = nextText;
-                    wordIndex++;
-                    if (nextTextTrimmed === targetLine) {
-                        break;
+                const wordText = words[wordIndex].text
+                const nextText = (matchedText + wordText).trim()
+                if (targetLine.startsWith(nextText)) {
+                    matchedText = matchedText + wordText
+                    wordIndex++
+                    matchedCount++
+                    if (nextText === targetLine) {
+                        break
                     }
-                } else {
-                    // 尝试去除末尾标点后匹配（处理 "us," 匹配 "us who we" 的情况）
-                    let textNoPunct: string = nextTextTrimmed.replace(/[^\w\s\u4e00-\u9fa5]+$/, "");
-                    if (textNoPunct !== nextTextTrimmed && targetLine.startsWith(textNoPunct)) {
-                        matchedText = nextText;
-                        wordIndex++;
-                        if (textNoPunct === targetLine) {
-                            break;
-                        }
-                    } else {
-                        break;
-                    }
+                    continue
                 }
+                const textNoPunct = nextText.replace(/[^\w\s\u4e00-\u9fa5]+$/, "")
+                if (textNoPunct !== nextText && targetLine.startsWith(textNoPunct)) {
+                    matchedText = matchedText + wordText
+                    wordIndex++
+                    matchedCount++
+                    if (textNoPunct === targetLine) {
+                        break
+                    }
+                    continue
+                }
+                if (matchedCount === 0) {
+                    wordIndex++
+                    matchedText = wordText
+                    matchedCount = 1
+                }
+                break
             }
-            result.push([startIndex, wordIndex > startIndex ? wordIndex - 1 : startIndex]);
+            result.push([startIndex, Math.max(startIndex, wordIndex - 1)])
         }
-        return result;
+        if (result.length > 0 && result.length < lines.length) {
+            const lastRange = result[result.length - 1]
+            while (result.length < lines.length) {
+                result.push([lastRange[0], lastRange[1]])
+            }
+        }
+        return result
     }
 
     private createLrcView(line: LrcLine) {
-        const view = new LrcLineView(line);
+        const view = new LrcLineView(line)
         view.setTextSize(this.controller.getTextSize())
         view.setTextColor(this.controller.getTextColor())
         view.setKrcTextBgColor(this.controller.getKrcTextBgColor())
@@ -379,8 +411,41 @@ export struct CcLyricView {
         return view
     }
 
+    private resolveFocusIndex(position: number): number {
+        if (this.lyricTimeline.length <= 0) {
+            return -1
+        }
+        let left = 0
+        let right = this.lyricTimeline.length - 1
+        while (left <= right) {
+            const mid = Math.floor((left + right) / 2)
+            const item = this.lyricTimeline[mid]
+            if (item === undefined) {
+                break
+            }
+            if (position < item.beginTime) {
+                right = mid - 1
+                continue
+            }
+            if (position >= item.endTime) {
+                left = mid + 1
+                continue
+            }
+            return mid
+        }
+        const fallbackIndex = Math.min(Math.max(left, 0), this.lyricTimeline.length - 1)
+        return fallbackIndex
+    }
+
+    private scrollToIndexSafely(index: number, animated: boolean) {
+        if (index < 0 || index >= this.lrcDataSource.totalCount()) {
+            return
+        }
+        this.scroller.scrollToIndex(index, animated)
+    }
+
     private updatePosition(position: number) {
-        if (this.lrcDataSource === undefined || this.lyric === undefined) {
+        if (this.lyricTimeline.length <= 0 || this.lyric === undefined) {
             MediaLogger.w(TAG, "The lrc source is not set!")
             return
         }
@@ -388,41 +453,25 @@ export struct CcLyricView {
             MediaLogger.w(TAG, "The lrc source is not ready!")
             return
         }
-        if (this.focusView !== undefined) { // play the focus highlight animation
+        if (this.focusView !== undefined) {
             this.focusView.play(position)
         }
-        const size = this.lrcDataSource.totalCount()
-        for (let i = 0; i < size; i++) {
-            const lyricLineView = this.lrcDataSource.getData(i)
-            if (lyricLineView === undefined) {
-                continue
-            }
-            const lyricLine = lyricLineView.getLyric()
-            const beginTime = lyricLine.beginTime
-            const endTime = lyricLine.endTime
-            if (position >= beginTime && position < endTime) { //between a lyric line
-                if (this.focusIndex != i) {
-                    this.changeFocusLine(lyricLineView, i)
-                }
-                break
-            } else if (i < size - 2) { // between at two lyric lines
-                const nextItemIndex = i + 1
-                const nextLineView = this.lrcDataSource.getData(nextItemIndex)
-                let nextEndTime = 0
-                if (nextLineView === undefined) {
-                    nextEndTime = endTime
-                } else {
-                    nextEndTime = nextLineView.getLyric().beginTime
-                }
-                if (position >= beginTime && position < nextEndTime && this.focusIndex != nextItemIndex) {
-                    this.changeFocusLine(nextLineView, nextItemIndex)
-                    break
-                }
-            }
+        const normalizedPosition = Math.max(0, position)
+        const index = this.resolveFocusIndex(normalizedPosition)
+        if (index < 0 || index >= this.lyricTimeline.length) {
+            return
+        }
+        const focusItem = this.lyricTimeline[index]
+        if (focusItem === undefined) {
+            return
+        }
+        if (this.focusIndex !== index) {
+            this.changeFocusLine(focusItem.view, index)
         }
     }
 
     private changeFocusLine(focusLine: LrcLineView | undefined, focusIndex: number) {
+        const previousFocusIndex = this.focusIndex
         if (this.focusView) {
             this.focusView.stop()
             MediaLogger.d(TAG, this.focusView.getLyric().text + "--unHighlight")
@@ -432,8 +481,8 @@ export struct CcLyricView {
         this.focusView?.markHighlight()
         this.focusIndex = focusIndex
         MediaLogger.d(TAG, this.focusView?.getLyric().text + "--highlight")
-        if (!this.isUserMoving) {
-            this.scroller.scrollToIndex(focusIndex, true)
+        if (!this.isUserMoving && previousFocusIndex !== focusIndex) {
+            this.scrollToIndexSafely(focusIndex, true)
         }
     }
 }

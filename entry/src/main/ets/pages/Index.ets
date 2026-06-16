@@ -27,18 +27,18 @@ struct Index {
                         url: "pages/CustomSeekUISample"
                     })
                 })
-            Text("Lyric")
-                .width("100%")
-                .height(50)
-                .fontSize(24)
-                .textAlign(TextAlign.Center)
-                .border({ radius: 4 })
-                .backgroundColor("#cccc")
-                .onClick(() => {
-                    this.getUIContext().getRouter().pushUrl({
-                        url: "pages/LyricViewSample"
-                    })
-                })
+            // Text("Lyric")
+            //     .width("100%")
+            //     .height(50)
+            //     .fontSize(24)
+            //     .textAlign(TextAlign.Center)
+            //     .border({ radius: 4 })
+            //     .backgroundColor("#cccc")
+            //     .onClick(() => {
+            //         this.getUIContext().getRouter().pushUrl({
+            //             url: "pages/LyricViewSample"
+            //         })
+            //     })
         }
         .height('100%')
         .width('100%')
