@@ -165,7 +165,7 @@ class LrcTextView extends RenderNode {
     private isHighlight = false
     private mode: AlignMode = AlignMode.CENTER
     private animDuration = 250
-    private lastWordPosition = 0
+    private lastWordPosition = -1
 
     constructor(uiContext: UIContext, lyricLine: LrcLine) {
         super()
@@ -226,8 +226,8 @@ class LrcTextView extends RenderNode {
         this.font.setSize(this.textSize)
         this.lyricTextBlob = drawing.TextBlob.makeFromString(this.lyricLine.text, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
         const bound = this.lyricTextBlob.bounds()
-        this.textWidth = bound.right - bound.left
-        this.textHeight = bound.bottom - bound.top
+        this.textWidth = Math.max(0, bound.right - bound.left)
+        this.textHeight = Math.max(0, bound.bottom - bound.top)
         this.beginX = this.mode === AlignMode.CENTER ? (this.context.vp2px(this.frame.width) - this.textWidth) / 2 : 0
         this.beginY = this.context.vp2px(this.frame.height / 2) + this.textHeight / 2
         if (!this.isKrc) {
@@ -240,6 +240,12 @@ class LrcTextView extends RenderNode {
             })
         }
         this.invalidate()
+    }
+
+    private measureTextWidth(text: string): number {
+        const blob = drawing.TextBlob.makeFromString(text, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+        const bound = blob.bounds()
+        return Math.max(0, bound.right - bound.left)
     }
 
     onSizeChanged(width: number, height: number) {
@@ -258,14 +264,13 @@ class LrcTextView extends RenderNode {
     }
 
     update(position: number) {
-        this.isHighlight = true
+        if (!this.isHighlight) {
+            this.isHighlight = true
+        }
         if (this.isKrc) {
             this.playPosition = position
             this.updateAnimation()
         } else {
-            if (this.isHighlight) {
-                return
-            }
             this.invalidate()
         }
     }
@@ -275,6 +280,7 @@ class LrcTextView extends RenderNode {
         this.anim = undefined
         this.playPosition = -1
         this.drawingWidth = 0
+        this.lastWordPosition = -1
         this.isHighlight = false
         this.invalidate()
     }
@@ -286,81 +292,74 @@ class LrcTextView extends RenderNode {
 
     private updateAnimation() {
         const wordList = this.lyricLine.wordList!
+        if (wordList.length <= 0) {
+            return
+        }
         let duration = this.animDuration
-        let targetText = ""
-        if (wordList.length === 1) { // single word line
-            if (this.anim !== undefined) {
-                MediaLogger.w(TAG, "single word line anim is running, not changed!")
-                return
-            }
+        let targetText = ''
+        if (wordList.length === 1) {
             const word = wordList[0]
             targetText = word.text
-            duration = word.endTime - word.beginTime
-            if (this.anim === undefined) { //创建动画实例
-                const animator = AnimatorProvider.getInstance(this.context)
-                animator.setAnimationDuration(duration)
-                this.anim = animator.getAnimator()
-                this.anim.reset({
-                    duration: duration,
-                    delay: 0,
-                    easing: "linear",
-                    fill: 'forwards',
-                    direction: "normal",
-                    iterations: 1,
-                    begin: 0,
-                    end: this.textWidth
-                })
-                this.anim.addCallback(this.animCallback)
-                this.anim.run()
-            }
-        } else { // multi words line
-            let currentWordPosition = -1
-            for (let i = 0; i < wordList.length; i++) {
-                const word = wordList[i]
-                targetText += word.text
-                if (this.playPosition > word.beginTime && this.playPosition < word.endTime) {
-                    if (i === this.lastWordPosition) {
-                        MediaLogger.d(TAG, "word position is not changed")
-                        break
-                    }
-                    currentWordPosition = i
-                    this.lastWordPosition = i
-                    duration = word.endTime - word.beginTime
-                    break
-                }
-            }
-            if (currentWordPosition < 0) { //目标word未改变，继续执行当前动画即可，无需更新
-                MediaLogger.i(TAG, "word position is not changed, keep current animation")
-                return
-            }
-            let drawTargetWidth = 0
-            if (currentWordPosition === wordList.length - 1) { //最后一行，动画目标为文本view的宽度，即动画结束完全显示
-                drawTargetWidth = this.textWidth
-            } else { //非最后一行，动画目标为当前文本所占的宽度，即显示当前占比
-                const lyricTextBlob = drawing.TextBlob.makeFromString(targetText, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
-                const bound = lyricTextBlob.bounds()
-                drawTargetWidth = bound.right - bound.left //目标占比宽度
-            }
-            if (this.anim === undefined) { //创建动画实例
+            duration = Math.max(1, word.endTime - word.beginTime)
+            if (this.anim === undefined) {
                 const animator = AnimatorProvider.getInstance(this.context)
                 animator.setAnimationDuration(duration)
                 this.anim = animator.getAnimator()
                 this.anim.addCallback(this.animCallback)
             }
-            this.anim.pause()
             this.anim.reset({
-                duration: duration,
+                duration,
                 delay: 0,
-                easing: "linear",
+                easing: 'linear',
                 fill: 'forwards',
-                direction: "normal",
+                direction: 'normal',
                 iterations: 1,
-                begin: this.drawingWidth,
-                end: drawTargetWidth
+                begin: 0,
+                end: this.textWidth
             })
-            this.anim.addCallback(this.animCallback)
             this.anim.run()
+            return
         }
+
+        let currentWordPosition = -1
+        for (let i = 0; i < wordList.length; i++) {
+            const word = wordList[i]
+            targetText += word.text
+            if (this.playPosition >= word.beginTime && this.playPosition < word.endTime) {
+                if (i === this.lastWordPosition) {
+                    return
+                }
+                currentWordPosition = i
+                this.lastWordPosition = i
+                duration = Math.max(1, word.endTime - word.beginTime)
+                break
+            }
+        }
+        if (currentWordPosition < 0) {
+            return
+        }
+
+        const drawTargetWidth = currentWordPosition === wordList.length - 1
+            ? this.textWidth
+            : this.measureTextWidth(targetText)
+        if (this.anim === undefined) {
+            const animator = AnimatorProvider.getInstance(this.context)
+            animator.setAnimationDuration(duration)
+            this.anim = animator.getAnimator()
+            this.anim.addCallback(this.animCallback)
+        }
+        this.anim.pause()
+        this.anim.reset({
+            duration,
+            delay: 0,
+            easing: 'linear',
+            fill: 'forwards',
+            direction: 'normal',
+            iterations: 1,
+            begin: this.drawingWidth,
+            end: drawTargetWidth
+        })
+        this.anim.run()
     }
 
     draw(context: DrawContext): void {
