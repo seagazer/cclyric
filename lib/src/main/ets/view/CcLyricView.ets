@@ -47,6 +47,15 @@ export struct CcLyricView {
     private playPosition = 0
     private dataSourceVersion = 0
     private rebuildDataSourceTimeout = -1
+    private frameRefreshTimeout = -1
+    private lastExternalPosition = -1
+    private lastExternalUpdateTime = -1
+    private playbackAnchorPosition = 0
+    private playbackAnchorTime = 0
+    private estimatedProgressInterval = 300
+    private isPlaybackTickerRunning = false
+    private readonly frameRefreshInterval = 16
+    private readonly maxClockSyncGap = 1500
     private lyricTimeline: LyricTimelineItem[] = []
     private readonly layoutService = new LyricLayoutService()
     private readonly scrollCoordinator = new LyricScrollCoordinator()
@@ -61,11 +70,13 @@ export struct CcLyricView {
         this.fadeEnable = this.controller.getFadeEnable()
         this.fadePercent = this.controller.getFadePercent()
         this.controller.onProgressChanged = (position) => {
-            this.playPosition = position
+            this.syncPlaybackClock(position)
             this.updatePosition(position)
         }
         this.controller.onDataChanged = (lrc) => {
             this.lyric = lrc
+            this.stopPlaybackTicker()
+            this.resetPlaybackClock()
             this.focusIndex = -1
             this.centerLrcLine = undefined
             this.isUserMoving = false
@@ -101,6 +112,7 @@ export struct CcLyricView {
 
     aboutToDisappear(): void {
         this.clearDataSourceRebuildTimer()
+        this.stopPlaybackTicker()
         this.scrollCoordinator.clearRecoverTimer()
     }
 
@@ -233,6 +245,11 @@ export struct CcLyricView {
         this.rebuildDataSourceTimeout = -1
     }
 
+    private clearFrameRefreshTimer() {
+        clearTimeout(this.frameRefreshTimeout)
+        this.frameRefreshTimeout = -1
+    }
+
     private scheduleDataSourceRebuild() {
         this.clearDataSourceRebuildTimer()
         this.rebuildDataSourceTimeout = setTimeout(() => {
@@ -292,6 +309,95 @@ export struct CcLyricView {
         this.onDataSourceReady?.()
     }
 
+    private resetPlaybackClock() {
+        this.lastExternalPosition = -1
+        this.lastExternalUpdateTime = -1
+        this.playbackAnchorPosition = 0
+        this.playbackAnchorTime = 0
+        this.estimatedProgressInterval = 300
+    }
+
+    private syncPlaybackClock(position: number) {
+        const normalizedPosition = Math.max(0, position)
+        const now = Date.now()
+        const previousPosition = this.lastExternalPosition
+        const previousUpdateTime = this.lastExternalUpdateTime
+        this.playbackAnchorPosition = normalizedPosition
+        this.playbackAnchorTime = now
+        if (previousPosition >= 0 && previousUpdateTime >= 0) {
+            const progressDelta = normalizedPosition - previousPosition
+            const timeDelta = now - previousUpdateTime
+            if (this.isContinuousPlaybackProgress(progressDelta, timeDelta)) {
+                this.estimatedProgressInterval = Math.min(Math.max(timeDelta, 120), 1000)
+                this.startPlaybackTicker()
+            } else {
+                this.stopPlaybackTicker()
+            }
+        }
+        this.lastExternalPosition = normalizedPosition
+        this.lastExternalUpdateTime = now
+    }
+
+    private isContinuousPlaybackProgress(progressDelta: number, timeDelta: number): boolean {
+        if (progressDelta <= 0 || timeDelta <= 0 || timeDelta > this.maxClockSyncGap) {
+            return false
+        }
+        const playbackSpeed = progressDelta / timeDelta
+        return playbackSpeed >= 0.5 && playbackSpeed <= 2
+    }
+
+    private startPlaybackTicker() {
+        if (this.isPlaybackTickerRunning) {
+            return
+        }
+        this.isPlaybackTickerRunning = true
+        this.scheduleNextFrameRefresh()
+    }
+
+    private stopPlaybackTicker() {
+        this.isPlaybackTickerRunning = false
+        this.clearFrameRefreshTimer()
+    }
+
+    private scheduleNextFrameRefresh() {
+        this.clearFrameRefreshTimer()
+        if (!this.isPlaybackTickerRunning) {
+            return
+        }
+        this.frameRefreshTimeout = setTimeout(() => {
+            this.frameRefreshTimeout = -1
+            this.refreshByPlaybackClock()
+        }, this.frameRefreshInterval)
+    }
+
+    private refreshByPlaybackClock() {
+        if (!this.isPlaybackTickerRunning) {
+            return
+        }
+        const now = Date.now()
+        const staleDelay = Math.min(Math.max(this.estimatedProgressInterval * 2.5, 600), 2000)
+        if (this.lastExternalUpdateTime < 0 || now - this.lastExternalUpdateTime > staleDelay) {
+            this.stopPlaybackTicker()
+            return
+        }
+        const extrapolatedPosition = this.playbackAnchorPosition + now - this.playbackAnchorTime
+        const timelineEndPosition = this.getTimelineEndPosition()
+        const nextPosition = timelineEndPosition >= 0 ? Math.min(extrapolatedPosition, timelineEndPosition) : extrapolatedPosition
+        this.updatePosition(nextPosition)
+        if (timelineEndPosition >= 0 && nextPosition >= timelineEndPosition) {
+            this.stopPlaybackTicker()
+            return
+        }
+        this.scheduleNextFrameRefresh()
+    }
+
+    private getTimelineEndPosition(): number {
+        if (this.lyricTimeline.length <= 0) {
+            return -1
+        }
+        return this.lyricTimeline[this.lyricTimeline.length - 1].endTime
+    }
+
     private restoreFocusLine(index: number) {
         if (index < 0 || index >= this.lyricTimeline.length) {
             return
@@ -332,6 +438,7 @@ export struct CcLyricView {
             return
         }
         const normalizedPosition = Math.max(0, position)
+        this.playPosition = normalizedPosition
         const index = this.scrollCoordinator.resolveFocusIndex(this.lyricTimeline, normalizedPosition)
         if (index < 0 || index >= this.lyricTimeline.length) {
             return
@@ -346,6 +453,6 @@ export struct CcLyricView {
             })
             this.focusIndex = this.scrollCoordinator.getFocusIndex()
         }
-        focusItem.view.play(position)
+        focusItem.view.play(normalizedPosition)
     }
 }

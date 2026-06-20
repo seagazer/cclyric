@@ -170,6 +170,7 @@ class LrcTextView extends RenderNode {
     private beginY = -1
     private playPosition = -1
     private drawingWidth = 0
+    private wordPrefixWidths: number[] = [0]
     private endPoint: common2D.Point = { x: 0, y: 0 }
     private isKrc = false
     private isHighlight = false
@@ -234,6 +235,7 @@ class LrcTextView extends RenderNode {
         const bound = this.lyricTextBlob.bounds()
         this.textWidth = Math.max(0, bound.right - bound.left)
         this.textHeight = Math.max(0, bound.bottom - bound.top)
+        this.updateWordPrefixWidths()
         this.beginX = this.mode === AlignMode.CENTER ? (this.context.vp2px(this.frame.width) - this.textWidth) / 2 : 0
         this.beginY = this.context.vp2px(this.frame.height / 2) + this.textHeight / 2
         if (!this.isKrc) {
@@ -252,6 +254,20 @@ class LrcTextView extends RenderNode {
         const blob = drawing.TextBlob.makeFromString(text, this.font, drawing.TextEncoding.TEXT_ENCODING_UTF8)
         const bound = blob.bounds()
         return Math.max(0, bound.right - bound.left)
+    }
+
+    private updateWordPrefixWidths() {
+        const wordList = this.lyricLine.wordList
+        this.wordPrefixWidths = [0]
+        if (!this.isKrc || wordList === undefined || wordList.length <= 0) {
+            return
+        }
+        let prefixText = ''
+        for (let i = 0; i < wordList.length; i++) {
+            prefixText += wordList[i].text
+            const prefixWidth = i === wordList.length - 1 ? this.textWidth : this.measureTextWidth(prefixText)
+            this.wordPrefixWidths.push(prefixWidth)
+        }
     }
 
     onSizeChanged(width: number, height: number) {
@@ -302,24 +318,20 @@ class LrcTextView extends RenderNode {
             this.drawingWidth = this.textWidth
             return
         }
-        let prefixText = ''
-        let prefixWidth = 0
         for (let i = 0; i < wordList.length; i++) {
             const word = wordList[i]
+            const prefixWidth = this.wordPrefixWidths[i] ?? 0
             if (position < word.beginTime) {
                 this.drawingWidth = prefixWidth
                 return
             }
-            const nextText = prefixText + word.text
-            const nextWidth = i === wordList.length - 1 ? this.textWidth : this.measureTextWidth(nextText)
+            const nextWidth = this.wordPrefixWidths[i + 1] ?? this.textWidth
             if (position < word.endTime) {
                 const duration = Math.max(1, word.endTime - word.beginTime)
                 const progress = Math.min(1, Math.max(0, (position - word.beginTime) / duration))
                 this.drawingWidth = prefixWidth + (nextWidth - prefixWidth) * progress
                 return
             }
-            prefixText = nextText
-            prefixWidth = nextWidth
         }
         this.drawingWidth = this.textWidth
     }
