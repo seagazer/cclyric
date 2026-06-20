@@ -46,6 +46,7 @@ export struct CcLyricView {
     private viewWidth = 0 // px
     private playPosition = 0
     private dataSourceVersion = 0
+    private rebuildDataSourceTimeout = -1
     private lyricTimeline: LyricTimelineItem[] = []
     private readonly layoutService = new LyricLayoutService()
     private readonly scrollCoordinator = new LyricScrollCoordinator()
@@ -57,7 +58,6 @@ export struct CcLyricView {
         this.lineSpace = this.controller.getLineSpace()
         this.topOffset = this.controller.getTopOffset()
         this.alignMode = this.controller.getAlignMode()
-        // this.fadeColor = this.controller.getFadeColor()
         this.fadeEnable = this.controller.getFadeEnable()
         this.fadePercent = this.controller.getFadePercent()
         this.controller.onProgressChanged = (position) => {
@@ -76,7 +76,7 @@ export struct CcLyricView {
             this.lineSpace = this.controller.getLineSpace()
             this.alignMode = this.controller.getAlignMode()
             if (this.lyric !== undefined) { // changed size when lyric displaying
-                this.setDataSource(this.lyric)
+                this.scheduleDataSourceRebuild()
             }
         }
         this.controller.onAttributeChanged = () => {
@@ -100,6 +100,7 @@ export struct CcLyricView {
     }
 
     aboutToDisappear(): void {
+        this.clearDataSourceRebuildTimer()
         this.scrollCoordinator.clearRecoverTimer()
     }
 
@@ -222,12 +223,26 @@ export struct CcLyricView {
             this.viewWidth = this.getUIContext().vp2px(size.width as number)
             this.lyric = this.controller.getLyric()
             if (this.lyric != undefined) {
-                this.setDataSource(this.lyric)
+                this.scheduleDataSourceRebuild()
             }
         })
     }
 
+    private clearDataSourceRebuildTimer() {
+        clearTimeout(this.rebuildDataSourceTimeout)
+        this.rebuildDataSourceTimeout = -1
+    }
+
+    private scheduleDataSourceRebuild() {
+        this.clearDataSourceRebuildTimer()
+        this.rebuildDataSourceTimeout = setTimeout(() => {
+            this.rebuildDataSourceTimeout = -1
+            this.setDataSource(this.lyric)
+        }, 0)
+    }
+
     private setDataSource(lyric: Lrc | undefined) {
+        this.clearDataSourceRebuildTimer()
         this.scrollCoordinator.reset()
         this.isUserMoving = false
         if (lyric === undefined) {
@@ -273,7 +288,21 @@ export struct CcLyricView {
         this.isDataSourceReady = true
         const targetIndex = this.scrollCoordinator.resolveFocusIndex(this.lyricTimeline, this.playPosition)
         this.scrollToIndexSafely(targetIndex, false)
+        this.restoreFocusLine(targetIndex)
         this.onDataSourceReady?.()
+    }
+
+    private restoreFocusLine(index: number) {
+        if (index < 0 || index >= this.lyricTimeline.length) {
+            return
+        }
+        const focusItem = this.lyricTimeline[index]
+        if (focusItem === undefined) {
+            return
+        }
+        this.scrollCoordinator.changeFocusLine(focusItem.view, index)
+        this.focusIndex = this.scrollCoordinator.getFocusIndex()
+        focusItem.view.play(this.playPosition)
     }
 
     private createLrcView(line: LrcLine) {

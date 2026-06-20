@@ -24,7 +24,6 @@ struct CustomSeekUISample {
             .setHighlightScale(1.2) // only set once
             .setTextColor(0xCC707070)
             .setTextHighlightColor(0xffe7107f)
-            .setFadeColor("#00000000")
             .setAlignMode(AlignMode.START)
             .setEmptyHint("未找到歌词")
         this.lyric = this.parser.parse(MockData.krc1)
@@ -175,7 +174,6 @@ function duration2text(duration: number): string {
     let s2 = second >= 10 ? second.toString() : "0" + second
     return s1 + ":" + s2
 }
-
 
 
 

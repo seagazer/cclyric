@@ -61,7 +61,7 @@ export class ListAdapter<T> implements IDataSource {
 
     notifyDataDelete(index: number) {
         this.listeners.forEach((listener) => {
-            listener.onDataAdd(index)
+            listener.onDataDelete(index)
         })
     }
 

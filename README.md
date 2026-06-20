@@ -20,7 +20,7 @@
 
 ## 注意事项
 - 从 1.1.1 版本开始，重构逐字动画逻辑，动效更加平滑和精准，因为采用了部分高版本接口，因此后续版本仅支持Api14以上。
-- 从 1.0.8 版本开始，新增逐字歌词能力，新增了 CcLyricView 组件和 CcLrcController 控制器，取替之前的 LyricView（不再维护）。
+- 从 1.0.8 版本开始，新增逐字歌词能力，当前仅保留 CcLyricView 组件和 CcLyricController 控制器。
 - 从 1.0.8 版本开始，不再提供默认的歌词解析器，建议提供数据源格式和Lrc数据结构，使用AI工具编写解析代码。
 
 ## 依赖方式
@@ -80,14 +80,6 @@ CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 | 参数 | 参数类型    | 参数说明         |
 | ---- | ----------- | ---------------- |
 | hint | ResourceStr | 无歌词时的提示语 |
-
-#### setFadeColor(color: ResourceColor): CcLyricController
-
-设置歌词上下边缘渐变颜色，默认为#00ffffff，**1.1.1版本开始废弃**。
-
-| 参数  | 参数类型      | 参数说明         |
-| ----- | ------------- | ---------------- |
-| color | ResourceColor | 歌词边缘渐变颜色 |
 
 #### setFadeEnable(enable: boolean): CcLyricController
 
@@ -167,14 +159,6 @@ CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 | 参数     | 参数类型 | 参数说明              |
 | -------- | -------- | --------------------- |
 | position | number   | 媒体播放进度(单位 ms) |
-
-#### setLrcAnimDuration(duration: number)
-
-设置逐字歌词的动效时间，默认250ms。**1.1.1版本开始废弃**。
-
-| 参数     | 参数类型 | 参数说明          |
-| -------- | -------- | ----------------- |
-| duration | number   | 动效时间(单位 ms) |
 
 ### Lrc
 

@@ -17,13 +17,10 @@ export class CcLyricController {
     private _textHighlightColor: number = 0xffff0000
     private _highlightScale: number = 1.1
     private _emptyHint: ResourceStr = "--"
-    private _fadeColor: ResourceColor = "#ffffffff"
     private _fadeEnable: boolean = true
     private _fadePercent: number = 0.2
     private _topOffset: number = 100 //vp
     private alignMode = AlignMode.CENTER
-
-    // private _AnimDuration = 250
 
     /**
      * Open the debug log or not, default is false.
@@ -74,22 +71,6 @@ export class CcLyricController {
 
     public getEmptyHint(): ResourceStr {
         return this._emptyHint;
-    }
-
-    /**
-     * @deprecated since v1.1.1
-     *
-     * Set the fade color on edge of the lyric view.
-     * @param color The fade color.
-     */
-    public setFadeColor(color: ResourceColor): CcLyricController {
-        // this._fadeColor = color;
-        // this.invalidate()
-        return this
-    }
-
-    public getFadeColor(): ResourceColor {
-        return this._fadeColor;
     }
 
     /**
@@ -220,22 +201,6 @@ export class CcLyricController {
     public getHighlightScale(): number {
         return this._highlightScale
     }
-
-    /**
-     * @deprecated since v1.1.1
-     *
-     * Set the duration for lyric highlight animation.
-     * @param duration The duration of animation, default is 250ms.
-     */
-    public setLrcAnimDuration(duration: number): CcLyricController {
-        // this._AnimDuration = duration
-        // this.invalidate()
-        return this
-    }
-
-    // public getLrcAnimDuration() {
-    //     return this._AnimDuration
-    // }
 
     /**
      * Update the progress of media player.

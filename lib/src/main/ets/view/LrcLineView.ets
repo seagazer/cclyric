@@ -23,8 +23,11 @@ export class LrcLineView extends NodeController {
     private krcTextBgColor: number = -1
     private textHighlightColor: number = -1
     private mode: AlignMode = AlignMode.CENTER
+    private isHighlighted = false
+    private playPosition = -1
 
     markHighlight() {
+        this.isHighlighted = true
         this.lyricTextView?.markHighlight()
     }
 
@@ -69,7 +72,7 @@ export class LrcLineView extends NodeController {
 
     /**
      * Return the lyric data of this view.
-     * @returns The lyric data {@link LyricLine}.
+     * @returns The lyric data {@link LrcLine}.
      */
     getLyric(): LrcLine {
         return this.lyricLine
@@ -80,6 +83,7 @@ export class LrcLineView extends NodeController {
      * @param position The playing position of media player.
      */
     play(position: number) {
+        this.playPosition = position
         this.lyricTextView?.update(position)
     }
 
@@ -87,6 +91,8 @@ export class LrcLineView extends NodeController {
      * Stop the effect animation.
      */
     stop() {
+        this.isHighlighted = false
+        this.playPosition = -1
         this.lyricTextView?.stop()
     }
 
@@ -111,6 +117,12 @@ export class LrcLineView extends NodeController {
                 this.setTextHighlightColor(this.textHighlightColor)
             }
             this.setAlignMode(this.mode)
+            if (this.isHighlighted) {
+                this.lyricTextView?.markHighlight()
+            }
+            if (this.playPosition >= 0) {
+                this.lyricTextView?.update(this.playPosition)
+            }
             const renderNode = this.rootView?.getRenderNode()
             if (renderNode) {
                 renderNode.appendChild(this.lyricTextView)

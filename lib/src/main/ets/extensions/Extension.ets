@@ -1,6 +1,6 @@
 import { hilog } from "@kit.PerformanceAnalysisKit"
 
-const TAG = "LyricView"
+const TAG = "cclyric"
 
 export function printD(msg: string) {
     hilog.debug(0, TAG, msg)
