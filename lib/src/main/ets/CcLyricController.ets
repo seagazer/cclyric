@@ -54,7 +54,7 @@ export class CcLyricController {
      */
     setAlignMode(mode: AlignMode): CcLyricController {
         this.alignMode = mode
-        this.onAttributeChanged?.()
+        this.resize()
         return this
     }
 

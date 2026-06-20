@@ -46,7 +46,8 @@ export class LyricLayoutService {
     buildDisplayLines(line: LrcLine, width: number, fontSize: number, highlightScale: number): LyricDisplayLine[] {
         const measuredLines = this.measureLines(line, width, fontSize * highlightScale)
         if (measuredLines.length <= 1) {
-            return [this.createDisplayLine(line, line.beginTime, line.endTime, 0, 0, 0, measuredLines[0] ?? line.text)]
+            const sourceEndIndex = line.wordList !== undefined && line.wordList.length > 0 ? line.wordList.length - 1 : 0
+            return [this.createDisplayLine(line, line.beginTime, line.endTime, 0, 0, sourceEndIndex, measuredLines[0] ?? line.text)]
         }
         const isKrc = line.wordList !== undefined && line.wordList.length > 0
         if (!isKrc) {

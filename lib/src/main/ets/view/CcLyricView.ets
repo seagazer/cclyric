@@ -40,10 +40,12 @@ export struct CcLyricView {
     @Local isUserMoving: boolean = false
     @Local centerLrcLine?: LrcLine = undefined
     @Local topOffset: number = 100
+    @Local alignMode: AlignMode = AlignMode.CENTER
     @Event onDataSourceReady: () => void
     private isDataSourceReady = false
     private viewWidth = 0 // px
     private playPosition = 0
+    private dataSourceVersion = 0
     private lyricTimeline: LyricTimelineItem[] = []
     private readonly layoutService = new LyricLayoutService()
     private readonly scrollCoordinator = new LyricScrollCoordinator()
@@ -54,6 +56,7 @@ export struct CcLyricView {
         this.emptyHint = this.controller.getEmptyHint()
         this.lineSpace = this.controller.getLineSpace()
         this.topOffset = this.controller.getTopOffset()
+        this.alignMode = this.controller.getAlignMode()
         // this.fadeColor = this.controller.getFadeColor()
         this.fadeEnable = this.controller.getFadeEnable()
         this.fadePercent = this.controller.getFadePercent()
@@ -71,6 +74,7 @@ export struct CcLyricView {
         }
         this.controller.onResize = () => {
             this.lineSpace = this.controller.getLineSpace()
+            this.alignMode = this.controller.getAlignMode()
             if (this.lyric !== undefined) { // changed size when lyric displaying
                 this.setDataSource(this.lyric)
             }
@@ -81,6 +85,7 @@ export struct CcLyricView {
             this.fadeEnable = this.controller.getFadeEnable()
             this.fadePercent = this.controller.getFadePercent()
             this.topOffset = this.controller.getTopOffset()
+            this.alignMode = this.controller.getAlignMode()
             for (let i = 0; i < this.lrcDataSource.totalCount(); i++) {
                 const itemView = this.lrcDataSource.getData(i)
                 if (itemView !== undefined) {
@@ -88,7 +93,7 @@ export struct CcLyricView {
                     itemView.setTextColor(this.controller.getTextColor())
                     itemView.setKrcTextBgColor(this.controller.getKrcTextBgColor())
                     itemView.setTextHighlightColor(this.controller.getTextHighlightColor())
-                    itemView.setAlignMode(this.controller.getAlignMode())
+                    itemView.setAlignMode(this.alignMode)
                 }
             }
         }
@@ -163,15 +168,15 @@ export struct CcLyricView {
                             {
                                 x: this.controller.getHighlightScale(),
                                 y: this.controller.getHighlightScale(),
-                                centerX: this.controller.getAlignMode() === AlignMode.CENTER ? "50%" : 0
+                                centerX: this.alignMode === AlignMode.CENTER ? "50%" : 0
                             } :
-                            { x: 1, y: 1, centerX: this.controller.getAlignMode() === AlignMode.CENTER ? "50%" : 0 })
+                            { x: 1, y: 1, centerX: this.alignMode === AlignMode.CENTER ? "50%" : 0 })
                         .animation({ duration: 300 })
                     }, (krc: LrcLineView | undefined, index: number) => {
                         if (krc != undefined) {
-                            return krc.getLyric().beginTime + "_" + krc.getLyric().endTime + "_" + index
+                            return this.dataSourceVersion + "_" + krc.getLyric().beginTime + "_" + krc.getLyric().endTime + "_" + index
                         }
-                        return index.toString()
+                        return this.dataSourceVersion + "_" + index
                     })
                     ListItem().height("50%")
                 }
@@ -223,6 +228,8 @@ export struct CcLyricView {
     }
 
     private setDataSource(lyric: Lrc | undefined) {
+        this.scrollCoordinator.reset()
+        this.isUserMoving = false
         if (lyric === undefined) {
             this.lrcDataSource.clear(true)
             this.lyricTimeline = []
@@ -237,6 +244,7 @@ export struct CcLyricView {
             return
         }
         this.isDataSourceReady = false
+        this.dataSourceVersion++
         this.lrcDataSource.clear(false)
         this.lyricTimeline = []
         this.focusIndex = -1
@@ -274,7 +282,7 @@ export struct CcLyricView {
         view.setTextColor(this.controller.getTextColor())
         view.setKrcTextBgColor(this.controller.getKrcTextBgColor())
         view.setTextHighlightColor(this.controller.getTextHighlightColor())
-        view.setAlignMode(this.controller.getAlignMode())
+        view.setAlignMode(this.alignMode)
         return view
     }
 
@@ -303,10 +311,12 @@ export struct CcLyricView {
         if (focusItem === undefined) {
             return
         }
+        if (this.scrollCoordinator.getFocusIndex() !== index) {
+            this.scrollCoordinator.changeFocusLine(focusItem.view, index, (focusIndex) => {
+                this.scrollToIndexSafely(focusIndex, true)
+            })
+            this.focusIndex = this.scrollCoordinator.getFocusIndex()
+        }
         focusItem.view.play(position)
-        this.scrollCoordinator.changeFocusLine(focusItem.view, index, (focusIndex) => {
-            this.scrollToIndexSafely(focusIndex, true)
-        })
-        this.focusIndex = this.scrollCoordinator.getFocusIndex()
     }
 }

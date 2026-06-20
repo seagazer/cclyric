@@ -4,7 +4,6 @@ import { common2D, drawing } from '@kit.ArkGraphics2D'
 import { ColorHelper } from '../extensions/ColorHelper'
 import { MediaLogger } from '../extensions/MediaLogger'
 import { AlignMode } from '../bean/AlignMode'
-import { Animator, AnimatorProvider } from './Animation'
 
 const TAG = "[LrcLineView]"
 
@@ -30,8 +29,8 @@ export class LrcLineView extends NodeController {
     }
 
     setAlignMode(mode: AlignMode) {
-        this.lyricTextView?.setAlignMode(mode)
         this.mode = mode
+        this.lyricTextView?.setAlignMode(mode)
     }
 
     public setTextSize(size: number) {
@@ -153,7 +152,6 @@ class LrcTextView extends RenderNode {
     }
     private textHighlightColor: number = 0xFFFF0000
     private lyricTextBlob?: drawing.TextBlob = undefined
-    private anim?: Animator = undefined
     private textWidth: number = 0
     private textHeight: number = 0
     private beginX = -1
@@ -164,8 +162,6 @@ class LrcTextView extends RenderNode {
     private isKrc = false
     private isHighlight = false
     private mode: AlignMode = AlignMode.CENTER
-    private animDuration = 250
-    private lastWordPosition = -1
 
     constructor(uiContext: UIContext, lyricLine: LrcLine) {
         super()
@@ -182,10 +178,8 @@ class LrcTextView extends RenderNode {
     }
 
     setAlignMode(mode: AlignMode) {
-        if (this.mode !== mode) {
-            this.mode = mode
-            this.updateConfig()
-        }
+        this.mode = mode
+        this.updateConfig()
     }
 
     setTextSize(size: number) {
@@ -267,99 +261,55 @@ class LrcTextView extends RenderNode {
         if (!this.isHighlight) {
             this.isHighlight = true
         }
+        this.playPosition = position
         if (this.isKrc) {
-            this.playPosition = position
-            this.updateAnimation()
-        } else {
-            this.invalidate()
+            this.updateDrawingWidth(position)
         }
+        this.invalidate()
     }
 
     stop() {
-        this.anim?.stop()
-        this.anim = undefined
         this.playPosition = -1
         this.drawingWidth = 0
-        this.lastWordPosition = -1
         this.isHighlight = false
         this.invalidate()
     }
 
-    private animCallback = (progress: number) => {
-        this.drawingWidth = progress
-        this.invalidate()
-    }
-
-    private updateAnimation() {
-        const wordList = this.lyricLine.wordList!
-        if (wordList.length <= 0) {
+    private updateDrawingWidth(position: number) {
+        const wordList = this.lyricLine.wordList
+        if (wordList === undefined || wordList.length <= 0) {
+            this.drawingWidth = 0
             return
         }
-        let duration = this.animDuration
-        let targetText = ''
-        if (wordList.length === 1) {
-            const word = wordList[0]
-            targetText = word.text
-            duration = Math.max(1, word.endTime - word.beginTime)
-            if (this.anim === undefined) {
-                const animator = AnimatorProvider.getInstance(this.context)
-                animator.setAnimationDuration(duration)
-                this.anim = animator.getAnimator()
-                this.anim.addCallback(this.animCallback)
-            }
-            this.anim.reset({
-                duration,
-                delay: 0,
-                easing: 'linear',
-                fill: 'forwards',
-                direction: 'normal',
-                iterations: 1,
-                begin: 0,
-                end: this.textWidth
-            })
-            this.anim.run()
+        if (position <= wordList[0].beginTime) {
+            this.drawingWidth = 0
             return
         }
-
-        let currentWordPosition = -1
+        const lastWord = wordList[wordList.length - 1]
+        if (position >= lastWord.endTime) {
+            this.drawingWidth = this.textWidth
+            return
+        }
+        let prefixText = ''
+        let prefixWidth = 0
         for (let i = 0; i < wordList.length; i++) {
             const word = wordList[i]
-            targetText += word.text
-            if (this.playPosition >= word.beginTime && this.playPosition < word.endTime) {
-                if (i === this.lastWordPosition) {
-                    return
-                }
-                currentWordPosition = i
-                this.lastWordPosition = i
-                duration = Math.max(1, word.endTime - word.beginTime)
-                break
+            if (position < word.beginTime) {
+                this.drawingWidth = prefixWidth
+                return
             }
+            const nextText = prefixText + word.text
+            const nextWidth = i === wordList.length - 1 ? this.textWidth : this.measureTextWidth(nextText)
+            if (position < word.endTime) {
+                const duration = Math.max(1, word.endTime - word.beginTime)
+                const progress = Math.min(1, Math.max(0, (position - word.beginTime) / duration))
+                this.drawingWidth = prefixWidth + (nextWidth - prefixWidth) * progress
+                return
+            }
+            prefixText = nextText
+            prefixWidth = nextWidth
         }
-        if (currentWordPosition < 0) {
-            return
-        }
-
-        const drawTargetWidth = currentWordPosition === wordList.length - 1
-            ? this.textWidth
-            : this.measureTextWidth(targetText)
-        if (this.anim === undefined) {
-            const animator = AnimatorProvider.getInstance(this.context)
-            animator.setAnimationDuration(duration)
-            this.anim = animator.getAnimator()
-            this.anim.addCallback(this.animCallback)
-        }
-        this.anim.pause()
-        this.anim.reset({
-            duration,
-            delay: 0,
-            easing: 'linear',
-            fill: 'forwards',
-            direction: 'normal',
-            iterations: 1,
-            begin: this.drawingWidth,
-            end: drawTargetWidth
-        })
-        this.anim.run()
+        this.drawingWidth = this.textWidth
     }
 
     draw(context: DrawContext): void {

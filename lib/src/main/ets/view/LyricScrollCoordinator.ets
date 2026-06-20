@@ -122,6 +122,10 @@ export class LyricScrollCoordinator {
 
     changeFocusLine(focusLine: LrcLineView | undefined, focusIndex: number, onNeedScroll?: (index: number) => void) {
         const previousFocusIndex = this.focusIndex
+        if (previousFocusIndex === focusIndex && this.focusView === focusLine) {
+            this.focusView?.markHighlight()
+            return
+        }
         if (this.focusView) {
             this.focusView.stop()
             this.focusView = undefined
