@@ -4,24 +4,26 @@
 
 **cclyric** 是一个为 **OpenHarmony** 和 **HarmonyOS** 设计的音乐歌词组件库。
 
-- 支持逐字歌词(卡拉ok效果)
+- 支持逐字歌词，也就是卡拉 OK 高亮效果
 - 支持逐行歌词
-- 支持滑动seek操作
 - 支持歌词滚动显示
-- 支持歌词左对齐和居中显示模式
-- 支持自定义seek界面
-- 支持自定义歌词样式，包括歌词行距，字体大小/颜色，聚焦大小/颜色等
-
+- 支持滑动 seek 操作
+- 支持默认 seek UI，也支持自定义 seek UI
+- 支持歌词左对齐和居中显示
+- 支持自定义歌词样式，包括行距、字号、普通颜色、逐字背景色、聚焦颜色、聚焦缩放等
+- 逐字歌词进度由播放时间戳驱动，并在播放中进行平滑刷新
 
 ## 示例效果
-| 居中对齐                                                                          | 左对齐                                                                            | 自定义样式                                                                        | 自定义seek界面                                                                    |
+
+| 居中对齐                                                                          | 左对齐                                                                            | 自定义样式                                                                        | 自定义 seek 界面                                                                  |
 | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | <img src="https://s41.ax1x.com/2026/01/05/pZdi7AP.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2026/01/05/pZdFS7q.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2026/01/05/pZdF9A0.png" width="180" height="360"/> | <img src="https://s41.ax1x.com/2025/12/20/pZ3QWSe.png" width="180" height="360"/> |
 
 ## 注意事项
-- 从 1.1.1 版本开始，重构逐字动画逻辑，动效更加平滑和精准，因为采用了部分高版本接口，因此后续版本仅支持Api14以上。
-- 从 1.0.8 版本开始，新增逐字歌词能力，当前仅保留 CcLyricView 组件和 CcLyricController 控制器。
-- 从 1.0.8 版本开始，不再提供默认的歌词解析器，建议提供数据源格式和Lrc数据结构，使用AI工具编写解析代码。
+
+- 从 1.1.4 版本开始，废弃的 `LyricView`、`LyricView2`、旧控制器和旧解析器已删除，请统一使用 `CcLyricView`、`CcLyricController` 和 `Lrc` 数据结构。
+- 从 1.1.1 版本开始，逐字动画逻辑已重构，动效更平滑和精准；由于使用了部分高版本接口，后续版本仅支持 API 14 及以上。
+- 从 1.0.8 版本开始，不再提供默认歌词解析器。业务侧可以根据自己的歌词来源，将 LRC、KRC、逐字歌词等格式解析为本库的 `Lrc` 数据结构。
 
 ## 依赖方式
 
@@ -29,30 +31,29 @@
 ohpm install @seagazer/cclyric
 ```
 
-## 接口能力
-
-**cclyric** 提供视图组件 **CcLyricView**，用户可以通过 **CcLyricController** 来操作组件。
+## 接口文档
 
 ### CcLyricView
 
-歌词组件
+歌词视图组件。组件通过 `controller` 接收歌词、播放进度和样式配置。
 
-| 属性                 | 属性类型                                   | 属性说明                                 | 必填 |
-| -------------------- | ------------------------------------------ | ---------------------------------------- | ---- |
-| controller           | CcLyricController                          | 歌词组件控制器                           | 是   |
-| supportSeek          | boolean                                    | 是否开启滑动seek能力，默认false          | 否   |
-| onSeekAction         | (position: number) => void                 | seek回调                                 | 否   |
-| onScrollChanged      | (centerLine: LrcLine \| undefined) => void | 滑动时中间歌词信息回调，用于自定义seekui | 否   |
-| onScrollStateChanged | (scrolling: boolean) => void               | 用户手动滑动状态回调，用于自定义seekui   | 否   |
-| onDataSourceReady    | () => void                                 | 歌词数据加载完成回调                     | 否   |
+| 属性                 | 属性类型                                   | 默认值 | 属性说明                                               | 必填 |
+| -------------------- | ------------------------------------------ | ------ | ------------------------------------------------------ | ---- |
+| controller           | CcLyricController                          | -      | 歌词组件控制器                                         | 是   |
+| supportSeek          | boolean                                    | true   | 是否开启默认滑动 seek 能力                             | 否   |
+| autoHideSeekUIDelay  | number                                     | 800    | 用户停止滑动后，默认 seek UI 或自定义 seek 状态隐藏延迟，单位 ms | 否   |
+| onSeekAction         | (position: number) => void                 | -      | 点击默认 seek UI 播放按钮时触发，返回目标播放进度，单位 ms | 否   |
+| onScrollChanged      | (centerLine: LrcLine \| undefined) => void | -      | 用户滑动歌词时，中间位置歌词变化回调，可用于自定义 seek UI | 否   |
+| onScrollStateChanged | (scrolling: boolean) => void               | -      | 用户手动滑动状态变化回调，可用于自定义 seek UI         | 否   |
+| onDataSourceReady    | () => void                                 | -      | 歌词数据源构建完成回调                                 | 否   |
 
 ### CcLyricController
 
-CcLyricView 组件控制器，通过接口控制歌词状态，样式。
+`CcLyricView` 控制器，用于设置歌词数据、播放进度和显示样式。样式接口支持链式调用。
 
 #### setDebugger(debug: boolean): void
 
-设置是否开启调试日志，默认false
+设置是否开启调试日志，默认 `false`。
 
 | 参数  | 参数类型 | 参数说明         |
 | ----- | -------- | ---------------- |
@@ -60,30 +61,31 @@ CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 
 #### setLyric(lyric: Lrc | undefined): CcLyricController
 
-设置歌词数据。
+设置歌词数据。传入 `undefined` 时显示空歌词提示。
 
-| 参数  | 参数类型        | 参数说明                    |
-| ----- | --------------- | --------------------------- |
-| lyric | Lrc \|undefined | 歌词，没有歌词设置undefined |
+| 参数  | 参数类型        | 参数说明 |
+| ----- | --------------- | -------- |
+| lyric | Lrc \| undefined | 歌词数据 |
 
 #### setAlignMode(mode: AlignMode): CcLyricController
 
-设置歌词显示的对齐模式，当前支持左对齐和居中对齐，默认居中显示。
-| 参数 | 参数类型  | 参数说明           |
-| ---- | --------- | ------------------ |
-| mode | AlignMode | 歌词显示的对齐模式 |
+设置歌词对齐模式，默认 `AlignMode.CENTER`。
 
-#### setEmptyHint(hint: ResourceStr): CcLyricController
+| 参数 | 参数类型  | 参数说明 |
+| ---- | --------- | -------- |
+| mode | AlignMode | 对齐模式 |
 
-设置无歌词时的提示语，默认为`--`。
+#### setEmptyHint(hintText: ResourceStr): CcLyricController
 
-| 参数 | 参数类型    | 参数说明         |
-| ---- | ----------- | ---------------- |
-| hint | ResourceStr | 无歌词时的提示语 |
+设置无歌词时的提示语，默认 `--`。
+
+| 参数     | 参数类型    | 参数说明         |
+| -------- | ----------- | ---------------- |
+| hintText | ResourceStr | 无歌词时的提示语 |
 
 #### setFadeEnable(enable: boolean): CcLyricController
 
-设置歌词上下边缘是否渐变显示，默认true
+设置歌词上下边缘是否渐变显示，默认 `true`。
 
 | 参数   | 参数类型 | 参数说明                 |
 | ------ | -------- | ------------------------ |
@@ -91,255 +93,276 @@ CcLyricView 组件控制器，通过接口控制歌词状态，样式。
 
 #### setFadePercent(percent: number): CcLyricController
 
-设置歌词上下边缘渐变占比，默认0.2，取值范围为[0,1]。
+设置歌词上下边缘渐变占比，默认 `0.2`，取值范围为 `[0, 1]`。
 
 | 参数    | 参数类型 | 参数说明         |
 | ------- | -------- | ---------------- |
 | percent | number   | 上下边缘渐变占比 |
 
-#### setTextSize(textSize: number): CcLyricController
-
-设置歌词文本尺寸，默认为 20vp。
-
-| 参数     | 参数类型 | 参数说明              |
-| -------- | -------- | --------------------- |
-| textSize | number   | 歌词文本尺寸(单位 vp) |
-
-#### setTextColor(color: number): CcLyricController
-
-设置歌词文本普通颜色，默认为0xff000000。
-
-| 参数  | 参数类型 | 参数说明     |
-| ----- | -------- | ------------ |
-| color | number   | 文本普通颜色 |
-
-#### setHighlightColor(color: number): CcLyricController
-
-设置歌词文本聚焦颜色，当前播放的歌词属于聚焦状态，默认为0xffff0000。
-
-| 参数  | 参数类型 | 参数说明     |
-| ----- | -------- | ------------ |
-| color | number   | 文本聚焦颜色 |
-#### setKrcTextBgColor(color: number): CcLyricController
-
-设置逐字歌词聚焦行文本背景颜色（前景色设置为setHighlightColor），默认和歌词文本普通颜色保持一致：0xff000000。
-
-| 参数  | 参数类型 | 参数说明               |
-| ----- | -------- | ---------------------- |
-| color | number   | 逐字歌词聚焦行文本颜色 |
-
 #### setTopOffset(offset: number): CcLyricController
 
-设置歌词首行距离顶部的距离，单位vp，默认为100vp。
+设置歌词内容距离顶部的偏移，单位 vp，默认 `100`。
 
 | 参数   | 参数类型 | 参数说明               |
 | ------ | -------- | ---------------------- |
-| offset | number   | 歌词首行距离顶部的距离 |
+| offset | number   | 歌词内容顶部偏移，单位 vp |
 
-#### setHighlightScale(scale: number): CcLyricController
+#### setTextSize(size: number): CcLyricController
 
-设置歌词文本聚焦缩放，当前播放的歌词属于聚焦状态，默认为 1.1f。
+设置歌词文本大小，单位 vp，默认 `20`。
+
+| 参数 | 参数类型 | 参数说明           |
+| ---- | -------- | ------------------ |
+| size | number   | 歌词文本大小，单位 vp |
+
+#### setLineSpace(space: number): CcLyricController
+
+设置歌词行间距，单位 vp，默认 `12`。
 
 | 参数  | 参数类型 | 参数说明         |
 | ----- | -------- | ---------------- |
-| scale | number   | 文本聚焦缩放比例 |
+| space | number   | 歌词行间距，单位 vp |
 
-#### setLineSpace(lineSpace: number): CcLyricController
+#### setTextColor(color: number): CcLyricController
 
-设置歌词行间距，默认为 12vp。
+设置普通歌词文本颜色，默认 `0xff000000`。
 
-| 参数      | 参数类型 | 参数说明            |
-| --------- | -------- | ------------------- |
-| lineSpace | number   | 歌词行间距(单位 vp) |
+| 参数  | 参数类型 | 参数说明     |
+| ----- | -------- | ------------ |
+| color | number   | 普通文本颜色 |
 
-#### updatePosition(position: number)
+#### setKrcTextBgColor(color: number): CcLyricController
 
-更新媒体播放进度，组件会自动刷新歌词显示。
+设置逐字歌词聚焦行的背景文本颜色，默认 `0xff000000`。
 
-| 参数     | 参数类型 | 参数说明              |
-| -------- | -------- | --------------------- |
-| position | number   | 媒体播放进度(单位 ms) |
+| 参数  | 参数类型 | 参数说明                 |
+| ----- | -------- | ------------------------ |
+| color | number   | 逐字歌词聚焦行背景文本颜色 |
+
+#### setTextHighlightColor(color: number): CcLyricController
+
+设置当前播放歌词的高亮颜色，默认 `0xffff0000`。
+
+| 参数  | 参数类型 | 参数说明 |
+| ----- | -------- | -------- |
+| color | number   | 高亮颜色 |
+
+#### setHighlightScale(scale: number): CcLyricController
+
+设置当前播放歌词的缩放比例，默认 `1.1`。
+
+| 参数  | 参数类型 | 参数说明 |
+| ----- | -------- | -------- |
+| scale | number   | 缩放比例 |
+
+#### updatePosition(position: number): void
+
+更新媒体播放进度，组件会自动刷新歌词位置、聚焦行和逐字歌词进度。
+
+| 参数     | 参数类型 | 参数说明           |
+| -------- | -------- | ------------------ |
+| position | number   | 媒体播放进度，单位 ms |
 
 ### Lrc
 
-歌词数据结构
+歌词数据结构。
 
 | 属性      | 属性类型        | 属性说明     |
 | --------- | --------------- | ------------ |
-| artist    | string          | 艺术家       |
-| title     | string          | 标题         |
-| album     | string          | 专辑         |
-| by        | string          | 作者         |
-| offset    | number          | 时间戳偏移量 |
-| lyricList | Array\<LrcLine> | 歌词行数组   |
+| artist    | string          | 艺术家，可选 |
+| title     | string          | 标题，可选   |
+| album     | string          | 专辑，可选   |
+| by        | string          | 作者，可选   |
+| offset    | number          | 时间戳偏移量，可选 |
+| lyricList | LrcLine[]       | 歌词行数组   |
 
 ### LrcLine
 
-单行歌词数据结构
+单行歌词数据结构。
 
-| 属性      | 属性类型               | 属性说明                                     |
-| --------- | ---------------------- | -------------------------------------------- |
-| text      | string                 | 歌词内容                                     |
-| beginTime | number                 | 当前行歌词起始时间戳                         |
-| endTime   | number                 | 当前行歌词结束时间戳                         |
-| wordList  | LrcWord[] \| undefined | 单个字的时间信息，Lrc逐行歌词场景为undefined |
+| 属性      | 属性类型               | 属性说明                                  |
+| --------- | ---------------------- | ----------------------------------------- |
+| text      | string                 | 歌词内容                                  |
+| beginTime | number                 | 当前行歌词起始时间戳，单位 ms             |
+| endTime   | number                 | 当前行歌词结束时间戳，单位 ms             |
+| wordList  | LrcWord[] \| undefined | 逐字歌词时间信息；逐行歌词可不传          |
 
 ### LrcWord
 
-单个字数据结构
+逐字歌词数据结构。
 
-| 属性      | 属性类型 | 属性说明         |
-| --------- | -------- | ---------------- |
-| text      | string   | 字符文本         |
-| beginTime | number   | 该字符起始时间戳 |
-| endTime   | number   | 该字符结束时间戳 |
+| 属性      | 属性类型 | 属性说明                |
+| --------- | -------- | ----------------------- |
+| text      | string   | 字符或词文本            |
+| beginTime | number   | 字符或词起始时间戳，单位 ms |
+| endTime   | number   | 字符或词结束时间戳，单位 ms |
 
 ### AlignMode
 
-歌词对齐模式枚举
+歌词对齐模式。
 
-| 属性   | 属性说明 |
-| ------ | -------- |
+| 枚举值 | 说明 |
+| ------ | ---- |
 | CENTER | 居中对齐 |
-| START  | 左对齐   |
+| START  | 左对齐 |
 
-
-
-## 场景示例
-
-- 下面是基础示例和使用方式：
+## 基础示例
 
 ```ts
+import { AlignMode, CcLyricController, CcLyricView, Lrc } from '@seagazer/cclyric'
+
 @Entry
 @ComponentV2
 struct Index {
     @Local lyric?: Lrc = undefined
-    // 1.init the controller
+    private parser = new YourLyricParser()
     private controller: CcLyricController = new CcLyricController()
 
     aboutToAppear(): void {
-        // 2. setup the attribute
-        this.controller.setDebugger(true)
-        this.controller.setTextSize(18)
+        this.controller
             .setLineSpace(12)
-            .setTextColor(0xCC000000)
+            .setTextSize(18)
+            .setHighlightScale(1.1)
+            .setTextColor(0xCC707070)
+            .setKrcTextBgColor(0xffd79a75)
             .setTextHighlightColor(0xffe7107f)
+            .setEmptyHint('未找到歌词')
+            .setAlignMode(AlignMode.CENTER)
             .setFadeEnable(true)
-        this.lyric = this.parser.parse(MockData.krc1)
-        // 3. set the lyric
+            .setFadePercent(0.15)
+            .setTopOffset(300)
+
+        this.lyric = this.parser.parse(lyricText)
         this.controller.setLyric(this.lyric)
     }
 
     build() {
         Column() {
-            // 4. init the view
             CcLyricView({
                 controller: this.controller,
-                // 使用默认的seekui
-                supportSeek: true, // support scroll seek
-                    onSeekAction: (position) => {
-                        this.mockPlayerSeek(position)
-                    }
+                supportSeek: true,
+                onSeekAction: (position: number) => {
+                    this.seekTo(position)
+                }
             })
-            .width("100%")
-            .height("100%)
+                .width('100%')
+                .layoutWeight(1)
         }
-        .height('100%')
         .width('100%')
+        .height('100%')
     }
 
     onPlayerPositionUpdate(position: number) {
-        // 5. update the mediaplayer position
         this.controller.updatePosition(position)
     }
 
-    mockPlayerSeek(position: number) {
-        // 6. update the mediaplayer position
-        this.player.seekTo(position)
+    seekTo(position: number) {
+        // player.seekTo(position)
+        this.controller.updatePosition(position)
     }
-}    
+}
+
+const lyricText = `
+[00:00.000]我[00:00.400]想[00:00.800]更[00:01.200]懂[00:01.700]你[00:02.500]
+[00:02.500]不[00:02.900]是[00:03.300]为[00:03.700]了[00:04.100]抓[00:04.500]紧[00:05.000]你[00:05.600]
+`
 ```
 
-- 自定义滑动seek界面：
+## 自定义 seek UI 示例
+
+将 `supportSeek` 设置为 `false` 后，可以通过 `onScrollChanged` 和 `onScrollStateChanged` 获取滑动状态与中心歌词时间，自行绘制 seek UI。
+
 ```ts
+import { AlignMode, CcLyricController, CcLyricView, Lrc, LrcLine } from '@seagazer/cclyric'
+
 @Entry
 @ComponentV2
-struct Index {
+struct CustomSeekIndex {
     @Local lyric?: Lrc = undefined
-    // 1.init the controller
-    private controller: CcLyricController = new CcLyricController()
-    // 自定义ui数据
     @Local userScrolling: boolean = false
     @Local scrollTargetTime: number = 0
+    private controller: CcLyricController = new CcLyricController()
 
     aboutToAppear(): void {
-        // 2. setup the attribute
-        this.controller.setDebugger(true)
-        this.controller.setTextSize(18)
+        this.controller
+            .setTextSize(18)
             .setLineSpace(12)
-            .setTextColor(0xCC000000)
+            .setTextColor(0xCC707070)
             .setTextHighlightColor(0xffe7107f)
-        this.lyric = this.parser.parse(MockData.krc1)
-        // 3. set the lyric
+            .setAlignMode(AlignMode.START)
+            .setEmptyHint('未找到歌词')
+
+        this.lyric = parseLyric()
         this.controller.setLyric(this.lyric)
     }
 
     build() {
-        Column() {
-            Stack() {
-                Stack() {
-                    CcLyricView({
-                        controller: this.controller,
-                        // custom seek ui: 1.set supportSeek false, 2.get current center duration from onScrollChanged and onScrollStateChanged callback
-                        supportSeek: false, //设置默认seek属性为false
-                        onScrollChanged: (centerLine) => {
-                            if (centerLine !== undefined) {
-                                this.scrollTargetTime = centerLine.beginTime
-                            }
-                        },
-                        onScrollStateChanged: (scrolling) => {
-                            this.userScrolling = scrolling
-                        }
-                    })
-                }.padding(12)
-                // 自定义seekui，数据从上面的onScrollChanged和onScrollStateChanged回调获取
-                if (this.userScrolling && this.scrollTargetTime >= 0) {
-                    Row() {
-                        Blank()
-                        Text(duration2text(this.scrollTargetTime))
-                            .fontSize(18)
-                        SymbolGlyph($r("sys.symbol.play_fill"))
-                            .fontSize(32)
-                            .onClick(() => {
-                                this.mockPlayerSeek(this.scrollTargetTime)
-                                this.userScrolling = false
-                            })
+        Stack() {
+            CcLyricView({
+                controller: this.controller,
+                supportSeek: false,
+                onScrollChanged: (centerLine: LrcLine | undefined) => {
+                    if (centerLine !== undefined) {
+                        this.scrollTargetTime = centerLine.beginTime
                     }
-                    .width("95%")
-                    .height(42)
-                    .border({ radius: 8 })
-                    .backgroundColor("#808d8d8d")
+                },
+                onScrollStateChanged: (scrolling: boolean) => {
+                    this.userScrolling = scrolling
                 }
+            })
+
+            if (this.userScrolling) {
+                Row() {
+                    Blank()
+                    Text(duration2Text(this.scrollTargetTime))
+                        .fontSize(18)
+                    SymbolGlyph($r('sys.symbol.play_fill'))
+                        .fontSize(32)
+                        .onClick(() => {
+                            this.seekTo(this.scrollTargetTime)
+                            this.userScrolling = false
+                        })
+                }
+                .width('95%')
+                .height(42)
+                .border({ radius: 8 })
+                .backgroundColor('#808d8d8d')
             }
-            .width("100%")
-            .height('100%')
         }
-        .height('100%')
         .width('100%')
+        .height('100%')
     }
 
     onPlayerPositionUpdate(position: number) {
-        // 5. update the mediaplayer position
         this.controller.updatePosition(position)
     }
 
-    mockPlayerSeek(position: number) {
-        // 6. update the mediaplayer position
-        this.player.seekTo(position)
+    seekTo(position: number) {
+        // player.seekTo(position)
+        this.controller.updatePosition(position)
     }
-}    
+}
+
+function duration2Text(duration: number): string {
+    const totalSeconds = Math.floor(duration / 1000)
+    const minutes = Math.floor(totalSeconds / 60)
+    const seconds = totalSeconds % 60
+    return minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0')
+}
+
+function parseLyric(): Lrc {
+    return {
+        lyricList: [
+            { text: '第一句歌词', beginTime: 0, endTime: 3000 },
+            { text: '第二句歌词', beginTime: 3000, endTime: 6000 }
+        ]
+    }
+}
 ```
 
-- 更多使用场景和示例，可以参考本库代码仓的 entry 工程：  https://github.com/seagazer/cclyric
-- 播放器场景可以参考示例CcLyricViewSample.ets，使用ccplayer搭配使用（三方库中心仓地址 https://ohpm.openharmony.cn/#/cn/detail/@seagazer%2Fccplayer） 可以快捷构建媒体播放应用
-- 使用过程中存在任何相关问题欢迎各位开发者提Issue和PR，或者加群反馈（Q群:1051643574），欢迎大家一起共建完善该库，如果觉得对你有用，请给个star鼓励一下谢谢。
+## 更多示例
+
+- 更多使用场景可以参考本仓库的 `entry` 工程：https://github.com/seagazer/cclyric
+- 播放器场景可以参考 `entry/src/main/ets/pages/CcLyricViewSample.ets`，该示例使用 `@seagazer/ccplayer` 搭配歌词组件构建播放页面。
+- 自定义 seek UI 可以参考 `entry/src/main/ets/pages/CustomSeekUISample.ets`。
+- 使用过程中存在任何相关问题欢迎提 Issue 和 PR，或者加群反馈：Q 群 1051643574。如果这个库对你有用，也欢迎给一个 star。
