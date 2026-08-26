@@ -644,6 +644,7 @@ export class StringParser {
             const parts = line.split(/\[(\d+(?::\d+)?(?:\.\d+)?)\]/);
             const times: number[] = []; // 时间数组（毫秒）
             const chars: string[] = []; // 字符数组
+            const charBeginTimes: number[] = []
             // 提取时间（索引1,3,5...）并转换为毫秒
             for (let i = 1; i < parts.length; i += 2) {
                 const ms = this.parseTimeTag(parts[i], offset);
@@ -651,31 +652,35 @@ export class StringParser {
                     times.push(ms);
                 }
             }
-            // 提取字符（索引2,4,6...）
+            // 提取字符及其开始时间。连续时间标签产生空文本段，不能参与字符计数。
             for (let i = 2; i < parts.length; i += 2) {
                 const char = parts[i];
-                if (char) {
+                const timeIndex = (i - 2) / 2
+                if (char !== undefined && char.length > 0) {
                     chars.push(char);
+                    charBeginTimes.push(times[timeIndex])
                 }
             }
             if (times.length <= 0) {
                 continue
             }
-            // KRC格式：时间数量为字符数量+1（每个字符对应一个开始时间，最后一个时间是结束时间）
-            if (times.length === chars.length + 1) {
+            // KRC格式：存在多个文字段。连续时间标签不应使整行退化为普通LRC。
+            if (times.length > 1 && chars.length > 0) {
                 // 生成逐字歌词列表
                 const wordList: LrcWord[] = chars.map((text, i) => {
+                    const beginTime = charBeginTimes[i]
+                    const nextBeginTime = i + 1 < charBeginTimes.length ? charBeginTimes[i + 1] : times[times.length - 1]
                     const data: LrcWord = {
                         text,
-                        beginTime: times[i],
-                        endTime: times[i + 1]
+                        beginTime,
+                        endTime: Math.max(beginTime, nextBeginTime)
                     }
                     return data
                 });
                 // 生成歌词行
                 const lyricLine: LrcLine = {
                     text: chars.join(''), // 行完整文本
-                    beginTime: times[0], // 行开始时间（第一个字符的开始时间）
+                    beginTime: charBeginTimes[0], // 行开始时间（第一个字符的开始时间）
                     endTime: times[times.length - 1], // 行结束时间（最后一个字符的结束时间）
                     wordList
                 };
@@ -706,13 +711,12 @@ export class StringParser {
             }
             const split2 = ssPart.split('.');
             const ssStr = split2[0];
-            const sssStr = split2[1];
-            if (!sssStr) {
-                return -1
-            }
+            const fraction = split2.length > 1 ? split2[1] : '0';
             const mm = parseInt(mmStr, 10) || 0;
             const ss = parseInt(ssStr, 10) || 0;
-            const sss = parseInt(sssStr, 10) || 0;
+            const normalizedFraction = fraction.length >= 3 ? fraction.substring(0, 3) :
+                fraction + (fraction.length === 0 ? '000' : fraction.length === 1 ? '00' : '0')
+            const sss = parseInt(normalizedFraction, 10) || 0;
             return mm * 60 * 1000 + ss * 1000 + sss + offset;
         }
         // 秒格式，例如 [0.41]

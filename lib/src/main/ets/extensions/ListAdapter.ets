@@ -1,4 +1,7 @@
 import ArrayList from "@ohos.util.ArrayList"
+import { MediaLogger } from './MediaLogger'
+
+const TAG = "[ListAdapter]"
 
 export class ListAdapter<T> implements IDataSource {
     private listeners: ArrayList<DataChangeListener> = new ArrayList()
@@ -19,20 +22,22 @@ export class ListAdapter<T> implements IDataSource {
     addData(data: T, autoFlush: boolean = true) {
         try {
             this.data.add(data)
-            if (autoFlush)
+            if (autoFlush) {
                 this.notifyDataAdd(this.data.length - 1)
+            }
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to add data: " + String(error))
         }
     }
 
     addDataWithIndex(data: T, index: number, autoFlush: boolean = true) {
         try {
             this.data.insert(data, index)
-            if (autoFlush)
+            if (autoFlush) {
                 this.notifyDataAdd(index)
+            }
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to add data with index: " + String(error))
         }
     }
 
@@ -45,10 +50,11 @@ export class ListAdapter<T> implements IDataSource {
     clear(autoFlush: boolean = true) {
         try {
             this.data.clear()
-            if (autoFlush)
+            if (autoFlush) {
                 this.notifyDataReload()
+            }
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to clear data: " + String(error))
         }
     }
 
@@ -57,11 +63,12 @@ export class ListAdapter<T> implements IDataSource {
             let index = this.data.getIndexOf(data)
             if (index >= 0) {
                 this.data.remove(data)
-                if (autoFlush)
+                if (autoFlush) {
                     this.notifyDataDelete(index)
+                }
             }
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to remove data: " + String(error))
         }
     }
 
@@ -71,7 +78,7 @@ export class ListAdapter<T> implements IDataSource {
                 listener.onDataAdd(index)
             })
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to notify data add: " + String(error))
         }
     }
 
@@ -81,7 +88,7 @@ export class ListAdapter<T> implements IDataSource {
                 listener.onDataDelete(index)
             })
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to notify data delete: " + String(error))
         }
     }
 
@@ -91,16 +98,17 @@ export class ListAdapter<T> implements IDataSource {
                 listener.onDataReloaded()
             })
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to notify data reload: " + String(error))
         }
     }
 
     registerDataChangeListener(listener: DataChangeListener) {
         try {
-            if (!this.listeners.has(listener))
+            if (!this.listeners.has(listener)) {
                 this.listeners.add(listener)
+            }
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to register data listener: " + String(error))
         }
     }
 
@@ -108,7 +116,7 @@ export class ListAdapter<T> implements IDataSource {
         try {
             this.listeners.remove(listener)
         } catch (error) {
-            // TODO: Implement error handling.
+            MediaLogger.attentionE(TAG, "Failed to unregister data listener: " + String(error))
         }
     }
 }

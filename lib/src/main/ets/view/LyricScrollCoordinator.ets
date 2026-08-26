@@ -9,6 +9,7 @@ export class LyricScrollCoordinator {
     private userMoveTimeout = -1
     private focusIndex = -1
     private centerLrcLine?: LrcLine = undefined
+    private validIndexes: number[] = []
 
     bindScroller(): Scroller {
         return this.scroller
@@ -39,9 +40,19 @@ export class LyricScrollCoordinator {
         this.isUserMoving = false
         this.focusIndex = -1
         this.centerLrcLine = undefined
+        this.validIndexes = []
         if (this.focusView !== undefined) {
             this.focusView.stop()
             this.focusView = undefined
+        }
+    }
+
+    setTimeline(items: LyricTimelineItem[]) {
+        this.validIndexes = []
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].endTime > 0) {
+                this.validIndexes.push(i)
+            }
         }
     }
 
@@ -97,12 +108,7 @@ export class LyricScrollCoordinator {
         }
         // Only lyrics with a real time point (endTime > 0) can be focused.
         // Lines without a time point (e.g. metadata) are skipped.
-        const validIndexes: number[] = []
-        for (let i = 0; i < items.length; i++) {
-            if (items[i].endTime > 0) {
-                validIndexes.push(i)
-            }
-        }
+        const validIndexes = this.validIndexes
         if (validIndexes.length <= 0) {
             return 0
         }
@@ -118,11 +124,13 @@ export class LyricScrollCoordinator {
         let lo = 0
         let hi = validIndexes.length - 1
         let best = firstValidIndex
+        let bestPos = 0
         while (lo <= hi) {
             const mid = Math.floor((lo + hi) / 2)
             const idx = validIndexes[mid]
             if (items[idx].beginTime <= position) {
                 best = idx
+                bestPos = mid
                 lo = mid + 1
             } else {
                 hi = mid - 1
@@ -133,7 +141,6 @@ export class LyricScrollCoordinator {
             return best
         }
         // Position falls in a gap; choose the nearer of the previous and next valid lyrics.
-        const bestPos = validIndexes.indexOf(best)
         const nextIndex = validIndexes[bestPos + 1]
         if (nextIndex !== undefined) {
             const nextItem = items[nextIndex]

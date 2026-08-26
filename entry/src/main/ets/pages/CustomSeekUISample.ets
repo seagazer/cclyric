@@ -40,8 +40,9 @@ struct CustomSeekUISample {
             .setAlignMode(AlignMode.START)
             .setEmptyHint("未找到歌词")
             .setSeekIconColor(0xffe7107f)
-        if (deviceInfo.sdkApiVersion >= 18)
+        if (deviceInfo.sdkApiVersion >= 18) {
             this.controller.setTypeface(drawing.Typeface.makeFromRawFile($rawfile('NotoSerifCJK.ttc')))
+        }
         this.lyric = this.parser.parse(MockData.krc1)
         this.controller.setLyric(this.lyric)
     }

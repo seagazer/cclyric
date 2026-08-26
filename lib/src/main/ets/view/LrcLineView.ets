@@ -157,6 +157,7 @@ class LrcTextView extends RenderNode {
     private krcNormalPen: drawing.Brush = new drawing.Brush()
     private highlightPen: drawing.Brush = new drawing.Brush()
     private font = new drawing.Font()
+    private readonly defaultTypeface = this.font.getTypeface()
     private readonly defaultTextSize = 16 //vp
     private textSize: number = 0 //vp
     private textColor: common2D.Color = {
@@ -238,10 +239,8 @@ class LrcTextView extends RenderNode {
     }
 
     setTypeface(typeface: drawing.Typeface | null) {
-        if (typeface !== null) {
-            this.font.setTypeface(typeface)
-            this.updateConfig()
-        }
+        this.font.setTypeface(typeface ?? this.defaultTypeface)
+        this.updateConfig()
     }
 
     private updateConfig() {

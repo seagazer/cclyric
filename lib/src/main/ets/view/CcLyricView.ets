@@ -310,6 +310,7 @@ export struct CcLyricView {
             }
         }
         this.lrcDataSource.notifyDataReload()
+        this.scrollCoordinator.setTimeline(this.lyricTimeline)
         this.isDataSourceReady = true
         const targetIndex = this.scrollCoordinator.resolveFocusIndex(this.lyricTimeline, this.playPosition)
         this.scrollToIndexSafely(targetIndex, false)
