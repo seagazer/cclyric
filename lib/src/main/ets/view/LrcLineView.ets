@@ -264,7 +264,20 @@ class LrcTextView extends RenderNode {
             this.textWidth = Math.max(this.textWidth, width)
             this.textHeight += height
         }
-        this.lineHeight = lines.length > 0 ? this.lineHeights[0] : 0
+        this.lineHeight = 0
+        for (let i = 0; i < this.lineHeights.length; i++) {
+            this.lineHeight = Math.max(this.lineHeight, this.lineHeights[i])
+        }
+        if (this.lineHeight <= 0) {
+            this.lineHeight = this.textSize
+        }
+        this.textHeight = 0
+        for (let i = 0; i < this.lineHeights.length; i++) {
+            if (this.lineHeights[i] <= 0) {
+                this.lineHeights[i] = this.lineHeight
+            }
+            this.textHeight += this.lineHeights[i]
+        }
         this.updateLayout()
         if (!this.isKrc) {
             const argb = ColorHelper.hex2Argb(this.textHighlightColor)
@@ -279,7 +292,6 @@ class LrcTextView extends RenderNode {
     }
 
     private updateLayout() {
-        const frameWidth = this.context.vp2px(this.frame.width)
         const frameHeight = this.context.vp2px(this.frame.height)
         const totalHeight = this.textHeight
         const startY = frameHeight / 2 - totalHeight / 2 + this.lineHeight / 2

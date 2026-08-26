@@ -714,9 +714,7 @@ export class StringParser {
             const fraction = split2.length > 1 ? split2[1] : '0';
             const mm = parseInt(mmStr, 10) || 0;
             const ss = parseInt(ssStr, 10) || 0;
-            const normalizedFraction = fraction.length >= 3 ? fraction.substring(0, 3) :
-                fraction + (fraction.length === 0 ? '000' : fraction.length === 1 ? '00' : '0')
-            const sss = parseInt(normalizedFraction, 10) || 0;
+            const sss = this.parseFractionMilliseconds(fraction)
             return mm * 60 * 1000 + ss * 1000 + sss + offset;
         }
         // 秒格式，例如 [0.41]
@@ -725,5 +723,18 @@ export class StringParser {
             return -1
         }
         return Math.round(sec * 1000) + offset;
+    }
+
+    private parseFractionMilliseconds(fraction: string): number {
+        if (fraction.length >= 3) {
+            return parseInt(fraction.substring(0, 3), 10) || 0
+        }
+        if (fraction.length === 2) {
+            return (parseInt(fraction, 10) || 0) * 10
+        }
+        if (fraction.length === 1) {
+            return (parseInt(fraction, 10) || 0) * 100
+        }
+        return 0
     }
 }
