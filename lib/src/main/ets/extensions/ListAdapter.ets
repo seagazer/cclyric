@@ -1,4 +1,7 @@
-import { ArrayList } from '@kit.ArkTS'
+import ArrayList from "@ohos.util.ArrayList"
+import { MediaLogger } from './MediaLogger'
+
+const TAG = "[ListAdapter]"
 
 export class ListAdapter<T> implements IDataSource {
     private listeners: ArrayList<DataChangeListener> = new ArrayList()
@@ -17,16 +20,24 @@ export class ListAdapter<T> implements IDataSource {
     }
 
     addData(data: T, autoFlush: boolean = true) {
-        this.data.add(data)
-        if (autoFlush) {
-            this.notifyDataAdd(this.data.length - 1)
+        try {
+            this.data.add(data)
+            if (autoFlush) {
+                this.notifyDataAdd(this.data.length - 1)
+            }
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to add data: " + String(error))
         }
     }
 
     addDataWithIndex(data: T, index: number, autoFlush: boolean = true) {
-        this.data.insert(data, index)
-        if (autoFlush) {
-            this.notifyDataAdd(index)
+        try {
+            this.data.insert(data, index)
+            if (autoFlush) {
+                this.notifyDataAdd(index)
+            }
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to add data with index: " + String(error))
         }
     }
 
@@ -37,47 +48,75 @@ export class ListAdapter<T> implements IDataSource {
     }
 
     clear(autoFlush: boolean = true) {
-        this.data.clear()
-        if (autoFlush) {
-            this.notifyDataReload()
+        try {
+            this.data.clear()
+            if (autoFlush) {
+                this.notifyDataReload()
+            }
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to clear data: " + String(error))
         }
     }
 
     removeData(data: T, autoFlush: boolean = true) {
-        let index = this.data.getIndexOf(data)
-        if (index >= 0) {
-            this.data.remove(data)
-            if (autoFlush) {
-                this.notifyDataDelete(index)
+        try {
+            let index = this.data.getIndexOf(data)
+            if (index >= 0) {
+                this.data.remove(data)
+                if (autoFlush) {
+                    this.notifyDataDelete(index)
+                }
             }
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to remove data: " + String(error))
         }
     }
 
     notifyDataAdd(index: number) {
-        this.listeners.forEach((listener) => {
-            listener.onDataAdd(index)
-        })
+        try {
+            this.listeners.forEach((listener) => {
+                listener.onDataAdd(index)
+            })
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to notify data add: " + String(error))
+        }
     }
 
     notifyDataDelete(index: number) {
-        this.listeners.forEach((listener) => {
-            listener.onDataDelete(index)
-        })
+        try {
+            this.listeners.forEach((listener) => {
+                listener.onDataDelete(index)
+            })
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to notify data delete: " + String(error))
+        }
     }
 
     notifyDataReload() {
-        this.listeners.forEach((listener) => {
-            listener.onDataReloaded()
-        })
+        try {
+            this.listeners.forEach((listener) => {
+                listener.onDataReloaded()
+            })
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to notify data reload: " + String(error))
+        }
     }
 
     registerDataChangeListener(listener: DataChangeListener) {
-        if (!this.listeners.has(listener)) {
-            this.listeners.add(listener)
+        try {
+            if (!this.listeners.has(listener)) {
+                this.listeners.add(listener)
+            }
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to register data listener: " + String(error))
         }
     }
 
     unregisterDataChangeListener(listener: DataChangeListener) {
-        this.listeners.remove(listener)
+        try {
+            this.listeners.remove(listener)
+        } catch (error) {
+            MediaLogger.attentionE(TAG, "Failed to unregister data listener: " + String(error))
+        }
     }
 }

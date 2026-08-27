@@ -1,5 +1,6 @@
-import { AlignMode } from './bean/AlignMode'
 import { Lrc } from './bean/Lrc'
+import { AlignMode } from './bean/AlignMode'
+import drawing from '@ohos.graphics.drawing'
 import { MediaLogger } from './extensions/MediaLogger'
 
 /**
@@ -12,14 +13,16 @@ export class CcLyricController {
     private lyric?: Lrc | undefined = undefined
     private _textSize: number = 20 //fp
     private _lineSpace: number = 12 //vp
-    private _textColor: number = 0xff000000
-    private _krcTextBgColor: number = 0xff000000
-    private _textHighlightColor: number = 0xffff0000
+    private _textColor: ResourceColor = 0xff000000
+    private _krcTextBgColor: ResourceColor = 0xff000000
+    private _textHighlightColor: ResourceColor = 0xffff0000
+    private _typeface: drawing.Typeface | null = null
     private _highlightScale: number = 1.1
     private _emptyHint: ResourceStr = "--"
     private _fadeEnable: boolean = true
     private _fadePercent: number = 0.2
     private _topOffset: number = 100 //vp
+    private _seekIconColor: ResourceColor = "#80717171"
     private alignMode = AlignMode.CENTER
 
     /**
@@ -43,6 +46,20 @@ export class CcLyricController {
 
     getTopOffset(): number {
         return this._topOffset
+    }
+
+    /**
+     * Set the color of the seek icon of the custom seek ui, default is 0x80717171.
+     * @param color The seek icon color, support number, string, Color or Resource.
+     */
+    setSeekIconColor(color: ResourceColor): CcLyricController {
+        this._seekIconColor = color
+        this.invalidate()
+        return this
+    }
+
+    getSeekIconColor(): ResourceColor {
+        return this._seekIconColor
     }
 
     /**
@@ -148,44 +165,58 @@ export class CcLyricController {
 
     /**
      * Set the text color of lyric, default is 0xff000000.
-     * @param color The text color.
+     * @param color The text color, support number, string, Color or Resource.
      */
-    public setTextColor(color: number): CcLyricController {
+    public setTextColor(color: ResourceColor): CcLyricController {
         this._textColor = color
         this.invalidate()
         return this
     }
 
-    public getTextColor() {
+    public getTextColor(): ResourceColor {
         return this._textColor
     }
 
     /**
      * Set the background text color of krc line, default is 0xff000000.
-     * @param color The background text color of krc line.
+     * @param color The background text color of krc line, support number, string, Color or Resource.
      */
-    public setKrcTextBgColor(color: number): CcLyricController {
+    public setKrcTextBgColor(color: ResourceColor): CcLyricController {
         this._krcTextBgColor = color
         this.invalidate()
         return this
     }
 
-    public getKrcTextBgColor() {
+    public getKrcTextBgColor(): ResourceColor {
         return this._krcTextBgColor
     }
 
     /**
      * Set the highlight text color of lyric, default is 0xffff0000.
-     * @param color The text color.
+     * @param color The text color, support number, string, Color or Resource.
      */
-    public setTextHighlightColor(color: number): CcLyricController {
+    public setTextHighlightColor(color: ResourceColor): CcLyricController {
         this._textHighlightColor = color
         this.invalidate()
         return this
     }
 
-    public getTextHighlightColor(): number {
+    public getTextHighlightColor(): ResourceColor {
         return this._textHighlightColor
+    }
+
+    /**
+     * Set the custom typeface of lyric text.
+     * @param typeface The typeface, null to restore the default font.
+     */
+    public setTypeface(typeface: drawing.Typeface | null): CcLyricController {
+        this._typeface = typeface
+        this.invalidate()
+        return this
+    }
+
+    public getTypeface(): drawing.Typeface | null {
+        return this._typeface
     }
 
     /**

@@ -9,6 +9,7 @@ export class LyricScrollCoordinator {
     private userMoveTimeout = -1
     private focusIndex = -1
     private centerLrcLine?: LrcLine = undefined
+    private validIndexes: number[] = []
 
     bindScroller(): Scroller {
         return this.scroller
@@ -39,9 +40,19 @@ export class LyricScrollCoordinator {
         this.isUserMoving = false
         this.focusIndex = -1
         this.centerLrcLine = undefined
+        this.validIndexes = []
         if (this.focusView !== undefined) {
             this.focusView.stop()
             this.focusView = undefined
+        }
+    }
+
+    setTimeline(items: LyricTimelineItem[]) {
+        this.validIndexes = []
+        for (let i = 0; i < items.length; i++) {
+            if (items[i].endTime > 0) {
+                this.validIndexes.push(i)
+            }
         }
     }
 
@@ -95,29 +106,49 @@ export class LyricScrollCoordinator {
         if (items.length <= 0) {
             return -1
         }
-        if (position < items[0].beginTime) {
+        // Only lyrics with a real time point (endTime > 0) can be focused.
+        // Lines without a time point (e.g. metadata) are skipped.
+        const validIndexes = this.validIndexes
+        if (validIndexes.length <= 0) {
             return 0
         }
-        const lastIndex = items.length - 1
-        if (position >= items[lastIndex].endTime) {
-            return lastIndex
+        const firstValidIndex = validIndexes[0]
+        if (position < items[firstValidIndex].beginTime) {
+            return firstValidIndex
         }
-        let left = 0
-        let right = lastIndex
-        while (left <= right) {
-            const mid = Math.floor((left + right) / 2)
-            const item = items[mid]
-            if (position < item.beginTime) {
-                right = mid - 1
-                continue
-            }
-            if (position >= item.endTime) {
-                left = mid + 1
-                continue
-            }
-            return mid
+        const lastValidIndex = validIndexes[validIndexes.length - 1]
+        if (position >= items[lastValidIndex].endTime) {
+            return lastValidIndex
         }
-        return Math.min(Math.max(left, 0), lastIndex)
+        // Find the last valid item whose beginTime <= position.
+        let lo = 0
+        let hi = validIndexes.length - 1
+        let best = firstValidIndex
+        let bestPos = 0
+        while (lo <= hi) {
+            const mid = Math.floor((lo + hi) / 2)
+            const idx = validIndexes[mid]
+            if (items[idx].beginTime <= position) {
+                best = idx
+                bestPos = mid
+                lo = mid + 1
+            } else {
+                hi = mid - 1
+            }
+        }
+        const bestItem = items[best]
+        if (position >= bestItem.beginTime && position < bestItem.endTime) {
+            return best
+        }
+        // Position falls in a gap; choose the nearer of the previous and next valid lyrics.
+        const nextIndex = validIndexes[bestPos + 1]
+        if (nextIndex !== undefined) {
+            const nextItem = items[nextIndex]
+            const prevDistance = position - bestItem.endTime
+            const nextDistance = nextItem.beginTime - position
+            return nextDistance < prevDistance ? nextIndex : best
+        }
+        return best
     }
 
     changeFocusLine(focusLine: LrcLineView | undefined, focusIndex: number, onNeedScroll?: (index: number) => void) {

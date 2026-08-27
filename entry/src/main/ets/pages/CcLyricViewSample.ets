@@ -1,6 +1,8 @@
 import { AlignMode, CcLyricController, CcLyricView } from '@seagazer/cclyric';
 import { CcPlayer, MediaSource, MediaSourceFactory, PlayerState } from '@seagazer/ccplayer';
+import { drawing } from '@kit.ArkGraphics2D';
 import { MockData, StringParser } from './MockData';
+import deviceInfo from '@ohos.deviceInfo';
 
 
 @Entry
@@ -54,6 +56,10 @@ struct CcLyricViewSample {
             .setFadeEnable(true)
             .setFadePercent(0.15)
             .setTopOffset(300)
+            .setSeekIconColor(0xffe7107f)
+        if (deviceInfo.sdkApiVersion >= 18) {
+            this.controller.setTypeface(drawing.Typeface.makeFromRawFile($rawfile('NotoSerifCJK.ttc')))
+        }
         this.player.addOnProgressChangedListener(this.progressChangedListener)
             .addOnPreparedListener(this.prepareListener)
             .addOnSeekChangedListener(this.seekChangedListener)

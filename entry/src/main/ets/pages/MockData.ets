@@ -75,6 +75,170 @@ export class MockData {
         '[03:23.66]原来缘分是用来说明',
         '[03:28.21]你突然不爱我这件事情',
         '[03:33.34]',]
+    static src3 = [
+        "[ti:Human Nature]",
+        "[ar:Michael Jackson]",
+        "[al:Thriller 40]",
+        "[by:]",
+        "[offset:0]",
+        "[00:00.00]Human Nature - Michael Jackson",
+        "[00:01.29]Lyrics by：Steve Porcaro/John Bettis",
+        "[00:02.60]Composed by：Steve Porcaro/John Bettis",
+        "[00:08.22]Why",
+        "[00:10.82]Looking out across the nighttime",
+        "[00:16.07]The city winks a sleepless eye",
+        "[00:20.92]Hear her voice shake my window",
+        "[00:26.64]Sweet seducing sighs",
+        "[00:31.32]Get me out into the nighttime",
+        "[00:36.73]Four walls won't hold me tonight",
+        "[00:41.63]If this town is just an apple",
+        "[00:47.11]Then let me take a bite",
+        "[00:50.96]If they say why why why why",
+        "[00:54.50]Tell them that it's human nature",
+        "[00:56.99]Why why why why does he do me that way",
+        "[01:01.24]If they say why why why why",
+        "[01:04.78]Tell them that it's human nature",
+        "[01:07.43]Why why why why does he do me that way",
+        "[01:12.51]Reaching out to touch a stranger",
+        "[01:18.12]Electric eyes are everywhere",
+        "[01:22.82]See that girl she knows I'm watching",
+        "[01:28.29]She likes the way I stare",
+        "[01:32.27]If they say why why why why",
+        "[01:35.73]Just tell them that it's human nature",
+        "[01:38.33]Why why why why does he do me that way",
+        "[01:42.51]If they say why why why why",
+        "[01:44.86]She's giving in by keeping him a'round",
+        "[01:46.14]Tell them that it's human nature",
+        "[01:48.66]Why why why why does he do me that way",
+        "[01:53.44]I like livin' this way",
+        "[01:56.03]I like lovin' this way",
+        "[02:03.71]That way",
+        "[02:04.89]Why oh why",
+        "[02:08.86]That way",
+        "[02:09.98]Why oh why",
+        "[02:14.68]Looking out across the morning",
+        "[02:19.89]The city's heart begins to beat",
+        "[02:24.77]Reaching out I touch her shoulder",
+        "[02:30.22]I'm dreaming of the street",
+        "[02:34.12]If they say why why why why",
+        "[02:37.67]Tell them that it's human nature",
+        "[02:40.30]Why why why why does he do me that way",
+        "[02:44.42]If they say why why why why",
+        "[02:45.94]She's giving in by keeping him a'round",
+        "[02:48.54]Ooh-ooh tell 'em",
+        "[02:50.74]Why why why why does he do me that way",
+        "[02:54.74]If they say why why why why why why",
+        "[02:58.34]Cha-da-cha-sha-sha-sha-sha-sha aah-ah",
+        "[03:01.24]Why why why why does he do me that way",
+        "[03:05.01]If they say why why why why why why why",
+        "[03:06.92]She's giving in by keeping him a'round",
+        "[03:09.38]Ooh-ooh tell 'em aah-ah",
+        "[03:12.42]Why why why why does he do me that way",
+        "[03:15.34]If they say why why why why why why",
+        "[03:19.33]Ooh tell 'em",
+        "[03:21.82]Why why why why does he do me that way",
+        "[03:25.96]If they say why why why why",
+        "[03:27.02]She's giving in by keeping him a'round",
+        "[03:29.43]Da-da-da-da-da-da-da-da",
+        "[03:31.92]Why why why why does he do me that way",
+        "[03:36.65]I like living this way",
+        "[03:39.08]Why oh why",
+        "[03:44.09]That way",
+        "[03:44.79]Why oh why",
+        "[03:49.33]That way",
+        "[03:49.85]Why oh why",
+        "[03:54.41]That way",
+    ]
+    static src4 = [
+        '[0.41] 하루 (One Day) - Ailee (에일리)',
+        '[5.67]    ',
+        '[5.67] 词：KAWAE MINAKO',
+        '[9.59]    ',
+        '[9.59] 曲：KAWAE MINAKO',
+        '[11.66]    ',
+        '[11.66] 编曲：Prime time (PAPERMAKER)',
+        '[14.66]    ',
+        '[14.66] 아직 그대는 오지 않고',
+        '[20.3] 你依然没来 ',
+        '[20.3] 또 하루가 지네요',
+        '[25.88] 又过去一天',
+        '[25.88] 마중 나간 나의 마음은',
+        '[31.33] 我的心出去迎接你',
+        '[31.33] 또 혼자 돌아와요',
+        '[37.4] 又独自返回',
+        '[37.4] 눈물에 번진 구름 같은',
+        '[43.03] 在眼泪中蔓延 犹如云朵般',
+        '[43.03] 노을빛이 내리면',
+        '[48.77] 若是那霞光洒落',
+        '[48.77] 술 생각처럼',
+        '[51.07] 就像想喝一杯那样',
+        '[51.07] 떠오르는 그대 얼굴 그대 향기',
+        '[62.84] 浮现你的面容 你的芳香',
+        '[62.84] 그댄 왜 나를 사랑했나요',
+        '[68.51] 你为何爱我呢',
+        '[68.51] 이렇게 나를 울게 하나요',
+        '[73.82] 又这样让我哭泣呢',
+        '[73.82] 사랑이 슬픔인 걸 그때 알았더라면',
+        '[79.92] 若当时明白爱情如此悲伤',
+        '[79.92] 그대를 그냥 지나쳤을까',
+        '[97.45] 会直接错过你么',
+        '[97.45] 안 보려고 눈 감아봐도',
+        '[103.08] 就算闭上眼不看你',
+        '[103.08] 추억이 또 보여요',
+        '[108.78] 却又看见回忆',
+        '[108.78] 잃어버릴까 걱정하듯',
+        '[113.47] 担心会弄丢回忆 ',
+        '[113.47] 처음부터 그 끝까지',
+        '[119.9] 从始至终',
+        '[119.9] 귓볼을 입술로 간지르며',
+        '[125.53] 浅吻耳垂',
+        '[125.53] 소리 내 웃다 그대가 울죠',
+        '[130.89] 放声欢笑 而你却哭了',
+        '[130.89] 그 눈빛이 서러워 매번 놀라 잠 깨면',
+        '[137.13] 那眼神着实伤悲 若每次惊醒',
+        '[137.13] 베개를 적신 내 눈물만',
+        '[142.78] 都只有我那浸湿枕头的眼泪',
+        '[142.78] 그렇게 아름다운 사람을',
+        '[148.45] 我无力坚持不爱',
+        '[148.45] 사랑 안 하곤 버틸 힘없죠',
+        '[153.77] 那么美好的人',
+        '[153.77] 천 번 그날이 와도 나는 같았을 테니',
+        '[159.94] 就算那天到来数千次 我也是同样选择',
+        '[159.94] 만난 걸 미안해하지 말아요',
+        '[188.9] 相遇这件事 不要感到抱歉',
+        '[188.9] 하루 또 하루 버텨내도',
+        '[194.43] 就算一天天地坚持下去',
+        '[194.43] 그댄 오지 않네요',
+        '[200.27] 你也不会到来',
+        '[200.27] 울고 싶을 때 울어보면',
+        '[205.01] 若想哭的时候哭泣',
+        '[205.01] 그댄 내가 미울까요',
+        '[211.59] 你会埋怨我么',
+        '[211.59] 그댄 왜 나를 사랑했나요',
+        '[217.06] 你为何爱我呢',
+        '[217.06] 이렇게 나를 울게 하나요',
+        '[222.37] 又这样让我哭泣呢',
+        '[222.37] 사랑이 슬픔인 걸 그때 알았더라면',
+        '[228.42] 若当时明白爱情如此悲伤',
+        '[228.42] 그대를 지나쳐 갔을까',
+        '[234.26] 会错过你么',
+        '[234.26] 그렇게 아름다운 사람을',
+        '[239.86] 我无力坚持不爱',
+        '[239.86] 사랑 안 하곤 버틸 힘없죠',
+        '[245.16] 那么美好的人',
+        '[245.16] 천 번 그날이 와도 나는 같았을 테니',
+        '[251.51] 就算那天到来数千次 我也是同样选择',
+        '[251.51] 만난 걸 미안해하지 말아요',
+        '[268.97] 相遇这件事 不要感到抱歉',
+        '[268.97] 그리워 지친 날 달래듯',
+        '[274.49] 如同安抚思念你到疲惫的我',
+        '[274.49] 아침은 또 오네요',
+        '[280.38] 早晨再次来临',
+        '[280.38] 울 수 없으니 웃어야죠',
+        '[285.78] 因为我哭不出来 所以要笑出来才是 ',
+        '[285.78] 밤새 잊은 것처럼',
+        '[290.078] 就像彻夜忘记那般',
+    ]
     static krc1 = [
         "[ar:G.E.M. 邓紫棋、张靓颖]",
         "[ti:雨蝶 (Live)]",
@@ -437,6 +601,7 @@ export class MockData {
         "[03:04.987]Possible[03:06.804]",
         "[03:13.480]And [03:13.752]we'll [03:14.040]dream [03:16.674]it [03:16.978]possible[03:19.042]",
     ]
+
 }
 
 // generate by cursor
@@ -475,62 +640,101 @@ export class StringParser {
                 continue; // 处理完元数据，继续下一行
             }
             // 解析歌词行（带时间标签的行）
-            // 分割时间标签和字符（例如[00:00.195]阿 → 分割为时间和字符）
-            const parts = line.split(/\[(\d+:\d+\.\d+)\]/);
+            // 分割时间标签和字符（例如[00:00.195]阿 → 分割为时间和字符，[0.41] → 秒格式）
+            const parts = line.split(/\[(\d+(?::\d+)?(?:\.\d+)?)\]/);
             const times: number[] = []; // 时间数组（毫秒）
             const chars: string[] = []; // 字符数组
+            const charBeginTimes: number[] = []
             // 提取时间（索引1,3,5...）并转换为毫秒
             for (let i = 1; i < parts.length; i += 2) {
-                const timeStr = parts[i];
-                const split1 = timeStr.split(':');
-                const mmStr = split1[0];
-                const ssPart = split1[1];
-                if (!ssPart) {
-                    continue
+                const ms = this.parseTimeTag(parts[i], offset);
+                if (ms >= 0) {
+                    times.push(ms);
                 }
-                // 无效格式跳过
-                const split2 = ssPart.split('.');
-                const ssStr = split2[0];
-                const sssStr = split2[1];
-                if (!sssStr) {
-                    continue
-                }
-                // 无效格式跳过
-                const mm = parseInt(mmStr, 10) || 0;
-                const ss = parseInt(ssStr, 10) || 0;
-                const sss = parseInt(sssStr, 10) || 0;
-                const ms = mm * 60 * 1000 + ss * 1000 + sss;
-                times.push(ms + offset); // 加上偏移量
             }
-            // 提取字符（索引2,4,6...）
+            // 提取字符及其开始时间。连续时间标签产生空文本段，不能参与字符计数。
             for (let i = 2; i < parts.length; i += 2) {
                 const char = parts[i];
-                if (char) {
+                const timeIndex = (i - 2) / 2
+                if (char !== undefined && char.length > 0) {
                     chars.push(char);
+                    charBeginTimes.push(times[timeIndex])
                 }
             }
-            // 验证格式：时间数量应为字符数量+1（每个字符对应一个开始时间，最后一个时间是结束时间）
-            if (times.length !== chars.length + 1) {
+            if (times.length <= 0) {
                 continue
             }
-            // 生成逐字歌词列表
-            const wordList: LrcWord[] = chars.map((text, i) => {
-                const data: LrcWord = {
-                    text,
-                    beginTime: times[i],
-                    endTime: times[i + 1]
-                }
-                return data
+            // KRC格式：存在多个文字段。连续时间标签不应使整行退化为普通LRC。
+            if (times.length > 1 && chars.length > 0) {
+                // 生成逐字歌词列表
+                const wordList: LrcWord[] = chars.map((text, i) => {
+                    const beginTime = charBeginTimes[i]
+                    const nextBeginTime = i + 1 < charBeginTimes.length ? charBeginTimes[i + 1] : times[times.length - 1]
+                    const data: LrcWord = {
+                        text,
+                        beginTime,
+                        endTime: Math.max(beginTime, nextBeginTime)
+                    }
+                    return data
+                });
+                // 生成歌词行
+                const lyricLine: LrcLine = {
+                    text: chars.join(''), // 行完整文本
+                    beginTime: charBeginTimes[0], // 行开始时间（第一个字符的开始时间）
+                    endTime: times[times.length - 1], // 行结束时间（最后一个字符的结束时间）
+                    wordList
+                };
+                lyric.lyricList.push(lyricLine);
+                continue
+            }
+            // 普通LRC格式：整行文本 + 一个（或多个）时间标签
+            const text = chars.join('').trim();
+            if (text.length <= 0) {
+                continue
+            }
+            lyric.lyricList.push({
+                text,
+                beginTime: times[0],
+                endTime: times[times.length - 1]
             });
-            // 生成歌词行
-            const lyricLine: LrcLine = {
-                text: chars.join(''), // 行完整文本
-                beginTime: times[0], // 行开始时间（第一个字符的开始时间）
-                endTime: times[times.length - 1], // 行结束时间（最后一个字符的结束时间）
-                wordList
-            };
-            lyric.lyricList.push(lyricLine);
         }
         return lyric;
+    }
+
+    private parseTimeTag(timeStr: string, offset: number): number {
+        const split1 = timeStr.split(':');
+        if (split1.length === 2) {
+            const mmStr = split1[0];
+            const ssPart = split1[1];
+            if (!ssPart) {
+                return -1
+            }
+            const split2 = ssPart.split('.');
+            const ssStr = split2[0];
+            const fraction = split2.length > 1 ? split2[1] : '0';
+            const mm = parseInt(mmStr, 10) || 0;
+            const ss = parseInt(ssStr, 10) || 0;
+            const sss = this.parseFractionMilliseconds(fraction)
+            return mm * 60 * 1000 + ss * 1000 + sss + offset;
+        }
+        // 秒格式，例如 [0.41]
+        const sec = parseFloat(timeStr);
+        if (isNaN(sec)) {
+            return -1
+        }
+        return Math.round(sec * 1000) + offset;
+    }
+
+    private parseFractionMilliseconds(fraction: string): number {
+        if (fraction.length >= 3) {
+            return parseInt(fraction.substring(0, 3), 10) || 0
+        }
+        if (fraction.length === 2) {
+            return (parseInt(fraction, 10) || 0) * 10
+        }
+        if (fraction.length === 1) {
+            return (parseInt(fraction, 10) || 0) * 100
+        }
+        return 0
     }
 }

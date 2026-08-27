@@ -13,3 +13,4 @@
 /oh-package-lock.json5
 **/.test
 /.appanalyzer
+**/BuildProfile.ets

@@ -1,4 +1,4 @@
-import { text } from '@kit.ArkGraphics2D'
+import text from '@ohos.graphics.text'
 import { LrcLine } from '../bean/LrcLine'
 import { LrcWord } from '../bean/LrcWord'
 import { LyricDisplayLine } from '../bean/LyricDisplayLine'
@@ -44,6 +44,11 @@ export class LyricLayoutService {
     }
 
     buildDisplayLines(line: LrcLine, width: number, fontSize: number, highlightScale: number): LyricDisplayLine[] {
+        // Explicit newlines are rendered by LrcTextView so their line height and empty lines stay together.
+        if (line.text.indexOf('\n') >= 0) {
+            const sourceEndIndex = line.wordList !== undefined && line.wordList.length > 0 ? line.wordList.length - 1 : 0
+            return [this.createDisplayLine(line, line.beginTime, line.endTime, 0, 0, sourceEndIndex, line.text)]
+        }
         const measuredLines = this.measureLines(line, width, fontSize * highlightScale)
         if (measuredLines.length <= 1) {
             const sourceEndIndex = line.wordList !== undefined && line.wordList.length > 0 ? line.wordList.length - 1 : 0

@@ -1,4 +1,4 @@
-import { hilog } from "@kit.PerformanceAnalysisKit"
+import hilog from "@ohos.hilog"
 
 const TAG = "cclyric"
 
