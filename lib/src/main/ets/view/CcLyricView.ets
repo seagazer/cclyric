@@ -290,6 +290,7 @@ export struct CcLyricView {
         this.focusIndex = -1
         this.centerLrcLine = undefined
         const lines = lyric.lyricList
+        this.layoutService.setTypeface(this.controller.getTypeface())
         for (let i = 0; i < lines.length; i++) {
             const line = lines[i]
             const displayLines = this.layoutService.buildDisplayLines(

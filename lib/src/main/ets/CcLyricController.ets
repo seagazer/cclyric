@@ -211,7 +211,7 @@ export class CcLyricController {
      */
     public setTypeface(typeface: drawing.Typeface | null): CcLyricController {
         this._typeface = typeface
-        this.invalidate()
+        this.resize()
         return this
     }
 

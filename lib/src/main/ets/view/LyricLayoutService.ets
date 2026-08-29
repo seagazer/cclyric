@@ -1,4 +1,5 @@
 import text from '@ohos.graphics.text'
+import drawing from '@ohos.graphics.drawing'
 import { LrcLine } from '../bean/LrcLine'
 import { LrcWord } from '../bean/LrcWord'
 import { LyricDisplayLine } from '../bean/LyricDisplayLine'
@@ -9,7 +10,26 @@ import { LyricDisplayLine } from '../bean/LyricDisplayLine'
  */
 export class LyricLayoutService {
     private readonly fontCollection = new text.FontCollection()
+    private readonly wrapFont = new drawing.Font()
+    private readonly defaultTypeface = this.wrapFont.getTypeface()
+    private typeface: drawing.Typeface | null = null
     private readonly paragraphCache: Map<string, string[]> = new Map()
+    // Punctuation that should not start a wrapped line (avoid orphan punctuation for CJK text).
+    private readonly noStartPunctuation = '，。、；：！？…—～」』】》）”’,.;:!?)]}'
+
+    /**
+     * Set the typeface used to measure and wrap the lyric text.
+     * The typeface must be identical to the one used for rendering, otherwise lines wrapped
+     * with the default font metrics can overflow the viewport after the highlight scale is applied.
+     * @param typeface The typeface, null to use the default font.
+     */
+    setTypeface(typeface: drawing.Typeface | null) {
+        if (this.typeface === typeface) {
+            return
+        }
+        this.typeface = typeface
+        this.paragraphCache.clear()
+    }
 
     measureLines(line: LrcLine, width: number, fontSize: number): string[] {
         if (width <= 0 || fontSize <= 0 || line.text.length <= 0) {
@@ -20,6 +40,17 @@ export class LyricLayoutService {
         if (cached !== undefined) {
             return cached
         }
+        // A custom typeface must drive the wrapping, otherwise the wrapped lines are measured
+        // with the default font and can be wider than the viewport once rendered with the
+        // custom typeface and scaled by the highlight scale.
+        const result = this.typeface === null
+            ? this.measureLinesByParagraph(line.text, width, fontSize)
+            : this.measureLinesByDrawing(line.text, width, fontSize)
+        this.paragraphCache.set(cacheKey, result)
+        return result
+    }
+
+    private measureLinesByParagraph(textValue: string, width: number, fontSize: number): string[] {
         const style: text.ParagraphStyle = {
             wordBreak: text.WordBreak.NORMAL,
             textStyle: {
@@ -27,7 +58,7 @@ export class LyricLayoutService {
             }
         }
         const builder = new text.ParagraphBuilder(style, this.fontCollection)
-        builder.addText(line.text)
+        builder.addText(textValue)
         const paragraph = builder.build()
         paragraph.layoutSync(width)
         const result: string[] = []
@@ -35,12 +66,77 @@ export class LyricLayoutService {
         for (let i = 0; i < lineCount; i++) {
             const metrics = paragraph.getLineMetrics(i)
             if (metrics !== undefined) {
-                result.push(line.text.substring(metrics.startIndex, metrics.endIndex))
+                result.push(textValue.substring(metrics.startIndex, metrics.endIndex))
             }
         }
-        const normalized = result.length > 0 ? result : [line.text]
-        this.paragraphCache.set(cacheKey, normalized)
-        return normalized
+        return result.length > 0 ? result : [textValue]
+    }
+
+    /**
+     * Greedy wrapping based on the same drawing.Font metrics as LrcTextView rendering,
+     * so the measured width always matches the rendered width.
+     */
+    private measureLinesByDrawing(textValue: string, width: number, fontSize: number): string[] {
+        const result: string[] = []
+        let start = 0
+        while (start < textValue.length) {
+            const end = this.findBreakIndex(textValue, start, width, fontSize)
+            if (end <= start) {
+                break
+            }
+            result.push(textValue.substring(start, end))
+            start = end
+        }
+        return result.length > 0 ? result : [textValue]
+    }
+
+    private findBreakIndex(textValue: string, start: number, width: number, fontSize: number): number {
+        // Find the longest prefix that fits within the width.
+        let lo = start
+        let hi = textValue.length
+        while (lo < hi) {
+            const mid = Math.ceil((lo + hi) / 2)
+            if (this.measureTextWidth(textValue.substring(start, mid), fontSize) <= width) {
+                lo = mid
+            } else {
+                hi = mid - 1
+            }
+        }
+        if (lo <= start) {
+            return Math.min(textValue.length, start + 1)
+        }
+        // Do not split a surrogate pair.
+        if (lo < textValue.length) {
+            const current = textValue.charCodeAt(lo)
+            const previous = textValue.charCodeAt(lo - 1)
+            if (current >= 0xDC00 && current <= 0xDFFF && previous >= 0xD800 && previous <= 0xDBFF) {
+                lo -= 1
+            }
+        }
+        let breakIndex = lo
+        if (lo < textValue.length) {
+            // Prefer keeping English words intact: break at the last space inside the fitted prefix.
+            const lastSpace = textValue.lastIndexOf(' ', lo - 1)
+            if (lastSpace > start) {
+                breakIndex = lastSpace + 1
+            }
+            // Avoid starting a line with closing punctuation.
+            while (breakIndex < textValue.length && this.noStartPunctuation.indexOf(textValue.charAt(breakIndex)) >= 0) {
+                if (this.measureTextWidth(textValue.substring(start, breakIndex + 1), fontSize) > width) {
+                    break
+                }
+                breakIndex++
+            }
+        }
+        return breakIndex
+    }
+
+    private measureTextWidth(textValue: string, fontSize: number): number {
+        this.wrapFont.setTypeface(this.typeface ?? this.defaultTypeface)
+        this.wrapFont.setSize(fontSize)
+        const blob = drawing.TextBlob.makeFromString(textValue, this.wrapFont, drawing.TextEncoding.TEXT_ENCODING_UTF8)
+        const bound = blob.bounds()
+        return Math.max(0, bound.right - bound.left)
     }
 
     buildDisplayLines(line: LrcLine, width: number, fontSize: number, highlightScale: number): LyricDisplayLine[] {
