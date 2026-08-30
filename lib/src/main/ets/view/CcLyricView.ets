@@ -161,6 +161,10 @@ export struct CcLyricView {
                             if (this.centerLrcLine) {
                                 this.onSeekAction?.(this.centerLrcLine.beginTime)
                             }
+                            // 播放按钮的点击手势可能消费了触摸事件，导致List的onTouch无法收到
+                            // TouchType.Up，onTouchEnd无法被调用。这里主动调用onTouchEnd启动
+                            // 自动隐藏定时器，回调中会同步本视图的isUserMoving。
+                            this.scrollCoordinator.onTouchEnd(this.autoHideSeekUIDelay, this.supportSeek, this.dispatchScrollState)
                         })
                 }
                 .width("100%")
@@ -215,19 +219,19 @@ export struct CcLyricView {
                     this.centerLrcLine = this.scrollCoordinator.getCenterLine()
                 })
                 .onScrollStart(() => {
-                    this.scrollCoordinator.onScrollStart(this.onScrollStateChanged)
+                    this.scrollCoordinator.onScrollStart(this.dispatchScrollState)
                 })
                 .onScrollStop(() => {
-                    this.scrollCoordinator.onScrollStop(this.autoHideSeekUIDelay, this.onScrollStateChanged)
+                    this.scrollCoordinator.onScrollStop(this.autoHideSeekUIDelay, this.dispatchScrollState)
                 })
                 .onTouch((event) => {
                     switch (event.type) {
                         case TouchType.Down:
-                            this.scrollCoordinator.onTouchDown(this.onScrollStateChanged)
+                            this.scrollCoordinator.onTouchDown(this.dispatchScrollState)
                             break
                         case TouchType.Up:
                         case TouchType.Cancel:
-                            this.scrollCoordinator.onTouchEnd(this.autoHideSeekUIDelay, this.supportSeek, this.onScrollStateChanged)
+                            this.scrollCoordinator.onTouchEnd(this.autoHideSeekUIDelay, this.supportSeek, this.dispatchScrollState)
                             break
                     }
                     this.isUserMoving = this.scrollCoordinator.getUserMoving()
@@ -514,6 +518,18 @@ export struct CcLyricView {
             return
         }
         this.scroller.scrollToIndex(index, animated)
+    }
+
+    /**
+     * Synchronize the local reactive state with the coordinator and forward the
+     * external callback. The coordinator only owns its own internal flag; the
+     * seek UI visibility depends on the @Local flag of this view, so it must be
+     * updated whenever the coordinator changes its moving state (including from
+     * inside its delayed auto-hide timer).
+     */
+    private dispatchScrollState = (scrolling: boolean) => {
+        this.isUserMoving = this.scrollCoordinator.getUserMoving()
+        this.onScrollStateChanged?.(scrolling)
     }
 
     private updatePosition(position: number) {
