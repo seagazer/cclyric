@@ -57,6 +57,7 @@ export struct CcLyricView {
     private estimatedProgressInterval = 300
     private isPlaybackTickerRunning = false
     private readonly frameRefreshInterval = 16
+    private readonly maxIdleRefreshInterval = 250
     private readonly maxClockSyncGap = 1500
     private lyricTimeline: LyricTimelineItem[] = []
     private readonly layoutService = new LyricLayoutService()
@@ -361,7 +362,7 @@ export struct CcLyricView {
             return
         }
         this.isPlaybackTickerRunning = true
-        this.scheduleNextFrameRefresh()
+        this.scheduleNextFrameRefresh(this.frameRefreshInterval)
     }
 
     private stopPlaybackTicker() {
@@ -369,7 +370,7 @@ export struct CcLyricView {
         this.clearFrameRefreshTimer()
     }
 
-    private scheduleNextFrameRefresh() {
+    private scheduleNextFrameRefresh(delay: number) {
         this.clearFrameRefreshTimer()
         if (!this.isPlaybackTickerRunning) {
             return
@@ -377,7 +378,7 @@ export struct CcLyricView {
         this.frameRefreshTimeout = setTimeout(() => {
             this.frameRefreshTimeout = -1
             this.refreshByPlaybackClock()
-        }, this.frameRefreshInterval)
+        }, delay)
     }
 
     private refreshByPlaybackClock() {
@@ -398,7 +399,62 @@ export struct CcLyricView {
             this.stopPlaybackTicker()
             return
         }
-        this.scheduleNextFrameRefresh()
+        this.scheduleNextFrameRefresh(this.resolveNextRefreshDelay(nextPosition))
+    }
+
+    /**
+     * Compute the delay before the next ticker refresh.
+     * A fine cadence is only required while the focused line is a krc line that
+     * is actively sweeping a word. In every other state the drawing is static,
+     * so the ticker sleeps until the next drawing event (bounded by the idle
+     * interval) instead of doing per-frame work.
+     */
+    private resolveNextRefreshDelay(position: number): number {
+        const focusIndex = this.scrollCoordinator.getFocusIndex()
+        const focusItem = focusIndex >= 0 && focusIndex < this.lyricTimeline.length
+            ? this.lyricTimeline[focusIndex]
+            : undefined
+        if (focusItem === undefined) {
+            return this.frameRefreshInterval
+        }
+        if (focusItem.displayLine.isKrc && position >= focusItem.beginTime && position < focusItem.endTime) {
+            const words = focusItem.displayLine.line.wordList
+            if (words !== undefined && words.length > 0) {
+                for (let i = 0; i < words.length; i++) {
+                    if (position >= words[i].beginTime && position < words[i].endTime) {
+                        return this.frameRefreshInterval
+                    }
+                }
+            }
+        }
+        const nextEventTime = this.resolveNextEventTime(position, focusIndex, focusItem)
+        if (nextEventTime < 0) {
+            return this.frameRefreshInterval
+        }
+        return Math.min(Math.max(nextEventTime - position, this.frameRefreshInterval), this.maxIdleRefreshInterval)
+    }
+
+    /**
+     * The next position at which the drawing state changes: the next krc word
+     * boundary inside the focused line, the end of the focused line, or the
+     * begin of the following display line.
+     */
+    private resolveNextEventTime(position: number, focusIndex: number, focusItem: LyricTimelineItem): number {
+        if (focusItem.displayLine.isKrc) {
+            const words = focusItem.displayLine.line.wordList
+            if (words !== undefined && words.length > 0) {
+                for (let i = 0; i < words.length; i++) {
+                    if (words[i].beginTime > position) {
+                        return words[i].beginTime
+                    }
+                }
+            }
+        }
+        if (position < focusItem.endTime) {
+            return focusItem.endTime
+        }
+        const nextItem = focusIndex + 1 < this.lyricTimeline.length ? this.lyricTimeline[focusIndex + 1] : undefined
+        return nextItem !== undefined ? nextItem.beginTime : -1
     }
 
     private getTimelineEndPosition(): number {

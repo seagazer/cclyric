@@ -180,9 +180,13 @@ class LrcTextView extends RenderNode {
     private textHeight: number = 0
     private lineHeight: number = 0
     private beginY = -1
-    private playPosition = -1
     private drawingWidth = 0
-    private endPoint: common2D.Point = { x: 0, y: 0 }
+    private wordPrefixWidths: number[] = []
+    private isWordMetricsDirty = true
+    private cachedShader: drawing.ShaderEffect | null = null
+    private cachedShaderEndX = -1
+    private cachedShaderColor = -1
+    private readonly shaderUpdateThreshold = 1
     private isKrc = false
     private isHighlight = false
     private mode: AlignMode = AlignMode.CENTER
@@ -208,6 +212,7 @@ class LrcTextView extends RenderNode {
 
     setTextSize(size: number) {
         this.textSize = this.context.vp2px(size)
+        this.isWordMetricsDirty = true
         this.updateConfig()
     }
 
@@ -240,6 +245,7 @@ class LrcTextView extends RenderNode {
 
     setTypeface(typeface: drawing.Typeface | null) {
         this.font.setTypeface(typeface ?? this.defaultTypeface)
+        this.isWordMetricsDirty = true
         this.updateConfig()
     }
 
@@ -278,8 +284,14 @@ class LrcTextView extends RenderNode {
             }
             this.textHeight += this.lineHeights[i]
         }
+        if (this.isWordMetricsDirty) {
+            this.wordPrefixWidths = this.buildWordPrefixWidths()
+            this.isWordMetricsDirty = false
+        }
         this.updateLayout()
-        if (!this.isKrc) {
+        if (this.isKrc) {
+            this.cachedShader = null
+        } else {
             const argb = ColorHelper.hex2Argb(this.textHighlightColor)
             this.highlightPen.setColor({
                 alpha: argb[0],
@@ -305,6 +317,30 @@ class LrcTextView extends RenderNode {
         return Math.max(0, bound.right - bound.left)
     }
 
+    /**
+     * Precompute the cumulative text width for each krc word.
+     * The per-frame sweep then only reads this array instead of re-measuring
+     * text with native calls. The last word is aligned with {@link textWidth},
+     * matching the historical sweep behavior.
+     */
+    private buildWordPrefixWidths(): number[] {
+        const widths: number[] = []
+        if (!this.isKrc) {
+            return widths
+        }
+        const wordList = this.lyricLine.wordList
+        if (wordList === undefined || wordList.length <= 0) {
+            return widths
+        }
+        let prefixText = ''
+        for (let i = 0; i < wordList.length; i++) {
+            prefixText += wordList[i].text
+            const width = i === wordList.length - 1 ? this.textWidth : this.measureTextWidth(prefixText)
+            widths.push(width)
+        }
+        return widths
+    }
+
     onSizeChanged(width: number, height: number) {
         if (this.frame.width === width && this.frame.height === height) {
             return
@@ -319,18 +355,26 @@ class LrcTextView extends RenderNode {
     }
 
     update(position: number) {
+        if (this.isKrc) {
+            const previousWidth = this.drawingWidth
+            this.updateDrawingWidth(position)
+            if (!this.isHighlight) {
+                this.isHighlight = true
+                this.invalidate()
+            } else if (this.drawingWidth !== previousWidth) {
+                this.invalidate()
+            }
+            return
+        }
+        // An lrc line renders a static whole-line highlight; a redraw is only
+        // needed when the highlighted state changes.
         if (!this.isHighlight) {
             this.isHighlight = true
+            this.invalidate()
         }
-        this.playPosition = position
-        if (this.isKrc) {
-            this.updateDrawingWidth(position)
-        }
-        this.invalidate()
     }
 
     stop() {
-        this.playPosition = -1
         this.drawingWidth = 0
         this.isHighlight = false
         this.invalidate()
@@ -351,7 +395,7 @@ class LrcTextView extends RenderNode {
             this.drawingWidth = this.textWidth
             return
         }
-        let prefixText = ''
+        const prefixWidths = this.wordPrefixWidths
         let prefixWidth = 0
         for (let i = 0; i < wordList.length; i++) {
             const word = wordList[i]
@@ -359,15 +403,13 @@ class LrcTextView extends RenderNode {
                 this.drawingWidth = prefixWidth
                 return
             }
-            const nextText = prefixText + word.text
-            const nextWidth = i === wordList.length - 1 ? this.textWidth : this.measureTextWidth(nextText)
+            const nextWidth = prefixWidths[i]
             if (position < word.endTime) {
                 const duration = Math.max(1, word.endTime - word.beginTime)
                 const progress = Math.min(1, Math.max(0, (position - word.beginTime) / duration))
                 this.drawingWidth = prefixWidth + (nextWidth - prefixWidth) * progress
                 return
             }
-            prefixText = nextText
             prefixWidth = nextWidth
         }
         this.drawingWidth = this.textWidth
@@ -401,10 +443,16 @@ class LrcTextView extends RenderNode {
     }
 
     private drawKrc(canvas: drawing.Canvas) {
+        if (this.textWidth > 0 && this.drawingWidth >= this.textWidth) {
+            // Fully highlighted: the foreground sweep already covers the whole
+            // text, so the background layer would be completely hidden.
+            this.drawKrcForeground(canvas)
+            return
+        }
         // draw background
-        this.drawKrcBackground(canvas);
+        this.drawKrcBackground(canvas)
         // draw foreground
-        this.drawKrcForeground(canvas);
+        this.drawKrcForeground(canvas)
     }
 
     private drawKrcBackground(canvas: drawing.Canvas) {
@@ -422,21 +470,30 @@ class LrcTextView extends RenderNode {
     }
 
     private drawKrcForeground(canvas: drawing.Canvas) {
-        if (this.playPosition > 0) {
-            this.endPoint.x = this.drawingWidth + this.getLineBeginX(this.textWidth)
-            const shaderEffect = drawing.ShaderEffect.createLinearGradient({ x: 0, y: 0 }, this.endPoint,
-                [this.textHighlightColor, this.textHighlightColor], drawing.TileMode.DECAL)
-            this.highlightPen.setShaderEffect(shaderEffect)
-            canvas.attachBrush(this.highlightPen)
-            let y = this.beginY
-            for (let i = 0; i < this.lyricTextBlobs.length; i++) {
-                const blob = this.lyricTextBlobs[i]
-                if (blob !== undefined && this.lineHeights[i] > 0) {
-                    canvas.drawTextBlob(blob, this.getLineBeginX(this.lineWidths[i]), y)
-                }
-                y += this.lineHeights[i]
-            }
-            canvas.detachBrush()
+        if (this.drawingWidth <= 0) {
+            return
         }
+        const endX = this.drawingWidth + this.getLineBeginX(this.textWidth)
+        let shader = this.cachedShader
+        if (shader === null ||
+            this.cachedShaderColor !== this.textHighlightColor ||
+            Math.abs(this.cachedShaderEndX - endX) >= this.shaderUpdateThreshold) {
+            shader = drawing.ShaderEffect.createLinearGradient({ x: 0, y: 0 }, { x: endX, y: 0 },
+                [this.textHighlightColor, this.textHighlightColor], drawing.TileMode.DECAL)
+            this.cachedShader = shader
+            this.cachedShaderEndX = endX
+            this.cachedShaderColor = this.textHighlightColor
+        }
+        this.highlightPen.setShaderEffect(shader)
+        canvas.attachBrush(this.highlightPen)
+        let y = this.beginY
+        for (let i = 0; i < this.lyricTextBlobs.length; i++) {
+            const blob = this.lyricTextBlobs[i]
+            if (blob !== undefined && this.lineHeights[i] > 0) {
+                canvas.drawTextBlob(blob, this.getLineBeginX(this.lineWidths[i]), y)
+            }
+            y += this.lineHeights[i]
+        }
+        canvas.detachBrush()
     }
 }
