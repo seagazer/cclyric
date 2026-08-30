@@ -17,7 +17,8 @@ struct CcLyricViewSample {
     @Local playerProgress: number = 0
     @Local duration: number = 0
     @Local isPlaying: boolean = false
-    private changeIndex = 0
+    private styleIndex = 0
+    private layoutIndex = 0
     private isSeeking = false
     private player = new CcPlayer(this.getUIContext().getHostContext()!)
     private src?: MediaSource = undefined
@@ -143,27 +144,47 @@ struct CcLyricViewSample {
                             this.controller.setLyric(lyric)
                         })
                     })
+                // 1. Pure UI style change: only invalidates the view (no data source rebuild)
                 SymbolGlyph($r("sys.symbol.paintpalette_fill"))
                     .fontSize(32)
                     .onClick(() => {
-                        if (this.changeIndex % 2 == 0) {
+                        if (this.styleIndex % 2 == 0) {
                             this.controller
                                 .setTextColor(0x80809241)
                                 .setTextHighlightColor(0xff32c64b)
+                                .setKrcTextBgColor(0xff7ad79a)
+                                .setFadeEnable(true)
+                                .setFadePercent(0.2)
+                                .setSeekIconColor(0xff32c64b)
+                        } else {
+                            this.controller
+                                .setTextColor(0xCC707070)
+                                .setTextHighlightColor(0xffe7107f)
+                                .setKrcTextBgColor(0xffd79a75)
+                                .setFadeEnable(true)
+                                .setFadePercent(0.15)
+                                .setSeekIconColor(0xffe7107f)
+                        }
+                        this.styleIndex++
+                    })
+                // 2. Layout-affecting change: triggers full data source rebuild
+                SymbolGlyph($r("sys.symbol.textformat"))
+                    .fontSize(32)
+                    .onClick(() => {
+                        if (this.layoutIndex % 2 == 0) {
+                            this.controller
                                 .setLineSpace(20)
                                 .setTextSize(20)
                                 .setHighlightScale(1.25)
                                 .setAlignMode(AlignMode.START)
                         } else {
                             this.controller
-                                .setTextColor(0xCC707070)
-                                .setTextHighlightColor(0xffe7107f)
                                 .setLineSpace(12)
                                 .setTextSize(18)
                                 .setHighlightScale(1.1)
                                 .setAlignMode(AlignMode.CENTER)
                         }
-                        this.changeIndex++
+                        this.layoutIndex++
                     })
             }.width("100%")
             .justifyContent(FlexAlign.SpaceBetween)

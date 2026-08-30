@@ -116,22 +116,15 @@ export class LrcLineView extends NodeController {
         if (this.lyricTextView === null) {
             this.lyricTextView = new LrcTextView(this.context!, this.lyricLine)
             this.lyricTextView.onSizeChanged(size.width, size.height)
-            if (this.textSize !== -1) {
-                this.setTextSize(this.textSize)
-            }
-            if (this.textColor !== -1) {
-                this.setTextColor(this.textColor)
-            }
-            if (this.krcTextBgColor !== -1) {
-                this.setKrcTextBgColor(this.krcTextBgColor)
-            }
-            if (this.textHighlightColor !== -1) {
-                this.setTextHighlightColor(this.textHighlightColor)
-            }
-            if (this.typeface !== null) {
-                this.lyricTextView.setTypeface(this.typeface)
-            }
-            this.setAlignMode(this.mode)
+            // 一次性批量应用所有配置，仅触发一次文本测量
+            this.lyricTextView.applyConfig(
+                this.textSize !== -1 ? this.textSize : LrcTextView.DEFAULT_TEXT_SIZE,
+                this.textColor !== -1 ? this.textColor : 0xFF000000,
+                this.krcTextBgColor !== -1 ? this.krcTextBgColor : 0xFF000000,
+                this.textHighlightColor !== -1 ? this.textHighlightColor : 0xFFFF0000,
+                this.typeface,
+                this.mode
+            )
             const renderNode = this.rootView?.getRenderNode()
             if (renderNode) {
                 renderNode.appendChild(this.lyricTextView)
@@ -158,8 +151,8 @@ class LrcTextView extends RenderNode {
     private highlightPen: drawing.Brush = new drawing.Brush()
     private font = new drawing.Font()
     private readonly defaultTypeface = this.font.getTypeface()
-    private readonly defaultTextSize = 16 //vp
-    private textSize: number = 0 //vp
+    static readonly DEFAULT_TEXT_SIZE: number = 16 //vp
+    private textSize: number = 0 //px
     private textColor: common2D.Color = {
         red: 0,
         green: 0,
@@ -194,10 +187,10 @@ class LrcTextView extends RenderNode {
     constructor(uiContext: UIContext, lyricLine: LrcLine) {
         super()
         this.context = uiContext
-        this.textSize = uiContext.vp2px(this.defaultTextSize)
         this.lyricLine = lyricLine
         this.isKrc = lyricLine.wordList != undefined && lyricLine.wordList.length > 0
-        this.updateConfig()
+        // 用默认值完成一次完整初始化，实际配置由 applyConfig 一次性覆盖
+        this.applyConfig(LrcTextView.DEFAULT_TEXT_SIZE, 0xFF000000, 0xFF000000, 0xFFFF0000, null, AlignMode.CENTER)
     }
 
     markHighlight() {
@@ -206,52 +199,115 @@ class LrcTextView extends RenderNode {
     }
 
     setAlignMode(mode: AlignMode) {
+        if (this.mode === mode) {
+            return
+        }
         this.mode = mode
-        this.updateConfig()
+        // 对齐模式只在绘制时影响起点，无需重新测量文本
+        this.invalidate()
     }
 
     setTextSize(size: number) {
-        this.textSize = this.context.vp2px(size)
+        const newSize = this.context.vp2px(size)
+        if (this.textSize === newSize) {
+            return
+        }
+        this.textSize = newSize
         this.isWordMetricsDirty = true
-        this.updateConfig()
+        this.applyTextMetrics()
     }
 
     setTextColor(textColor: number) {
         const colors = ColorHelper.hex2Argb(textColor) //argb
+        const newColor: common2D.Color = {
+            red: colors[1],
+            green: colors[2],
+            blue: colors[3],
+            alpha: colors[0]
+        }
+        if (this.textColor.red === newColor.red && this.textColor.green === newColor.green &&
+            this.textColor.blue === newColor.blue && this.textColor.alpha === newColor.alpha) {
+            return
+        }
+        this.textColor = newColor
+        this.normalPen.setColor(this.textColor)
+        this.invalidate()
+    }
+
+    setKrcTextBgColor(textColor: number) {
+        const colors = ColorHelper.hex2Argb(textColor) //argb
+        const newColor: common2D.Color = {
+            red: colors[1],
+            green: colors[2],
+            blue: colors[3],
+            alpha: colors[0]
+        }
+        if (this.textKrcBgColor.red === newColor.red && this.textKrcBgColor.green === newColor.green &&
+            this.textKrcBgColor.blue === newColor.blue && this.textKrcBgColor.alpha === newColor.alpha) {
+            return
+        }
+        this.textKrcBgColor = newColor
+        this.krcNormalPen.setColor(this.textKrcBgColor)
+        this.invalidate()
+    }
+
+    setTextHighlightColor(textColor: number) {
+        if (this.textHighlightColor === textColor) {
+            return
+        }
+        this.textHighlightColor = textColor
+        this.applyHighlightColor()
+        this.invalidate()
+    }
+
+    setTypeface(typeface: drawing.Typeface | null) {
+        const target = typeface ?? this.defaultTypeface
+        if (this.font.getTypeface() === target) {
+            return
+        }
+        this.font.setTypeface(target)
+        this.isWordMetricsDirty = true
+        this.applyTextMetrics()
+    }
+
+    /**
+     * Apply the whole set of rendering attributes at once and perform a single
+     * text measurement. Used at view creation to avoid the repeated native
+     * measurement caused by calling each setter individually.
+     * @param textSize The text size, the unit is vp.
+     */
+    applyConfig(textSize: number, textColor: number, krcTextBgColor: number,
+        textHighlightColor: number, typeface: drawing.Typeface | null, mode: AlignMode) {
+        this.textSize = this.context.vp2px(textSize)
+        this.mode = mode
+        this.isWordMetricsDirty = true
+        const colors = ColorHelper.hex2Argb(textColor)
         this.textColor = {
             red: colors[1],
             green: colors[2],
             blue: colors[3],
             alpha: colors[0]
         }
-        this.updateConfig()
-    }
-
-    setKrcTextBgColor(textColor: number) {
-        const colors = ColorHelper.hex2Argb(textColor) //argb
-        this.textKrcBgColor = {
-            red: colors[1],
-            green: colors[2],
-            blue: colors[3],
-            alpha: colors[0]
-        }
-        this.updateConfig()
-    }
-
-    setTextHighlightColor(textColor: number) {
-        this.textHighlightColor = textColor
-        this.updateConfig()
-    }
-
-    setTypeface(typeface: drawing.Typeface | null) {
-        this.font.setTypeface(typeface ?? this.defaultTypeface)
-        this.isWordMetricsDirty = true
-        this.updateConfig()
-    }
-
-    private updateConfig() {
         this.normalPen.setColor(this.textColor)
+        const krcColors = ColorHelper.hex2Argb(krcTextBgColor)
+        this.textKrcBgColor = {
+            red: krcColors[1],
+            green: krcColors[2],
+            blue: krcColors[3],
+            alpha: krcColors[0]
+        }
         this.krcNormalPen.setColor(this.textKrcBgColor)
+        this.textHighlightColor = textHighlightColor
+        this.font.setTypeface(typeface ?? this.defaultTypeface)
+        this.applyHighlightColor()
+        this.applyTextMetrics()
+    }
+
+    /**
+     * Re-measure the lyric text and rebuild the render resources that depend on
+     * the text metrics. Only needed when the text size or the typeface changes.
+     */
+    private applyTextMetrics() {
         this.font.setSize(this.textSize)
         const lines = this.lyricLine.text.split('\n')
         this.lyricTextBlobs = []
@@ -289,6 +345,14 @@ class LrcTextView extends RenderNode {
             this.isWordMetricsDirty = false
         }
         this.updateLayout()
+        this.invalidate()
+    }
+
+    /**
+     * Refresh the highlight color resources. For krc lines the sweep shader is
+     * invalidated; for lrc lines the highlight pen color is updated.
+     */
+    private applyHighlightColor() {
         if (this.isKrc) {
             this.cachedShader = null
         } else {
@@ -300,7 +364,6 @@ class LrcTextView extends RenderNode {
                 blue: argb[3]
             })
         }
-        this.invalidate()
     }
 
     private updateLayout() {
